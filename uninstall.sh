@@ -17,8 +17,8 @@ echo -en '\n'
 echo '   Очишаем хвосты:'
 echo '       по пути /usr/lib/node_modules/homebridge*'
 sudo rm -rf /usr/lib/node_modules/homebridge*
-echo '       по пути /etc/systemd/system/homebridge'
-sudo rm -rf /etc/systemd/system/homebridge
+echo '       по пути /etc/systemd/system/homebridge*'
+sudo rm -rf /etc/systemd/system/homebridge*
 echo '       по пути /etc/default/homebridge*'
 sudo rm -rf /etc/default/homebridge*
 echo '       по пути /var/lib/homebridge*'
