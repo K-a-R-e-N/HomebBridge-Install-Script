@@ -4,17 +4,17 @@ echo ==========================================
 echo  Установка Home Bridge и его зависимостей
 echo ==========================================
 
-sudo su
-sudo curl -sL https://deb.nodesource.com/setup_12.x | bash -
+curl -sL https://deb.nodesource.com/setup_12.x | sudo bash -
 sudo apt-get install -y nodejs gcc g++ make python && node -v
-npm cache verify
-npm install -g --unsafe-perm homebridge
-npm install -g --unsafe-perm homebridge-config-ui-x
-useradd -m --system -G video homebridge
-grep homebridge /etc/sudoers || echo 'homebridge    ALL=(ALL) NOPASSWD: ALL' | sudo EDITOR='tee -a' visudo
-mkdir -p /var/lib/homebridge
-rm -rf /var/lib/homebridge/config.json
-tee -a /var/lib/homebridge/config.json <<_EOF_
+sudo npm cache verify
+sudo npm install -g --unsafe-perm homebridge
+sudo npm install -g --unsafe-perm homebridge-config-ui-x
+sudo useradd -m --system -G video homebridge
+sudo grep homebridge /etc/sudoers || echo 'homebridge    ALL=(ALL) NOPASSWD: ALL' | sudo EDITOR='tee -a' visudo
+sudo mkdir -p /var/lib/homebridge
+
+sudo rm -rf /var/lib/homebridge/config.json
+sudo tee -a /var/lib/homebridge/config.json <<_EOF_
 {
     "bridge": {
         "name": "Homebridge",
@@ -38,8 +38,9 @@ tee -a /var/lib/homebridge/config.json <<_EOF_
     ]
 }
 _EOF_
-rm -rf /etc/systemd/system/homebridge.service
-tee -a /etc/systemd/system/homebridge.service <<_EOF_
+
+sudo rm -rf /etc/systemd/system/homebridge.service
+sudo tee -a /etc/systemd/system/homebridge.service <<_EOF_
 [Unit]
 Description=Homebridge
 After=syslog.target network-online.target
@@ -58,8 +59,9 @@ AmbientCapabilities=CAP_NET_RAW
 [Install]
 WantedBy=multi-user.target
 _EOF_
-rm -rf /etc/default/homebridge
-tee -a /etc/default/homebridge <<_EOF_
+
+sudo rm -rf /etc/default/homebridge
+sudo tee -a /etc/default/homebridge <<_EOF_
 # Defaults / Configuration options for homebridge
 # The following settings tells homebridge where to find the config.json file and where to persist the data (i.e. pairing and others)
 HOMEBRIDGE_OPTS=-U /var/lib/homebridge -I
@@ -71,9 +73,8 @@ HOMEBRIDGE_OPTS=-U /var/lib/homebridge -I
 # To enable web terminals via homebridge-config-ui-x uncomment the following line
 # HOMEBRIDGE_CONFIG_UI_TERMINAL=1
 _EOF_
-chown -R homebridge: /var/lib/homebridge
-exit
 
+sudo chown -R homebridge: /var/lib/homebridge
 sudo systemctl daemon-reload
 sudo systemctl enable homebridge
 sudo systemctl start homebridge
@@ -82,4 +83,5 @@ echo ==============================================================
 echo  Процесс установки Home Bridge и его зависимостей, завершен !
 echo ==============================================================
 echo Самоудаляемся...
-sudo rm -rf /home/pi/HomebBridge-Install-Script/
+cd ..	
+sudo rm -rf HomebBridge-Install-Script
