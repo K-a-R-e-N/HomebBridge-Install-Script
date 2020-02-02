@@ -21,7 +21,7 @@ echo '# # Установка интерфейса для Home Bridge...'
 sudo npm install -g --unsafe-perm homebridge-config-ui-x > /dev/null 2>&1
 echo -en '\n'
 echo '# # Создаем основного пользователя для Home Bridge...'
-sudo useradd -m --system -G video homebridge > /dev/null 2>&1
+sudo useradd -m --system -G video homebridge
 echo -en '\n'
 echo '# # Добавляем полномочия интерфесу... '
 sudo grep homebridge /etc/sudoers || echo 'homebridge    ALL=(ALL) NOPASSWD: ALL' | sudo EDITOR='tee -a' visudo > /dev/null 2>&1
