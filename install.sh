@@ -107,7 +107,7 @@ echo Стоп Командная:                systemctl stop homebridge
 echo Запустите команду:             systemctl start homebridge
 echo Просмотр журналов Команда:     journalctl -f -n 100 -u homebridge
 echo
-echo Самоудаляемся папку со скриптом установки...
+echo Самоудаляем папку со скриптом установки...
 cd ..	
 sudo rm -rf HomebBridge-Install-Script
 echo
