@@ -107,16 +107,6 @@ echo =============================================================
 echo Процесс установки Home Bridge и его зависимостей, завершен !
 echo =============================================================
 
-echo Полезная информация для работы с Home Bridge
-echo 'Логин и пароль:                admin/admin'
-echo 'Путь к файлу конфигурации:     /var/lib/homebridge/config.json'
-echo 'Путь хранения:                 /var/lib/homebridge'
-echo 'Перезагрузка Команды:          systemctl restart homebridge'
-echo 'Стоп Командная:                systemctl stop homebridge'
-echo 'Запустите команду:             systemctl start homebridge'
-echo П'росмотр журналов Команда:     journalctl -f -n 100 -u homebridge'
-echo
-echo Самоудаляем папку со скриптом установки...
 cd ..	
 sudo rm -rf HomebBridge-Install-Script
 echo
