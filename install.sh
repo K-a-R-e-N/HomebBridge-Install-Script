@@ -1,6 +1,12 @@
+#!/bin/bash
+
+echo ==========================================
+echo  Установка Home Bridge и его зависимостей
+echo ==========================================
+
 sudo su
 sudo curl -sL https://deb.nodesource.com/setup_12.x | bash -
-sudo apt-get install -y nodejs gcc g++ make python </dev/null && node -v
+sudo apt-get install -y nodejs gcc g++ make python && node -v
 npm cache verify
 npm install -g --unsafe-perm homebridge
 npm install -g --unsafe-perm homebridge-config-ui-x
@@ -68,8 +74,12 @@ _EOF_
 chown -R homebridge: /var/lib/homebridge
 exit
 
-
-
 sudo systemctl daemon-reload
 sudo systemctl enable homebridge
 sudo systemctl start homebridge
+
+echo ==============================================================
+echo  Процесс установки Home Bridge и его зависимостей, завершен !
+echo ==============================================================
+echo Самоудаляемся...
+sudo rm -rf /home/pi/HomebBridge-Install-Script/
