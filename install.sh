@@ -43,15 +43,18 @@ sudo tee -a /var/lib/homebridge/config.json > /dev/null 2>&1 <<_EOF_
     "accessories": [],
     "platforms": [
         {
+            "platform": "config"
             "name": "Config",
             "port": 8080,
             "auth": "form",
+            "standalone": true,
             "restart": "sudo -n systemctl restart homebridge",
             "sudo": true,
             "log": {
                 "method": "systemd"
+                "service": "homebridge"
             },
-            "platform": "config"
+
         }
     ]
 }
