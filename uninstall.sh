@@ -1,5 +1,6 @@
 #!/bin/bash
 
+echo
 echo ====================================
 echo  Удаление Home Bridge и его хвостов
 echo ====================================
@@ -43,4 +44,4 @@ echo
 echo Самоудаляемся...
 cd ..	
 sudo rm -rf HomebBridge-Install-Script
-cd ~
+echo
