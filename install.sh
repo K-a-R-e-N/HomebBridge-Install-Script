@@ -5,27 +5,33 @@ echo =========================================
 echo Установка Home Bridge и его зависимостей
 echo =========================================
 echo
-
-echo Установка репозитория для Node.js 12.x...
-curl -sL https://deb.nodesource.com/setup_12.x | sudo bash -
-echo Установка пакетов nodejs gcc g++ make python...
-sudo apt-get install -y nodejs gcc g++ make python
-echo Вывожу версии установленных пакетов:
-echo Node && sudo node -v
-echo Устранаем заранее известные проблемы...
-sudo npm cache verify
-echo Установка Home Bridge
-sudo npm install -g --unsafe-perm homebridge
-echo Установка интерфейса для Home Bridge...
-sudo npm install -g --unsafe-perm homebridge-config-ui-x
-echo Создаем основного пользователя для Home Bridge...
-sudo useradd -m --system -G video homebridge
-echo Добавляем полномочия интерфесу... 
-sudo grep homebridge /etc/sudoers || echo 'homebridge    ALL=(ALL) NOPASSWD: ALL' | sudo EDITOR='tee -a' visudo
-echo Создаем основной каталог Home Bridge и даем права...
-sudo mkdir -p /var/lib/homebridge
-sudo chown -R homebridge: /var/lib/homebridge
-echo Создаем конфигурационный файл Home Bridge...
+echo # # Установка репозитория для Node.js 12.x...
+curl -sL https://deb.nodesource.com/setup_12.x | sudo bash - > /dev/null 2>&1
+echo
+echo # # Установка пакетов nodejs gcc g++ make python...
+sudo apt-get install -y nodejs gcc g++ make python > /dev/null 2>&1
+echo Версия установленой NodeJS: && sudo node -vecho
+echo
+echo # # Устранаем заранее известные проблемы...
+sudo npm cache verify > /dev/null 2>&1
+echo
+echo # # Установка Home Bridge
+sudo npm install -g --unsafe-perm homebridge > /dev/null 2>&1
+echo
+echo # # Установка интерфейса для Home Bridge...
+sudo npm install -g --unsafe-perm homebridge-config-ui-x > /dev/null 2>&1
+echo
+echo # # Создаем основного пользователя для Home Bridge...
+sudo useradd -m --system -G video homebridge > /dev/null 2>&1
+echo
+echo # # Добавляем полномочия интерфесу... 
+sudo grep homebridge /etc/sudoers || echo 'homebridge    ALL=(ALL) NOPASSWD: ALL' | sudo EDITOR='tee -a' visudo > /dev/null 2>&1
+echo
+echo # # Создаем основной каталог Home Bridge и даем права...
+sudo mkdir -p /var/lib/homebridge > /dev/null 2>&1
+sudo chown -R homebridge: /var/lib/homebridge > /dev/null 2>&1
+echo
+echo # # Создаем конфигурационный файл Home Bridge...
 sudo rm -rf /var/lib/homebridge/config.json
 sudo tee -a /var/lib/homebridge/config.json > /dev/null 2>&1 <<_EOF_
 {
@@ -52,7 +58,8 @@ sudo tee -a /var/lib/homebridge/config.json > /dev/null 2>&1 <<_EOF_
 }
 _EOF_
 
-echo Создаем сервис автозапуска...
+echo
+echo # # Создаем сервис автозапуска...
 sudo rm -rf /etc/systemd/system/homebridge.service
 sudo tee -a /etc/systemd/system/homebridge.service > /dev/null 2>&1 <<_EOF_
 [Unit]
@@ -74,7 +81,8 @@ AmbientCapabilities=CAP_NET_RAW
 WantedBy=multi-user.target
 _EOF_
 
-echo Создаем файл основных настроек Home Bridge...
+echo
+echo # # Создаем файл основных настроек Home Bridge...
 sudo rm -rf /etc/default/homebridge
 sudo tee -a /etc/default/homebridge > /dev/null 2>&1 <<_EOF_
 # Defaults / Configuration options for homebridge
@@ -89,23 +97,24 @@ HOMEBRIDGE_OPTS=-U /var/lib/homebridge -I
 # HOMEBRIDGE_CONFIG_UI_TERMINAL=1
 _EOF_
 
-echo Запускаем фоново сервис homebridge
+echo
+echo # # Запускаем фоново сервис homebridge
 sudo systemctl daemon-reload
 sudo systemctl enable homebridge
 sudo systemctl start homebridge
-
+echo
 echo =============================================================
 echo Процесс установки Home Bridge и его зависимостей, завершен !
 echo =============================================================
 
 echo Полезная информация для работы с Home Bridge
-echo Логин и пароль:                admin/admin
-echo Путь к файлу конфигурации:     /var/lib/homebridge/config.json
-echo Путь хранения:                 /var/lib/homebridge
-echo Перезагрузка Команды:          systemctl restart homebridge
-echo Стоп Командная:                systemctl stop homebridge
-echo Запустите команду:             systemctl start homebridge
-echo Просмотр журналов Команда:     journalctl -f -n 100 -u homebridge
+echo 'Логин и пароль:                admin/admin'
+echo 'Путь к файлу конфигурации:     /var/lib/homebridge/config.json'
+echo 'Путь хранения:                 /var/lib/homebridge'
+echo 'Перезагрузка Команды:          systemctl restart homebridge'
+echo 'Стоп Командная:                systemctl stop homebridge'
+echo 'Запустите команду:             systemctl start homebridge'
+echo П'росмотр журналов Команда:     journalctl -f -n 100 -u homebridge'
 echo
 echo Самоудаляем папку со скриптом установки...
 cd ..	
