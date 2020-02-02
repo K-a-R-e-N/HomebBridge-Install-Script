@@ -14,10 +14,10 @@ sudo rm -rf /etc/default/homebridge*
 sudo rm -rf /home/pi/.homebridge*
 sudo rm -rf /var/lib/homebridge*
 sudo rm -rf ~/.homebridge*
-sudo rm -r /usr/bin/ps4-waker
-sudo rm -r /usr/lib/node_modules/ps4-waker
+sudo rm -rf /usr/bin/ps4-waker
+sudo rm -rf /usr/lib/node_modules/ps4-waker
 echo ========================================================
 echo  Процесс удаления Home Bridge и его хвостов, завершен !
 echo ========================================================
-cd
+echo Самоудаляемся...
 sudo rm -rf /home/pi/HomebBridge-Install-Script/
