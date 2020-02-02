@@ -1,8 +1,10 @@
 #!/bin/bash
 
-echo ==========================================
-echo  Установка Home Bridge и его зависимостей
-echo ==========================================
+echo
+echo =========================================
+echo Установка Home Bridge и его зависимостей
+echo =========================================
+echo
 
 curl -sL https://deb.nodesource.com/setup_12.x | sudo bash -
 sudo apt-get install -y nodejs gcc g++ make python && node -v
@@ -14,7 +16,7 @@ sudo grep homebridge /etc/sudoers || echo 'homebridge    ALL=(ALL) NOPASSWD: ALL
 sudo mkdir -p /var/lib/homebridge
 
 sudo rm -rf /var/lib/homebridge/config.json
-sudo tee -a /var/lib/homebridge/config.json <<_EOF_
+sudo tee -a /var/lib/homebridge/config.json > /dev/null 2>&1 <<_EOF_
 {
     "bridge": {
         "name": "Homebridge",
@@ -40,7 +42,7 @@ sudo tee -a /var/lib/homebridge/config.json <<_EOF_
 _EOF_
 
 sudo rm -rf /etc/systemd/system/homebridge.service
-sudo tee -a /etc/systemd/system/homebridge.service <<_EOF_
+sudo tee -a /etc/systemd/system/homebridge.service > /dev/null 2>&1 <<_EOF_
 [Unit]
 Description=Homebridge
 After=syslog.target network-online.target
@@ -61,7 +63,7 @@ WantedBy=multi-user.target
 _EOF_
 
 sudo rm -rf /etc/default/homebridge
-sudo tee -a /etc/default/homebridge <<_EOF_
+sudo tee -a /etc/default/homebridge > /dev/null 2>&1 <<_EOF_
 # Defaults / Configuration options for homebridge
 # The following settings tells homebridge where to find the config.json file and where to persist the data (i.e. pairing and others)
 HOMEBRIDGE_OPTS=-U /var/lib/homebridge -I
@@ -79,9 +81,11 @@ sudo systemctl daemon-reload
 sudo systemctl enable homebridge
 sudo systemctl start homebridge
 
-echo ==============================================================
-echo  Процесс установки Home Bridge и его зависимостей, завершен !
-echo ==============================================================
+echo =============================================================
+echo Процесс установки Home Bridge и его зависимостей, завершен !
+echo =============================================================
+echo
 echo Самоудаляемся...
 cd ..	
 sudo rm -rf HomebBridge-Install-Script
+echo
