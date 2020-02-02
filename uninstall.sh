@@ -1,3 +1,8 @@
+echo 
+echo Удаление Home Bridge и его хвостов
+echo 
+echo.
+echo Начало
 sudo killall homebridge
 sudo userdel -r homebridge
 sudo npm uninstall -g homebridge
@@ -11,3 +16,4 @@ sudo rm -rf /var/lib/homebridge*
 sudo rm -rf ~/.homebridge*
 sudo rm -rf /usr/bin/ps4-waker
 sudo rm -rf /usr/lib/node_modules/ps4-waker
+echo Процесс удаления Home Bridge и его хвостов, завершен !
