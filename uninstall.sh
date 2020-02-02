@@ -19,3 +19,5 @@ sudo rm -rf /usr/lib/node_modules/ps4-waker
 echo ========================================================
 echo  Процесс удаления Home Bridge и его хвостов, завершен !
 echo ========================================================
+cd
+sudo rm -rf /home/pi/HomebBridge-Install-Script/
