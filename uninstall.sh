@@ -1,9 +1,9 @@
 #!/bin/bash
 
 echo
-echo ====================================
-echo  Удаление Home Bridge и его хвостов
-echo ====================================
+echo ===================================
+echo Удаление Home Bridge и его хвостов
+echo ===================================
 echo
 echo Убываем процесс...
 sudo killall homebridge > /dev/null 2>&1
@@ -14,7 +14,7 @@ sudo npm uninstall -g homebridge > /dev/null 2>&1
 echo Деинсталируем nodejs...
 sudo apt-get purge --auto-remove nodejs -y > /dev/null 2>&1
 echo Деинсталируем libavahi-compat-libdnssd-dev...
-sudo apt-get purge --auto-remove libavahi-compat-libdnssd-dev -y
+sudo apt-get purge --auto-remove libavahi-compat-libdnssd-dev -y > /dev/null 2>&1
 echo
 echo Очишаем хвосты:
 echo по пути /usr/lib/node_modules/homebridge*
@@ -37,9 +37,9 @@ echo Плагин ps4-waker
 sudo rm -rf /usr/bin/ps4-waker
 sudo rm -rf /usr/lib/node_modules/ps4-waker
 echo
-echo ========================================================
-echo  Процесс удаления Home Bridge и его хвостов, завершен !
-echo ========================================================
+echo =======================================================
+echo Процесс удаления Home Bridge и его хвостов, завершен !
+echo =======================================================
 echo
 echo Самоудаляемся...
 cd ..	
