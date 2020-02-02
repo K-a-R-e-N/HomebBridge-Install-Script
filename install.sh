@@ -24,7 +24,7 @@ echo '# # Создаем основного пользователя для Home
 sudo useradd -m --system -G video homebridge
 echo -en '\n'
 echo '# # Добавляем полномочия интерфесу... '
-sudo grep homebridge /etc/sudoers || echo 'homebridge    ALL=(ALL) NOPASSWD: ALL' | sudo EDITOR='tee -a' visudo > /dev/null 2>&1
+sudo grep homebridge /etc/sudoers > /dev/null 2>&1 || echo 'homebridge    ALL=(ALL) NOPASSWD: ALL' | sudo EDITOR='tee -a' visudo > /dev/null 2>&1
 echo -en '\n'
 echo '# # Создаем основной каталог Home Bridge и даем права...'
 sudo mkdir -p /var/lib/homebridge > /dev/null 2>&1
