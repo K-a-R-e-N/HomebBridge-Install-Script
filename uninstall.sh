@@ -23,4 +23,3 @@ echo ========================================================
 echo Самоудаляемся...
 cd ..	
 sudo rm -rf HomebBridge-Install-Script
-cd ..	
