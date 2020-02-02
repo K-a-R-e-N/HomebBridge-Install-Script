@@ -10,11 +10,9 @@ sudo killall homebridge > /dev/null 2>&1
 echo 'Деинсталируем Home Bridge...'
 sudo npm uninstall -g homebridge > /dev/null 2>&1
 echo 'Удаляем пользователя homebridge...'
-sudo userdel -f homebridge
+sudo userdel -rf homebridge
 echo 'Деинсталируем nodejs...'
 sudo apt-get purge --auto-remove nodejs -y > /dev/null 2>&1
-echo 'Деинсталируем libavahi-compat-libdnssd-dev...'
-sudo apt-get purge --auto-remove libavahi-compat-libdnssd-dev -y > /dev/null 2>&1
 echo -en '\n'
 echo 'Очишаем хвосты:'
 echo 'по пути /usr/lib/node_modules/homebridge*'
