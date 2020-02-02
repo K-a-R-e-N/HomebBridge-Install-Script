@@ -21,3 +21,4 @@ echo  Процесс удаления Home Bridge и его хвостов, за
 echo ========================================================
 echo Самоудаляемся...
 sudo rm -rf /home/pi/HomebBridge-Install-Script/
+cd
