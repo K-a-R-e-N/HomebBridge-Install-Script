@@ -3,13 +3,11 @@
 echo ====================================
 echo  Удаление Home Bridge и его хвостов
 echo ====================================
-echo.
-echo Начало
 sudo killall homebridge
 sudo userdel -r homebridge
 sudo npm uninstall -g homebridge
-sudo apt-get purge --auto-remove nodejs -y </dev/null
-sudo apt-get purge --auto-remove libavahi-compat-libdnssd-de -y </dev/null
+sudo apt-get purge --auto-remove nodejs -y
+sudo apt-get purge --auto-remove libavahi-compat-libdnssd-de -y
 sudo rm -rf /usr/lib/node_modules/homebridge*
 sudo rm -rf /etc/systemd/system/homebridge
 sudo rm -rf /etc/default/homebridge*
