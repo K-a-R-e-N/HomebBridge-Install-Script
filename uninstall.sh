@@ -15,13 +15,14 @@ echo '   Деинсталлируем HomeBridge...'
 sudo npm uninstall -g homebridge > /dev/null 2>&1
 echo -en '\n'
 echo '   Деинсталлируем интерфейс Homebridge Config UI X...'
-sudo npm uninstall -g homebridge-config-ui-x
+sudo npm uninstall -g homebridge-config-ui-x > /dev/null 2>&1
 echo -en '\n'
 echo '   Деинсталлируем NodeJS...'
 sudo apt-get purge --auto-remove nodejs -y > /dev/null 2>&1
 echo -en '\n'
 echo '   Удаляем пользователя homebridge...'
 sudo userdel -rf homebridge > /dev/null 2>&1
+echo -en '\n'
 echo '   Очищаем хвосты:'
 echo '       по пути /usr/lib/node_modules/homebridge*'
 sudo rm -rf /usr/lib/node_modules/homebridge*
