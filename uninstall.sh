@@ -7,14 +7,14 @@ echo ' ========================================================'
 echo -en '\n'
 echo '   Убиваем процесс...'
 sudo killall homebridge > /dev/null 2>&1
-echo '   Деинсталируем Home Bridge...'
+echo '   Деинсталлируем Home Bridge...'
 sudo npm uninstall -g homebridge > /dev/null 2>&1
 echo '   Удаляем пользователя homebridge...'
 sudo userdel -rf homebridge > /dev/null 2>&1
-echo '   Деинсталируем nodejs...'
+echo '   Деинсталлируем NodejsJS...'
 sudo apt-get purge --auto-remove nodejs -y > /dev/null 2>&1
 echo -en '\n'
-echo '   Очишаем хвосты:'
+echo '   Очищаем хвосты:'
 echo '       по пути /usr/lib/node_modules/homebridge*'
 sudo rm -rf /usr/lib/node_modules/homebridge*
 echo '       по пути /usr/bin/homebridge'
