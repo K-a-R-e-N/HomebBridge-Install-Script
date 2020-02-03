@@ -9,7 +9,7 @@ echo '# # Установка репозитория для Node.js 12.x...'
 curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -> /dev/null 2>&1
 echo -en '\n'
 echo '# # Установка пакетов nodejs gcc g++ make python...'
-sudo apt-get install -y nodejs gcc g++ make python > /dev/null 2>&1
+sudo apt-get install -y nodejs gcc g++ make python
 echo -en '\n'
 echo '# # Устраняем заранее известные проблемы...'
 sudo npm cache verify > /dev/null 2>&1
