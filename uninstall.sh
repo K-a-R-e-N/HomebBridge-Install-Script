@@ -11,7 +11,7 @@ echo '   Деинсталлируем Home Bridge...'
 sudo npm uninstall -g homebridge > /dev/null 2>&1
 echo '   Удаляем пользователя homebridge...'
 sudo userdel -rf homebridge > /dev/null 2>&1
-echo '   Деинсталлируем NodejsJS...'
+echo '   Деинсталлируем NodeJS...'
 sudo apt-get purge --auto-remove nodejs -y > /dev/null 2>&1
 echo -en '\n'
 echo '   Очищаем хвосты:'
@@ -39,9 +39,9 @@ echo '       Плагин ps4-waker'
 sudo rm -rf /usr/bin/ps4-waker
 sudo rm -rf /usr/lib/node_modules/ps4-waker
 echo -en '\n'
-echo ' ========================================================'
-echo '  Процесс удаления Home Bridge и его хвостов, завершен !'
-echo ' ========================================================'
+echo ' ========================================================='
+echo '    Процесс удаления Home Bridge и его хвостов завершен'
+echo ' ========================================================='
 echo -en '\n'
 echo -en '\n'
 echo '       Самоудаляем папку со скриптом установки...'
