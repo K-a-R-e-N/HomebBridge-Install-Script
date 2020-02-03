@@ -6,33 +6,33 @@ echo '            Установка HomeBridge и его зависимосте
 echo '==============================================================='
 echo -en '\n'
 echo '# # Установка репозитория для Node.js 12.x...'
-curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -> /dev/null 2>&1
+curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash - > /dev/null
 echo -en '\n'
 echo '# # Установка пакетов nodejs gcc g++ make python...'
-sudo apt-get install -y nodejs gcc g++ make python
+sudo apt-get install -y nodejs gcc g++ make python > /dev/null
 echo -en '\n'
 echo '# # Устраняем заранее известные проблемы...'
-sudo npm cache verify > /dev/null 2>&1
+sudo npm cache verify > /dev/null
 echo -en '\n'
 echo '# # Установка HomeBridge'
-sudo npm install -g --unsafe-perm homebridge > /dev/null 2>&1
+sudo npm install -g --unsafe-perm homebridge > /dev/null
 echo -en '\n'
 echo '# # Установка интерфейса для HomeBridge...'
-sudo npm install -g --unsafe-perm homebridge-config-ui-x > /dev/null 2>&1
+sudo npm install -g --unsafe-perm homebridge-config-ui-x > /dev/null
 echo -en '\n'
 echo '# # Создаем основного пользователя для Home Bridge...'
-sudo useradd -rm homebridge -G dialout,gpio,i2c
+sudo useradd -rm homebridge -G dialout,gpio,i2c > /dev/null
 echo -en '\n'
 echo '# # Добавляем полномочия интерфесу... '
-sudo grep homebridge /etc/sudoers > /dev/null 2>&1 || echo 'homebridge    ALL=(ALL) NOPASSWD: ALL' | sudo EDITOR='tee -a' visudo > /dev/null 2>&1
+sudo grep homebridge /etc/sudoers > /dev/null || echo 'homebridge    ALL=(ALL) NOPASSWD: ALL' | sudo EDITOR='tee -a' visudo > /dev/null
 echo -en '\n'
 echo '# # Создаем основной каталог Home Bridge и даем права...'
 [ ! -d ~/.homebridge ] && sudo mkdir -p ~/.homebridge
-sudo chown -R homebridge: ~/.homebridge > /dev/null 2>&1
+sudo chown -R homebridge: ~/.homebridge > /dev/null
 echo -en '\n'
 echo '# # Создаем конфигурационный файл HomeBridge...'
 sudo rm -rf ~/.homebridge/config.json
-sudo tee -a ~/.homebridge/config.json > /dev/null 2>&1 <<_EOF_
+sudo tee -a ~/.homebridge/config.json > /dev/null <<_EOF_
 {
     "bridge": {
         "name": "Homebridge",
@@ -62,7 +62,7 @@ _EOF_
 echo -en '\n'
 echo '# # Создаем сервис автозапуска...'
 sudo rm -rf /etc/systemd/system/homebridge.service
-sudo tee -a /etc/systemd/system/homebridge.service > /dev/null 2>&1 <<_EOF_
+sudo tee -a /etc/systemd/system/homebridge.service > /dev/null <<_EOF_
 [Unit]
 Description=Homebridge
 After=syslog.target network-online.target
@@ -86,7 +86,7 @@ echo -en '\n'
 echo '# # Создаем сервис автозапуска Homebridge Config UI X для Standalone Mode...'
 
 sudo rm -rf /etc/systemd/system/homebridge-config-ui-x.service
-sudo tee -a /etc/systemd/system/homebridge-config-ui-x.service > /dev/null 2>&1 <<_EOF_
+sudo tee -a /etc/systemd/system/homebridge-config-ui-x.service > /dev/null <<_EOF_
 [Unit]
 Description=Homebridge Config UI X
 After=syslog.target network-online.target
@@ -109,7 +109,7 @@ _EOF_
 echo -en '\n'
 echo '# # Создаем файл настроек HomeBridge...'
 sudo rm -rf /etc/default/homebridge
-sudo tee -a /etc/default/homebridge > /dev/null 2>&1 <<_EOF_
+sudo tee -a /etc/default/homebridge > /dev/null <<_EOF_
 # Defaults / Configuration options for homebridge
 # The following settings tells homebridge where to find the config.json file and where to persist the data (i.e. pairing and others)
 HOMEBRIDGE_OPTS=-U $HOME/.homebridge -I
