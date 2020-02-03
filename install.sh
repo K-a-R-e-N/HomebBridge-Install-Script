@@ -21,13 +21,12 @@ echo '# # Установка интерфейса для HomeBridge...'
 sudo npm install -g --unsafe-perm homebridge-config-ui-x > /dev/null 2>&1
 echo -en '\n'
 echo '# # Создаем основного пользователя для Home Bridge...'
-sudo useradd -m --system -G video homebridge
+sudo useradd -rm homebridge -G dialout,gpio,i2c
 echo -en '\n'
 echo '# # Добавляем полномочия интерфесу... '
 sudo grep homebridge /etc/sudoers > /dev/null 2>&1 || echo 'homebridge    ALL=(ALL) NOPASSWD: ALL' | sudo EDITOR='tee -a' visudo > /dev/null 2>&1
 echo -en '\n'
 echo '# # Создаем основной каталог Home Bridge и даем права...'
-echo 'OLD Patch /var/lib/homebridge'
 [ ! -d ~/.homebridge ] && sudo mkdir -p ~/.homebridge
 sudo chown -R homebridge: ~/.homebridge > /dev/null 2>&1
 echo -en '\n'
@@ -48,12 +47,10 @@ sudo tee -a ~/.homebridge/config.json > /dev/null 2>&1 <<_EOF_
             "name": "Config",
             "port": 8080,
             "auth": "form",
-            "standalone": true,
             "restart": "sudo -n systemctl restart homebridge",
             "sudo": true,
             "log": {
                 "method": "systemd"
-                "service": "homebridge"
             }
         }
     ]
