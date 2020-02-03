@@ -5,7 +5,7 @@ echo ' ========================================================'
 echo '            Удаление Home Bridge и его хвостов'
 echo ' ========================================================'
 echo -en '\n'
-echo '   Убываем процесс...'
+echo '   Убиваем процесс...'
 sudo killall homebridge > /dev/null 2>&1
 echo '   Деинсталируем Home Bridge...'
 sudo npm uninstall -g homebridge > /dev/null 2>&1
