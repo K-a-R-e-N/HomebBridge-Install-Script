@@ -11,7 +11,7 @@ echo -en '\n'
 echo '# # Установка пакетов nodejs gcc g++ make python...'
 sudo apt-get install -y nodejs gcc g++ make python > /dev/null 2>&1
 echo -en '\n'
-echo '# # Устранаем заранее известные проблемы...'
+echo '# # Устраняем заранее известные проблемы...'
 sudo npm cache verify > /dev/null 2>&1
 echo -en '\n'
 echo '# # Установка Home Bridge'
