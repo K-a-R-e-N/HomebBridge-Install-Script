@@ -136,7 +136,7 @@ echo '=============================================================='
 echo -en '\n'
 echo '     = Полезная информация для работы с Home Bridge ='
 echo -en '\n'
-echo '          Доступ по адресу: http://XXX.XXX.XXX.XXX:8080'
+echo "          Доступ по адресу: http://$(hostname -I ):8080"
 echo '            Логин и пароль: admin/admin'
 echo -en '\n'
 echo ' Путь к файлу конфигурации: sudo nano ~/.homebridge/config.json'
