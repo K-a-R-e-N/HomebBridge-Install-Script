@@ -22,16 +22,20 @@ sudo apt-get purge --auto-remove nodejs -y > /dev/null 2>&1
 echo -en '\n'
 echo '   Удаляем пользователя homebridge...'
 sudo userdel -rf homebridge > /dev/null 2>&1
+
 echo -en '\n'
-echo '   Очищаем хвосты:'
+echo '   Очищаем хвосты сервисов:'
+echo '       по пути /etc/systemd/system/homebridge*'
+echo '       по пути /etc/systemd/system/multi-user.target.wants/homebridge*'
+sudo rm -rf /etc/systemd/system/homebridge*
+sudo rm -rf /etc/systemd/system/multi-user.target.wants/homebridge*
+echo -en '\n'
+
+echo '   Очищаем хвосты, для возможности последующей нормальной установки:'
 echo '       по пути /usr/lib/node_modules/homebridge*'
 sudo rm -rf /usr/lib/node_modules/homebridge*
 echo '       по пути /usr/bin/homebridge'
 sudo rm -rf /usr/bin/homebridge*
-echo '       по пути /etc/systemd/system/homebridge*'
-sudo rm -rf /etc/systemd/system/homebridge*
-echo '       по пути /etc/systemd/system/multi-user.target.wants/homebridge*'
-sudo rm -rf /etc/systemd/system/multi-user.target.wants/homebridge*
 echo '       по пути /etc/default/homebridge*'
 sudo rm -rf /etc/default/homebridge*
 echo '       по пути /var/lib/homebridge*'
@@ -42,6 +46,7 @@ echo '       по пути /home/homebridge*'
 sudo rm -rf /home/homebridge*
 echo '       по пути ~/.homebridge*'
 sudo rm -rf ~/.homebridge*
+
 echo -en '\n'
 echo '   Очищаем хвосты от плагинов:'
 echo '       Плагин ps4-waker'
