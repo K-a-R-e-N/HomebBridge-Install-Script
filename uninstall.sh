@@ -5,15 +5,23 @@ echo ' ========================================================'
 echo '            Удаление Home Bridge и его хвостов'
 echo ' ========================================================'
 echo -en '\n'
-echo '   Убиваем процесс...'
+echo '   Убиваем процесс Homebridge...'
 sudo killall  -w -s 9 -u homebridge > /dev/null 2>&1
-echo '   Деинсталлируем Home Bridge...'
+echo -en '\n'
+echo '   Деинсталлируем службы Homebridge...'
+sudo hb-service uninstall > /dev/null 2>&1
+echo -en '\n'
+echo '   Деинсталлируем HomeBridge...'
 sudo npm uninstall -g homebridge > /dev/null 2>&1
-echo '   Удаляем пользователя homebridge...'
-sudo userdel -rf homebridge > /dev/null 2>&1
+echo -en '\n'
+echo '   Деинсталлируем интерфейс Homebridge Config UI X...'
+sudo npm uninstall -g homebridge-config-ui-x
+echo -en '\n'
 echo '   Деинсталлируем NodeJS...'
 sudo apt-get purge --auto-remove nodejs -y > /dev/null 2>&1
 echo -en '\n'
+echo '   Удаляем пользователя homebridge...'
+sudo userdel -rf homebridge > /dev/null 2>&1
 echo '   Очищаем хвосты:'
 echo '       по пути /usr/lib/node_modules/homebridge*'
 sudo rm -rf /usr/lib/node_modules/homebridge*
