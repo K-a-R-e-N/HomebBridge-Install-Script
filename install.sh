@@ -47,10 +47,12 @@ sudo tee -a ~/.homebridge/config.json > /dev/null 2>&1 <<_EOF_
             "name": "Config",
             "port": 8080,
             "auth": "form",
-            "restart": "sudo -n systemctl restart homebridge",
+            "standalone": true,
+            "restart": "sudo -n systemctl restart homebridge homebridge-config-ui-x",
             "sudo": true,
             "log": {
-                "method": "systemd"
+                "method": "systemd",
+                "service": "homebridge"
             }
         }
     ]
@@ -81,7 +83,31 @@ WantedBy=multi-user.target
 _EOF_
 
 echo -en '\n'
-echo '# # Создаем файл основных настроек HomeBridge...'
+echo '# # Создаем сервис автозапуска Homebridge Config UI X для Standalone Mode...'
+
+sudo rm -rf /etc/systemd/system/homebridge-config-ui-x.service
+sudo tee -a /etc/systemd/system/homebridge-config-ui-x.service > /dev/null 2>&1 <<_EOF_
+[Unit]
+Description=Homebridge Config UI X
+After=syslog.target network-online.target
+
+[Service]
+Type=simple
+User=homebridge
+EnvironmentFile=/etc/default/homebridge
+ExecStart=$(which homebridge-config-ui-x) \$HOMEBRIDGE_OPTS
+Restart=on-failure
+RestartSec=3
+KillMode=process
+CapabilityBoundingSet=CAP_IPC_LOCK CAP_NET_ADMIN CAP_NET_BIND_SERVICE CAP_NET_RAW CAP_SETGID CAP_SETUID CAP_SYS_CHROOT CAP_CHOWN CAP_FOWNER CAP_DAC_OVERRIDE CAP_AUDIT_WRITE CAP_SYS_ADMIN
+AmbientCapabilities=CAP_NET_RAW
+
+[Install]
+WantedBy=multi-user.target
+_EOF_
+
+echo -en '\n'
+echo '# # Создаем файл настроек HomeBridge...'
 sudo rm -rf /etc/default/homebridge
 sudo tee -a /etc/default/homebridge > /dev/null 2>&1 <<_EOF_
 # Defaults / Configuration options for homebridge
@@ -97,10 +123,12 @@ HOMEBRIDGE_OPTS=-U $HOME/.homebridge -I
 _EOF_
 
 echo -en '\n'
-echo '# # Запускаем фоново сервис homebridge'
+echo '# # Запускаем сервис автоподгрузки'
 sudo systemctl daemon-reload
 sudo systemctl enable homebridge
 sudo systemctl start homebridge
+sudo systemctl enable homebridge-config-ui-x
+sudo systemctl start homebridge-config-ui-x
 echo -en '\n'
 echo '=============================================================='
 echo ' Процесс установки Home Bridge и его зависимостей, завершен !'
