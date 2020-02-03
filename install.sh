@@ -1,9 +1,9 @@
 #!/bin/bash
 
 echo -en '\n'
-echo '=============================================================='
-echo '           Установка Home Bridge и его зависимостей'
-echo '=============================================================='
+echo '==============================================================='
+echo '            Установка HomeBridge и его зависимостей'
+echo '==============================================================='
 echo -en '\n'
 echo '# # Установка репозитория для Node.js 12.x...'
 curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -> /dev/null 2>&1
@@ -14,10 +14,10 @@ echo -en '\n'
 echo '# # Устраняем заранее известные проблемы...'
 sudo npm cache verify > /dev/null 2>&1
 echo -en '\n'
-echo '# # Установка Home Bridge'
+echo '# # Установка HomeBridge'
 sudo npm install -g --unsafe-perm homebridge > /dev/null 2>&1
 echo -en '\n'
-echo '# # Установка интерфейса для Home Bridge...'
+echo '# # Установка интерфейса для HomeBridge...'
 sudo npm install -g --unsafe-perm homebridge-config-ui-x > /dev/null 2>&1
 echo -en '\n'
 echo '# # Создаем основного пользователя для Home Bridge...'
@@ -26,16 +26,14 @@ echo -en '\n'
 echo '# # Добавляем полномочия интерфесу... '
 sudo grep homebridge /etc/sudoers > /dev/null 2>&1 || echo 'homebridge    ALL=(ALL) NOPASSWD: ALL' | sudo EDITOR='tee -a' visudo > /dev/null 2>&1
 echo -en '\n'
-echo '# # Предварительная проверочка директории...'
-[ ! -d ~/.homebridge ] && mkdir ~/.homebridge && cp config.json ~/.homebridge
-echo -en '\n'
 echo '# # Создаем основной каталог Home Bridge и даем права...'
-sudo mkdir -p /var/lib/homebridge > /dev/null 2>&1
-sudo chown -R homebridge: /var/lib/homebridge > /dev/null 2>&1
+echo 'OLD Patch /var/lib/homebridge'
+[ ! -d ~/.homebridge ] && sudo mkdir -p ~/.homebridge
+sudo chown -R homebridge: ~/.homebridge > /dev/null 2>&1
 echo -en '\n'
-echo '# # Создаем конфигурационный файл Home Bridge...'
-sudo rm -rf /var/lib/homebridge/config.json
-sudo tee -a /var/lib/homebridge/config.json > /dev/null 2>&1 <<_EOF_
+echo '# # Создаем конфигурационный файл HomeBridge...'
+sudo rm -rf ~/.homebridge/config.json
+sudo tee -a ~/.homebridge/config.json > /dev/null 2>&1 <<_EOF_
 {
     "bridge": {
         "name": "Homebridge",
@@ -46,7 +44,7 @@ sudo tee -a /var/lib/homebridge/config.json > /dev/null 2>&1 <<_EOF_
     "accessories": [],
     "platforms": [
         {
-            "platform": "config"
+            "platform": "config",
             "name": "Config",
             "port": 8080,
             "auth": "form",
@@ -56,8 +54,7 @@ sudo tee -a /var/lib/homebridge/config.json > /dev/null 2>&1 <<_EOF_
             "log": {
                 "method": "systemd"
                 "service": "homebridge"
-            },
-
+            }
         }
     ]
 }
@@ -86,13 +83,13 @@ AmbientCapabilities=CAP_NET_RAW
 WantedBy=multi-user.target
 _EOF_
 
-echo
-echo '# # Создаем файл основных настроек Home Bridge...'
+echo -en '\n'
+echo '# # Создаем файл основных настроек HomeBridge...'
 sudo rm -rf /etc/default/homebridge
 sudo tee -a /etc/default/homebridge > /dev/null 2>&1 <<_EOF_
 # Defaults / Configuration options for homebridge
 # The following settings tells homebridge where to find the config.json file and where to persist the data (i.e. pairing and others)
-HOMEBRIDGE_OPTS=-U /var/lib/homebridge -I
+HOMEBRIDGE_OPTS=-U $HOME/.homebridge -I
 
 # If you uncomment the following line, homebridge will log more
 # You can display this via systemd's journalctl: journalctl -f -u homebridge
@@ -117,8 +114,8 @@ echo -en '\n'
 echo '          Доступ по адресу: http://XXX.XXX.XXX.XXX:8080'
 echo '            Логин и пароль: admin/admin'
 echo -en '\n'
-echo ' Путь к файлу конфигурации: sudo nano /var/lib/homebridge/config.json'
-echo '             Путь хранения: cd /var/lib/homebridge'
+echo ' Путь к файлу конфигурации: sudo nano ~/.homebridge/config.json'
+echo '             Путь хранения: cd ~/.homebridge/'
 echo '      Перезагрузка Команды: sudo systemctl restart homebridge'
 echo '            Стоп Командная: sudo systemctl stop homebridge'
 echo '         Запустите команду: sudo systemctl start homebridge'
