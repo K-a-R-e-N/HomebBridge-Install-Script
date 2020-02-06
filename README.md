@@ -1,4 +1,4 @@
-# Скрипт установки новой HomeBridge и Node.js на Raspberry Pi
+# Скрипт установки HomeBridge и Node.js 12.x на Raspberry Pi
 _HomebBridge Installation Script_
 
 Cкрипт, который будет ставить самые свежие версии HomeBridge и Node.js. Так же в скрипте учтены важные моменты и проделаны специальные настройки, чтобы у вас не возникало ни каких проблем во время установки.
