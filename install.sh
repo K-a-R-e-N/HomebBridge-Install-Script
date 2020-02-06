@@ -65,7 +65,7 @@ sudo tee -a ~/.homebridge/config.json > /dev/null <<_EOF_
 }
 _EOF_
 
-echo -en "\n" ; echo "# # Создаем сервис автозапуска..."
+echo -en "\n" ; echo "# # Создаем службы автозапуска..."
 sudo rm -rf /etc/systemd/system/homebridge.service
 sudo tee -a /etc/systemd/system/homebridge.service > /dev/null <<_EOF_
 [Unit]
@@ -124,12 +124,12 @@ HOMEBRIDGE_OPTS=-U $HOME/.homebridge -I
 # HOMEBRIDGE_CONFIG_UI_TERMINAL=1
 _EOF_
 
-echo -en "\n" ; echo "# # Запускаем сервис автоподгрузки"
-sudo systemctl daemon-reload
-sudo systemctl enable homebridge
-sudo systemctl start homebridge
-sudo systemctl enable homebridge-config-ui-x
-sudo systemctl start homebridge-config-ui-x
+echo -en "\n" ; echo "# # Добавление служб в список автозагрузки..."
+sudo systemctl daemon-reload > /dev/null
+sudo systemctl enable homebridge > /dev/null
+sudo systemctl start homebridge > /dev/null
+sudo systemctl enable homebridge-config-ui-x > /dev/null
+sudo systemctl start homebridge-config-ui-x > /dev/null
 
 
 echo -en "\n"
