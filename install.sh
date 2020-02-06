@@ -160,4 +160,3 @@ echo "    │               sudo journalctl -f -n 100 -u homebridge             
 echo "    │                                                                     │"
 echo "    └─────────────────────────────────────────────────────────────────────┘"
 echo -en "\n"
-
