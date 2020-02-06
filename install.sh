@@ -10,7 +10,7 @@ echo -en "\n"
 
 echo -en "\n" ; echo "# # Установка Node.js..."
 echo -en "\n" ; echo "       - Добавление ключа подписи пакета NodeSource..."
-curl -sSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | sudo apt-key add
+curl -sSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | sudo apt-key --quiet add -
 echo -en "\n" ; echo "       - Добавление репозитория NodeSource..."
 NODE_VERSION=node_12.x && DISTRO="$(lsb_release -s -c)"
 echo "deb https://deb.nodesource.com/$NODE_VERSION $DISTRO main" | sudo tee /etc/apt/sources.list.d/nodesource.list > /dev/null
