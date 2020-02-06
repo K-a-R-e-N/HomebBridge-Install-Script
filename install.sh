@@ -1,47 +1,50 @@
 #!/bin/bash
 
-echo -en '\n'
-echo '==============================================================='
-echo '            Установка HomeBridge и его зависимостей'
-echo '==============================================================='
-echo -en '\n'
-echo '# # Установка репозитория для Node.js 12.x...'
+echo -en "\n"
+echo "╔═════════════════════════════════════════════════════════════════════════════╗"
+echo "║                                                                             ║"
+echo "║                   Установка HomeBridge и его зависимостей                   ║"
+echo "║                                                                             ║"
+echo "╚═════════════════════════════════════════════════════════════════════════════╝"
+echo -en "\n"
+
+echo -en "\n" ; echo "# # Установка репозитория для Node.js 12.x..."
 curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash - > /dev/null
-echo -en '\n'
-echo '# # Установка пакетов nodejs gcc g++ make python...'
+
+echo -en "\n" ; echo "# # Установка пакетов nodejs gcc g++ make python..."
 sudo apt-get install -y nodejs gcc g++ make python > /dev/null
-echo -en '\n'
-echo '# # Установка пакета libavahi-compat-libdnssd-dev...'
+
+echo -en "\n" ; echo "# # Установка пакета libavahi-compat-libdnssd-dev..."
 sudo apt-get install -y libavahi-compat-libdnssd-dev
-echo -en '\n'
-echo '# # Устраняем заранее известные проблемы...'
+
+echo -en "\n" ; echo "# # Устраняем заранее известные проблемы..."
 sudo npm cache verify > /dev/null
-echo -en '\n'
-echo '# # Установка HomeBridge'
+
+echo -en "\n" ; echo "# # Установка HomeBridge"
 sudo npm install -g --unsafe-perm homebridge > /dev/null
-echo -en '\n'
-echo '# # Установка интерфейса для HomeBridge...'
+
+echo -en "\n" ; echo "# # Установка интерфейса для HomeBridge..."
 sudo npm install -g --unsafe-perm homebridge-config-ui-x > /dev/null
-echo -en '\n'
-echo '# # Создаем основного пользователя для Home Bridge...'
+
+echo -en "\n" ; echo "# # Создаем основного пользователя для Home Bridge..."
 sudo useradd -rm homebridge -G dialout,gpio,i2c > /dev/null
-echo -en '\n'
-echo '# # Добавляем полномочия интерфесу... '
+
+echo -en "\n" ; echo "# # Добавляем полномочия интерфесу..."
 sudo grep homebridge /etc/sudoers > /dev/null || echo 'homebridge    ALL=(ALL) NOPASSWD: ALL' | sudo EDITOR='tee -a' visudo > /dev/null
-echo -en '\n'
-echo '# # Создаем основной каталог Home Bridge и даем права...'
+
+echo -en "\n" ; echo "# # Создаем основной каталог Home Bridge и даем права..."
 [ ! -d ~/.homebridge ] && sudo mkdir -p ~/.homebridge
 sudo chown -R homebridge: ~/.homebridge > /dev/null
-echo -en '\n'
-echo '# # Создаем конфигурационный файл HomeBridge...'
+
+echo -en "\n" ; echo "# # Создаем конфигурационный файл HomeBridge..."
 sudo rm -rf ~/.homebridge/config.json
 sudo tee -a ~/.homebridge/config.json > /dev/null <<_EOF_
 {
     "bridge": {
         "name": "Homebridge",
-        "username": "CB:22:3D:E2:CE:31",
+        "username": "1K:2A:3R:4E:5N:00",
         "port": 51826,
-        "pin": "033-44-254"
+        "pin": "333-44-254"
     },
     "accessories": [],
     "platforms": [
@@ -62,8 +65,7 @@ sudo tee -a ~/.homebridge/config.json > /dev/null <<_EOF_
 }
 _EOF_
 
-echo -en '\n'
-echo '# # Создаем сервис автозапуска...'
+echo -en "\n" ; echo "# # Создаем сервис автозапуска..."
 sudo rm -rf /etc/systemd/system/homebridge.service
 sudo tee -a /etc/systemd/system/homebridge.service > /dev/null <<_EOF_
 [Unit]
@@ -85,9 +87,7 @@ AmbientCapabilities=CAP_NET_RAW
 WantedBy=multi-user.target
 _EOF_
 
-echo -en '\n'
-echo '# # Создаем сервис автозапуска Homebridge Config UI X для Standalone Mode...'
-
+echo -en "\n" ; echo "# # Создаем сервис автозапуска Homebridge Config UI X для Standalone Mode..."
 sudo rm -rf /etc/systemd/system/homebridge-config-ui-x.service
 sudo tee -a /etc/systemd/system/homebridge-config-ui-x.service > /dev/null <<_EOF_
 [Unit]
@@ -109,8 +109,7 @@ AmbientCapabilities=CAP_NET_RAW
 WantedBy=multi-user.target
 _EOF_
 
-echo -en '\n'
-echo '# # Создаем файл настроек HomeBridge...'
+echo -en "\n" ; echo "# # Создаем файл настроек HomeBridge..."
 sudo rm -rf /etc/default/homebridge
 sudo tee -a /etc/default/homebridge > /dev/null <<_EOF_
 # Defaults / Configuration options for homebridge
@@ -125,27 +124,39 @@ HOMEBRIDGE_OPTS=-U $HOME/.homebridge -I
 # HOMEBRIDGE_CONFIG_UI_TERMINAL=1
 _EOF_
 
-echo -en '\n'
-echo '# # Запускаем сервис автоподгрузки'
+echo -en "\n" ; echo "# # Запускаем сервис автоподгрузки"
 sudo systemctl daemon-reload
 sudo systemctl enable homebridge
 sudo systemctl start homebridge
 sudo systemctl enable homebridge-config-ui-x
 sudo systemctl start homebridge-config-ui-x
-echo -en '\n'
-echo '=============================================================='
-echo ' Процесс установки Home Bridge и его зависимостей, завершен !'
-echo '=============================================================='
-echo -en '\n'
-echo '     = Полезная информация для работы с Home Bridge ='
-echo -en '\n'
-echo "          Доступ по адресу: http://$(hostname -I | tr -d ' '):8080"
-echo '            Логин и пароль: admin/admin'
-echo -en '\n'
-echo ' Путь к файлу конфигурации: sudo nano ~/.homebridge/config.json'
-echo '             Путь хранения: cd ~/.homebridge/'
-echo '      Перезагрузка Команды: sudo systemctl restart homebridge'
-echo '            Стоп Командная: sudo systemctl stop homebridge'
-echo '         Запустите команду: sudo systemctl start homebridge'
-echo ' Просмотр журналов Команда: sudo journalctl -f -n 100 -u homebridge'
-echo -en '\n'
+
+
+echo -en "\n"
+echo -en "\n"
+echo -en "\n"
+echo -en "\n"
+echo -en "\n"
+echo "╔═════════════════════════════════════════════════════════════════════════════╗"
+echo "║          Процесс установки HomeBridge и его зависимостей завершена          ║"
+echo "╚═════════════════════════════════════════════════════════════════════════════╝"
+echo -en "\n"
+echo "    ┌──────────── Полезная информация для работы с HomeBridge ────────────┐"
+echo "    │                                                                     │"
+echo "    │                    Доступ к HomeBridge по адресу                    │"
+echo "    │                      http://$(hostname -I | tr -d ' '):8080/                      │"
+echo "    │                                                                     │"
+echo "    │                       Логин и пароль для входа                      │"
+echo "    │                             admin/admin                             │"
+echo "    │                                                                     │"
+echo "    │                  Редактирование файла конфигурации                  │"
+echo "    │                 sudo nano ~/.homebridge/config.json                 │"
+echo "    │                                                                     │"
+echo "    │                     Перезагрузка Home Assistant                     │"
+echo "    │                  sudo systemctl restart homebridge                  │"
+echo "    │                                                                     │"
+echo "    │                          Просмотр журналов                          │"
+echo "    │               sudo journalctl -f -n 100 -u homebridge               │"
+echo "    │                                                                     │"
+echo "    └─────────────────────────────────────────────────────────────────────┘"
+echo -en "\n"
