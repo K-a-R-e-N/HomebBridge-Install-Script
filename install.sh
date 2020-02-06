@@ -16,9 +16,9 @@ NODE_VERSION=node_12.x && DISTRO="$(lsb_release -s -c)"
 echo "deb https://deb.nodesource.com/$NODE_VERSION $DISTRO main" | sudo tee /etc/apt/sources.list.d/nodesource.list > /dev/null
 echo "deb-src https://deb.nodesource.com/$NODE_VERSION $DISTRO main" | sudo tee -a /etc/apt/sources.list.d/nodesource.list > /dev/null
 echo -en "\n" ; echo "       - Обновление списка пакетов и установка Node.js..."
-sudo apt-get update && sudo apt-get install -y nodejs > /dev/null
+sudo apt-get update > /dev/null && sudo apt-get install -y nodejs > /dev/null
 
-echo -en "\n" ; echo "# # Установка пакетов nodejs gcc g++ make python..."
+echo -en "\n" ; echo "# # Установка пакетов gcc g++ make python..."
 sudo apt-get install -y gcc g++ make python > /dev/null
 
 echo -en "\n" ; echo "# # Установка пакета libavahi-compat-libdnssd-dev..."
