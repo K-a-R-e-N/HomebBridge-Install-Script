@@ -131,11 +131,11 @@ HOMEBRIDGE_OPTS=-U $HOME/.homebridge -I
 _EOF_
 
 echo -en "\n" ; echo "# # Добавление служб в список автозагрузки и их запуск..."
-sudo systemctl daemon-reload > /dev/null
-sudo systemctl enable homebridge > /dev/null
-sudo systemctl start homebridge > /dev/null
-sudo systemctl enable homebridge-config-ui-x > /dev/null
-sudo systemctl start homebridge-config-ui-x > /dev/null
+sudo systemctl -q daemon-reload
+sudo systemctl -q enable homebridge
+sudo systemctl -q start homebridge
+sudo systemctl -q enable homebridge-config-ui-x
+sudo systemctl -q start homebridge-config-ui-x
 
 
 echo -en "\n"
