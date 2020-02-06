@@ -15,7 +15,7 @@ echo -en "\n" ; echo "# # Установка пакетов nodejs gcc g++ make 
 sudo apt-get install -y nodejs gcc g++ make python > /dev/null
 
 echo -en "\n" ; echo "# # Установка пакета libavahi-compat-libdnssd-dev..."
-sudo apt-get install -y libavahi-compat-libdnssd-dev
+sudo apt-get install -y libavahi-compat-libdnssd-dev > /dev/null
 
 echo -en "\n" ; echo "# # Устраняем заранее известные проблемы..."
 sudo npm cache verify > /dev/null
