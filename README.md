@@ -44,6 +44,9 @@ bash uninstall.sh && bash install.sh && bash stripping.sh && cd ..
 ```
 итак...
 `bash uninstall.sh &&` - Полная деинсталляция HomeBridge и его зависимостей
+
 `bash install.sh &&` - Чистая установка HomeBridge и его зависимостей
+
 `bash stripping.sh &&` - Удаляет временную папку с содержимым, где хранился загружаемый скрипт
+
 Вот и все! Не забудьте поставить лайк
