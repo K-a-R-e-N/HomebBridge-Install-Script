@@ -124,7 +124,7 @@ HOMEBRIDGE_OPTS=-U $HOME/.homebridge -I
 # HOMEBRIDGE_CONFIG_UI_TERMINAL=1
 _EOF_
 
-echo -en "\n" ; echo "# # Добавление служб в список автозагрузки..."
+echo -en "\n" ; echo "# # Добавление служб в список автозагрузки и их запуск...""
 sudo systemctl daemon-reload > /dev/null
 sudo systemctl enable homebridge > /dev/null
 sudo systemctl start homebridge > /dev/null
