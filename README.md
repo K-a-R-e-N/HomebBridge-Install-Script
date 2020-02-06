@@ -19,25 +19,31 @@ Node.js ставиться последней 12.x версии
 Для актуального состояния скрипта, буду постоянно обновлять и дополнять его.
 Более подробные сведения и информацию о новых дополнениях вы можете посмотреть здесь
 Прежде чем начать, убедитесь, что на вашей Raspberry Pi установлена последняя версия Raspbian OS и обновлены все пакеты до актуального состояния. Для этого введите следующую команду:
-`sudo rm -Rf /var/lib/apt/lists
+```
+sudo rm -Rf /var/lib/apt/lists
 sudo apt-get update && sudo apt-get upgrade -y && sudo apt install git -y
-#Готово`
+#Готово
+```
 Если в  вашей системе ранее был установлен HomeBrige или Node.js, то прежде чем приступить к установке, надо предварительно очистить систему. Чтобы проделать эту операцию, воспользуйтесь специальным параметром скрипта, который описан ниже.
 
 Для чистой установки на новую систему надо скопировать нижние строки и ввести в консоль терминала:
 
-`git clone https://github.com/K-a-R-e-N/HomebBridge-Install-Script
+```
+git clone https://github.com/K-a-R-e-N/HomebBridge-Install-Script
 cd HomebBridge-Install-Script
 bash install.sh && bash stripping.sh && cd ..
-#Готово`
-Третья строка: "bash install.sh && bash stripping.sh && cd .." настраиваемая... Можно как добавлять так и удалять параметры...
-Если дописать на начало "bash uninstall.sh &&" - то перед установкой, система будет предварительно очищена от ранее установленных версий. Выглядеть эта команда будет так:
-`git clone https://github.com/K-a-R-e-N/HomebBridge-Install-Script
+#Готово
+```
+Третья строка: `bash install.sh && bash stripping.sh && cd ..` настраиваемая... Можно как добавлять так и удалять параметры...
+Если дописать на начало `bash uninstall.sh &&` - то перед установкой, система будет предварительно очищена от ранее установленных версий. Выглядеть эта команда будет так:
+```
+git clone https://github.com/K-a-R-e-N/HomebBridge-Install-Script
 cd HomebBridge-Install-Script
 bash uninstall.sh && bash install.sh && bash stripping.sh && cd ..
-#Готово`
+#Готово
+```
 итак...
 `bash uninstall.sh &&` - Полная деинсталляция HomeBridge и его зависимостей
-bash install.sh && - Чистая установка HomeBridge и его зависимостей
-bash stripping.sh && - Удаляет временную папку с содержимым, где хранился загружаемый скрипт
+`bash install.sh &&` - Чистая установка HomeBridge и его зависимостей
+`bash stripping.sh &&` - Удаляет временную папку с содержимым, где хранился загружаемый скрипт
 Вот и все! Не забудьте поставить лайк
