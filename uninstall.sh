@@ -33,7 +33,7 @@ sudo rm -rf /etc/systemd/system/multi-user.target.wants/homebridge*
 echo -en '\n'
 
 
-echo -en "\n" ; echo "# # Очищаем хвосты, для возможности последующей нормальной установки:"
+echo -en "\n" ; echo "  # # Очищаем хвосты, для возможности последующей нормальной установки:"
 echo "     - по пути /usr/lib/node_modules/homebridge*"
 echo "     - по пути /usr/bin/homebridge"
 echo "     - по пути /etc/default/homebridge*"
