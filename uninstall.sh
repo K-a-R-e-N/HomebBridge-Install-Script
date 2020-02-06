@@ -24,7 +24,7 @@ sudo apt-get purge --auto-remove nodejs -y > /dev/null 2>&1
 echo -en "\n" ; echo "  # # Удаление пользователя homebridge..."
 sudo userdel -rf homebridge > /dev/null 2>&1
 
-echo -en "\n" ; echo "  # #  Удаление служб из списока автозагрузки..."
+echo -en "\n" ; echo "  # #  Удаление служб из списока автозагрузки:"
 echo "     - по пути /etc/systemd/system/homebridge*"
 echo "     - по пути /etc/systemd/system/multi-user.target.wants/homebridge*"
 sudo rm -rf /etc/systemd/system/homebridge*
