@@ -49,9 +49,9 @@ sudo tee -a ~/.homebridge/config.json > /dev/null <<_EOF_
 {
     "bridge": {
         "name": "Homebridge",
-        "username": "1K:2A:3R:4E:5N:00",
+        "username": "CB:22:3D:E2:CE:31",
         "port": 51826,
-        "pin": "333-44-254"
+        "pin": "432-11-234"
     },
     "accessories": [],
     "platforms": [
@@ -153,7 +153,7 @@ echo "    │                    Доступ к HomeBridge по адресу   
 echo "    │                      http://$(hostname -I | tr -d ' '):8080/                      │"
 echo "    │                                                                     │"
 echo "    │                       Логин и пароль для входа                      │"
-echo "    │                             admin/admin                             │"
+echo "    │                            admin / admin                            │"
 echo "    │                                                                     │"
 echo "    │                  Редактирование файла конфигурации                  │"
 echo "    │                 sudo nano ~/.homebridge/config.json                 │"
