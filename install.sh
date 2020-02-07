@@ -8,6 +8,11 @@ echo "║                                                                       
 echo "╚═════════════════════════════════════════════════════════════════════════════╝"
 echo -en "\n"
 
+echo -en "\n" ; echo "# # Проверка на ранее установленную версию..."
+
+[ -f ~/.homebridge/config.json ] && echo -en "\n" && echo "# # Создание резервной копии конфигурационного файла HomeBridge..."
+
+
 echo -en "\n" ; echo "# # Установка Node.js..."
 echo "     - Добавление ключа подписи пакета NodeSource..."
 curl -sSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | sudo apt-key --quiet add -
