@@ -9,22 +9,6 @@ echo "╚═══════════════════════�
 echo -en "\n"
 
 echo -en "\n" ; echo "# # Проверка на ранее установленную версию..."
-if dpkg -l homebridge &>/dev/null; then
-  echo "     - В вашей системе уже установлен HomeBridge как системный пакет..."
-  GoToMenu
-elif dpkg -l nodejs &>/dev/null; then
-  if npm list -g | grep -q homebridge; then
-  echo "     - В вашей системе уже установлен HomeBridge из NPM..."
-  GoToMenu
-  else
-  echo "     - В системе уже установлен пакет NodeJS $(nodejs -v), но HomeBridge не установлен..."
-  GoToMenu
-  fi
-else
-  echo "     - Ранее установленых пакетов не обнаружено..."
-fi
-
-
 function GoToMenu{
   while :
   do
@@ -43,6 +27,22 @@ function GoToMenu{
   esac
   done
 }
+if dpkg -l homebridge &>/dev/null; then
+  echo "     - В вашей системе уже установлен HomeBridge как системный пакет..."
+  GoToMenu
+elif dpkg -l nodejs &>/dev/null; then
+  if npm list -g | grep -q homebridge; then
+  echo "     - В вашей системе уже установлен HomeBridge из NPM..."
+  GoToMenu
+  else
+  echo "     - В системе уже установлен пакет NodeJS $(nodejs -v), но HomeBridge не установлен..."
+  GoToMenu
+  fi
+else
+  echo "     - Ранее установленых пакетов не обнаружено..."
+fi
+
+
 
 
 
