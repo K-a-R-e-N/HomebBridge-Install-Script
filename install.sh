@@ -11,6 +11,23 @@ echo -en "\n"
 echo -en "\n" ; echo "# # Проверка на ранее установленную версию..."
 
 
+while :
+do
+echo -n "Выберите действие:"
+echo "1. выход из скрипта"
+echo "2. очистить"
+echo "3. продолжить без очистки"
+echo -n "Ввведите 1 или 2 или 3 :"
+read a
+printf "\n"
+case $a in
+1)     echo "echo "выход из скрипта" && exit 0";;
+2)     echo "echo "очистить" && bash uninstall.sh";;
+3)     echo "продолжить без очистки";;
+*)     echo "Попробуйте еще раз.";;
+esac
+done
+
 
 
 SELECT=""
