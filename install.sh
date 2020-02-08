@@ -25,7 +25,7 @@ else
 fi
 
 
-function GoToMenu(){
+function GoToMenu{
   while :
   do
   echo " Выберите действие:"
