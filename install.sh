@@ -9,7 +9,7 @@ echo "╚═══════════════════════�
 echo -en "\n"
 
 echo -en "\n" ; echo "# # Проверка на ранее установленную версию..."
-function GoToMenu{
+function GoToMenu {
   while :
   do
   echo " Выберите действие:"
