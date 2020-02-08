@@ -10,7 +10,27 @@ echo -en "\n"
 
 echo -en "\n" ; echo "# # Проверка на ранее установленную версию..."
 
-[ -f ~/.homebridge/config.json ] && echo -en "\n" && echo "# # Создание резервной копии конфигурационного файла HomeBridge..."
+
+
+
+SELECT=""
+# prevent parsing of the input line
+IFS=''
+while [[ "\$SELECT" != \$'\e' && "\$SELECT" != \$'\x0a' && "\$SELECT" != \$'\x20' ]]; do
+  echo "Выберите действие:"
+  echo "Нажать <ESC> выход из скрипта"
+  echo "Нажать <Enter> очистить"
+  echo "Нажать <Space> продолжить без очистки"
+  read -s -N 1 SELECT
+  echo "Debug/\$SELECT/\${#SELECT}"
+  [[ "\$SELECT" == \$'\e' ]] && echo "выход из скрипта" && exit
+  [[ "\$SELECT" == \$'\x0a' ]] && echo "очистить" && bash uninstall.sh
+  [[ "\$SELECT" == \$'\x20' ]] && echo "продолжить без очистки"
+done
+
+
+
+
 
 
 echo -en "\n" ; echo "# # Установка Node.js..."
