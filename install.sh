@@ -21,8 +21,8 @@ function GoToMenu {
   printf "\n"
   case $a in
   1)     echo "выход из скрипта" && exit 0;;
-  2)     echo "очистить" && bash uninstall.sh && break;;
-  3)     echo "продолжить без очистки && break";;
+  2)     echo "очистить" && bash uninstall.sh && return;;
+  3)     echo "продолжить без очистки" && return;;
   *)     echo "Попробуйте еще раз.";;
   esac
   done
