@@ -179,7 +179,7 @@ HOMEBRIDGE_OPTS=-U $HOME/.homebridge -I
 # HOMEBRIDGE_CONFIG_UI_TERMINAL=1
 _EOF_
 
-if [ -f ~/HB_BackUp/config.json.* ]; then 
+if [ -d ~/HB_BackUp/ ]; then 
 echo -en "\n" ; echo "# # Восстанавление резервной копии конфигурационного файла HomeBridge..."
 sudo mv -f ~/HB_BackUp/config.json.* ~/.homebridge/
 sudo rm -rf ~/HB_BackUp
