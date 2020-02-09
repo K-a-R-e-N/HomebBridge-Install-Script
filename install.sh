@@ -1,6 +1,6 @@
 #!/bin/bash
 
-
+clear
 function Zagolovok {
 echo -en "\n"
 echo "╔═════════════════════════════════════════════════════════════════════════════╗"
@@ -36,6 +36,7 @@ function GoToMenu {
   *)     echo "                           Попробуйте еще раз.";;
   esac
   done
+  clear
   Zagolovok
 }
 Zagolovok
