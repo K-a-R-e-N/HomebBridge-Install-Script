@@ -9,6 +9,9 @@ echo -en "\n"
 echo -en "\n" ; echo "  # # Завершение процесса Homebridge..."
 sudo killall  -w -s 9 -u homebridge > /dev/null 2>&1
 
+echo -en "\n" ; echo "  # #  Создание резервной копии конфигурационного файла HomeBridge..."
+sudo cp -f ~/.homebridge/config.json ~/.config.json.$(date +%s)000
+
 echo -en "\n" ; echo "  # # Деинсталляция служб Homebridge..."
 sudo hb-service uninstall > /dev/null 2>&1
 
