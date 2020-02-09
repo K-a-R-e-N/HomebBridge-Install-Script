@@ -24,14 +24,14 @@ function GoToMenu {
   read a
   printf "\n"
   case $a in
-  1)     echo "    - Предварительная очистка системы..." && bash uninstall.sh && return;;
-  2)     echo "    - Выполнение скрипта без очистки системы..." && if [ -f ~/.homebridge/config.json ]; then 
+  1)     echo "    - Предварительная очистка системы..." && sleep 2 && clear && bash uninstall.sh && return;;
+  2)     echo "    - Выполнение скрипта без очистки системы..." && sleep 2 && clear && if [ -f ~/.homebridge/config.json ]; then 
                                                             echo -en "\n"
                                                             echo "# # Создание резервной копии конфигурационного файла HomeBridge..."
                                                             sudo cp -f ~/.homebridge/config.json ~/.config.json.$(date +%s)000
                                                             fi
                                                             return;;
-  3)     echo "    - Завершить работу скрипта..." && exit 0;;
+  3)     echo "    - Завершение работы скрипта..." && sleep 2 && clear && exit 0;;
   *)     echo "                           Попробуйте еще раз.";;
   esac
   done
