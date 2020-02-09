@@ -24,6 +24,10 @@ function GoToMenu {
   read a
   printf "\n"
   case $a in
+  0)     echo "                    - Обновление скрипта с перезапуском..." && bash stripping.sh && cd ..
+                                                                              git clone https://github.com/K-a-R-e-N/HomebBridge-Install-Script
+                                                                              cd HomebBridge-Install-Script
+                                                                              bash install.sh && bash stripping.sh && cd ..
   1)     echo "                     - Предварительная очистка системы..." && sleep 2 && clear && bash uninstall.sh && return;;
   2)     echo "                  - Выполнение скрипта без очистки системы..." && sleep 2 && clear && if [ -f ~/.homebridge/config.json ]; then 
                                                             echo -en "\n"
