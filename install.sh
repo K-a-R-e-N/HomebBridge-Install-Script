@@ -28,7 +28,12 @@ function GoToMenu {
   case $a in
   1)     echo "     - Завершить работу скрипта..." && exit 0;;
   2)     echo "     - Предварительно очистить систему..." && bash uninstall.sh && return;;
-  3)     echo "     - Продолжить без очистки системы..." && if [ -f ~/.homebridge/config.json ]; then; echo -en "\n" ; echo "# # Создание резервной копии конфигурационного файла HomeBridge..." && sudo cp -f ~/.homebridge/config.json ~/.config.json.$(date +%s)000; fi; return;;
+  3)     echo "     - Продолжить без очистки системы..." && if [ -f ~/.homebridge/config.json ]; then 
+                                                            echo -en "\n"
+                                                            echo "# # Создание резервной копии конфигурационного файла HomeBridge..."
+                                                            sudo cp -f ~/.homebridge/config.json ~/.config.json.$(date +%s)000
+                                                            fi
+                                                            return;;
   *)     echo "                           Попробуйте еще раз.";;
   esac
   done
