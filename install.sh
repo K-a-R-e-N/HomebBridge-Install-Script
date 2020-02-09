@@ -25,12 +25,13 @@ function GoToMenu {
   printf "\n"
   case $a in
   1)     echo "                     - Предварительная очистка системы..." && sleep 2 && clear && bash uninstall.sh && return;;
-  2)     echo "                  - Выполнение скрипта без очистки системы..." && sleep 2 && clear && if [ -f ~/.homebridge/config.json ]; then 
-                                                            echo -en "\n"
-                                                            echo "# # Создание резервной копии конфигурационного файла HomeBridge..."
-                                                            sudo cp -f ~/.homebridge/config.json ~/.config.json.$(date +%s)000
-                                                            fi
-                                                            return;;
+  2)     echo "                  - Выполнение скрипта без очистки системы..." && sleep 2 && clear
+                                            if [ -f ~/.homebridge/config.json ]; then
+                                            sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
+                                            echo -en "\n" ; echo "  # # Создание резервной копии конфигурационного файла HomeBridge..."
+                                            sudo cp -f ~/.homebridge/config.json ~/HB_BackUp/config.json.$(date +%s)000
+                                            fi
+                                            return;;
   3)     echo "               - Завершение работы скрипта..." && exit 0;;
   *)     echo "                           Попробуйте еще раз.";;
   esac
@@ -178,9 +179,9 @@ HOMEBRIDGE_OPTS=-U $HOME/.homebridge -I
 # HOMEBRIDGE_CONFIG_UI_TERMINAL=1
 _EOF_
 
-if [ -f /home/pi/config.json.* ]; then 
+if [ -f ~/HB_BackUp/config.json.* ]; then 
 echo -en "\n" ; echo "# # Восстанавление резервной копии конфигурационного файла HomeBridge..."
-sudo mv -f /home/pi/config.json.* ~/.homebridge/
+sudo mv -f ~/HB_BackUp/config.json.* ~/.homebridge/
 fi
 
 echo -en "\n" ; echo "# # Добавление служб в список автозагрузки и их запуск..."
