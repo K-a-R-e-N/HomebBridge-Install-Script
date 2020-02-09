@@ -1,6 +1,5 @@
 #!/bin/bash
 
-clear
 function Zagolovok {
 echo -en "\n"
 echo "╔═════════════════════════════════════════════════════════════════════════════╗"
@@ -26,8 +25,8 @@ function GoToMenu {
   printf "\n"
   case $a in
   1)     echo "     - Завершить работу скрипта..." && exit 0;;
-  2)     echo "     - Предварительно очистить систему..." && bash uninstall.sh && return;;
-  3)     echo "     - Продолжить без очистки системы..." && if [ -f ~/.homebridge/config.json ]; then 
+  2)     echo "     - Предварительная очистка системы..." && bash uninstall.sh && return;;
+  3)     echo "     - Выполнение скрипта без очистки системы..." && if [ -f ~/.homebridge/config.json ]; then 
                                                             echo -en "\n"
                                                             echo "# # Создание резервной копии конфигурационного файла HomeBridge..."
                                                             sudo cp -f ~/.homebridge/config.json ~/.config.json.$(date +%s)000
@@ -36,10 +35,9 @@ function GoToMenu {
   *)     echo "                           Попробуйте еще раз.";;
   esac
   done
-  clear
-  Zagolovok
 }
-Zagolovok
+
+clear && Zagolovok
 
 echo -en "\n" ; echo "# # Проверка на ранее установленную версию..."
 if dpkg -l homebridge &>/dev/null; then
@@ -57,6 +55,7 @@ else
   echo "     - Ранее установленых пакетов не обнаружено..."
 fi
 
+clear && Zagolovok
 echo -en "\n" ; echo "# # Установка Node.js..."
 echo "     - Добавление ключа подписи пакета NodeSource..."
 curl -sSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | sudo apt-key --quiet add -
