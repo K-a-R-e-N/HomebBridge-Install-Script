@@ -37,7 +37,7 @@ function GoToMenu {
   done
 }
 
-clear && Zagolovok
+Zagolovok
 
 echo -en "\n" ; echo "# # Проверка на ранее установленную версию..."
 if dpkg -l homebridge &>/dev/null; then
