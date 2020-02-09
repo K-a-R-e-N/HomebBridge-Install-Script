@@ -1,5 +1,7 @@
 #!/bin/bash
 
+
+function Zagolovok {
 echo -en "\n"
 echo "╔═════════════════════════════════════════════════════════════════════════════╗"
 echo "║                                                                             ║"
@@ -7,13 +9,10 @@ echo "║                   Установка HomeBridge и его зависи
 echo "║                                                                             ║"
 echo "╚═════════════════════════════════════════════════════════════════════════════╝"
 echo -en "\n"
-
-echo -en "\n" ; echo "# # Проверка на ранее установленную версию..."
+}
 function GoToMenu {
   while :
   do
-  echo "     - В вашей системе уже установлен HomeBridge из NPM..."
-  
   echo "        ┌─ Выберите действие: ────────────────────────────────────────┐"
   echo "        │                                                             │"
   echo "        │    1 - Завершить работу скрипта                             │"
@@ -29,11 +28,15 @@ function GoToMenu {
   case $a in
   1)     echo "     - Завершить работу скрипта..." && exit 0;;
   2)     echo "     - Предварительно очистить систему..." && bash uninstall.sh && return;;
-  3)     echo "     - Продолжить без очистки системы..." && return;;
+  3)     echo "     - Продолжить без очистки системы..." && if [ -f ~/.homebridge/config.json ]; then; echo -en "\n" ; echo "# # Создание резервной копии конфигурационного файла HomeBridge..." && sudo cp -f ~/.homebridge/config.json ~/.config.json.$(date +%s)000; fi; return;;
   *)     echo "                           Попробуйте еще раз.";;
   esac
   done
+  Zagolovok
 }
+Zagolovok
+
+echo -en "\n" ; echo "# # Проверка на ранее установленную версию..."
 if dpkg -l homebridge &>/dev/null; then
   echo "     - В вашей системе уже установлен HomeBridge как системный пакет..."
   GoToMenu
@@ -170,6 +173,11 @@ HOMEBRIDGE_OPTS=-U $HOME/.homebridge -I
 # To enable web terminals via homebridge-config-ui-x uncomment the following line
 # HOMEBRIDGE_CONFIG_UI_TERMINAL=1
 _EOF_
+
+if [ -f /home/pi/config.json.* ]; then 
+echo -en "\n" ; echo "# # Восстанавливаем резервную копию конфигурационного файла HomeBridge..."
+sudo mv -f /home/pi/config.json.* ~/.homebridge/
+fi
 
 echo -en "\n" ; echo "# # Добавление служб в список автозагрузки и их запуск..."
 sudo systemctl -q daemon-reload
