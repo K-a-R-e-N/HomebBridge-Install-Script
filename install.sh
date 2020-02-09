@@ -15,23 +15,23 @@ function GoToMenu {
   echo -en "\n"
   echo "        ┌─ Выберите действие: ────────────────────────────────────────┐"
   echo "        │                                                             │"
-  echo "        │       1 - Завершить работу скрипта                          │"
-  echo "        │       2 - Предварительно очистить систему                   │"
-  echo "        │       3 - Продолжить без очистки системы (Для опытных)      │"
+  echo "        │       1 - Предварительно очистить систему                   │"
+  echo "        │       2 - Продолжить без очистки системы (Для опытных)      │"
+  echo "        │       3 - Завершить работу скрипта                          │"
   echo "        │                                                             │"
   echo "        └─────────────────────────────────────────────────────────────┘"
   echo "           Чтобы продолжить, введите номер пункта и нажмите на Enter"
   read a
   printf "\n"
   case $a in
-  1)     echo "     - Завершить работу скрипта..." && exit 0;;
-  2)     echo "     - Предварительная очистка системы..." && bash uninstall.sh && return;;
-  3)     echo "     - Выполнение скрипта без очистки системы..." && if [ -f ~/.homebridge/config.json ]; then 
+  1)     echo "    - Предварительная очистка системы..." && bash uninstall.sh && return;;
+  2)     echo "    - Выполнение скрипта без очистки системы..." && if [ -f ~/.homebridge/config.json ]; then 
                                                             echo -en "\n"
                                                             echo "# # Создание резервной копии конфигурационного файла HomeBridge..."
                                                             sudo cp -f ~/.homebridge/config.json ~/.config.json.$(date +%s)000
                                                             fi
                                                             return;;
+  3)     echo "    - Завершить работу скрипта..." && exit 0;;
   *)     echo "                           Попробуйте еще раз.";;
   esac
   done
@@ -41,29 +41,29 @@ clear && Zagolovok
 
 echo -en "\n" ; echo "# # Проверка на ранее установленную версию..."
 if dpkg -l homebridge &>/dev/null; then
-  echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge как системный пакет..."
+  echo -en "\n" ; echo "    - В вашей системе уже установлен HomeBridge как системный пакет..."
   GoToMenu
 elif dpkg -l nodejs &>/dev/null; then
   if npm list -g | grep -q homebridge; then
-  echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge из NPM..."
+  echo -en "\n" ; echo "    - В вашей системе уже установлен HomeBridge из NPM..."
   GoToMenu
   else
-  echo -en "\n" ; echo "     - В системе уже установлен пакет NodeJS $(nodejs -v), но HomeBridge не установлен..."
+  echo -en "\n" ; echo "    - В системе уже установлен пакет NodeJS $(nodejs -v), но HomeBridge не установлен..."
   GoToMenu
   fi
 else
-  echo "     - Ранее установленых пакетов не обнаружено..."
+  echo "    - Ранее установленых пакетов не обнаружено..."
 fi
 
 clear && Zagolovok
 echo -en "\n" ; echo "# # Установка Node.js..."
-echo "     - Добавление ключа подписи пакета NodeSource..."
+echo "    - Добавление ключа подписи пакета NodeSource..."
 curl -sSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | sudo apt-key --quiet add -
-echo "     - Добавление репозитория NodeSource..."
+echo "    - Добавление репозитория NodeSource..."
 NODE_VERSION=node_12.x && DISTRO="$(lsb_release -s -c)"
 echo "deb https://deb.nodesource.com/$NODE_VERSION $DISTRO main" | sudo tee /etc/apt/sources.list.d/nodesource.list > /dev/null
 echo "deb-src https://deb.nodesource.com/$NODE_VERSION $DISTRO main" | sudo tee -a /etc/apt/sources.list.d/nodesource.list > /dev/null
-echo "     - Обновление списка пакетов и установка Node.js..."
+echo "    - Обновление списка пакетов и установка Node.js..."
 sudo apt-get update > /dev/null && sudo apt-get install -y nodejs > /dev/null
 
 echo -en "\n" ; echo "# # Установка пакетов gcc g++ make python..."
