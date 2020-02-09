@@ -10,7 +10,7 @@ echo -en "\n" ; echo "  # # Завершение процесса Homebridge..."
 sudo killall  -w -s 9 -u homebridge > /dev/null 2>&1
 
 if [ -f ~/.homebridge/config.json ]; then 
-echo -en "\n" ; echo "# # Создание резервной копии конфигурационного файла HomeBridge..."
+echo -en "\n" ; echo "  # # Создание резервной копии конфигурационного файла HomeBridge..."
 sudo cp -f ~/.homebridge/config.json ~/.config.json.$(date +%s)000
 fi
 
