@@ -13,16 +13,15 @@ echo -en "\n"
 function GoToMenu {
   while :
   do
+  echo -en "\n"
   echo "        ┌─ Выберите действие: ────────────────────────────────────────┐"
   echo "        │                                                             │"
-  echo "        │    1 - Завершить работу скрипта                             │"
-  echo "        │    2 - Предварительно очистить систему                      │"
-  echo "        │    3 - Продолжить без очистки системы (Для опытных)         │"
-  echo "        │                                                             │"
-  echo "        │  Чтобы продолжить, введите номер пункта и нажмите на Enter  │"
+  echo "        │       1 - Завершить работу скрипта                          │"
+  echo "        │       2 - Предварительно очистить систему                   │"
+  echo "        │       3 - Продолжить без очистки системы (Для опытных)      │"
   echo "        │                                                             │"
   echo "        └─────────────────────────────────────────────────────────────┘"
-  echo "                           Ввведите номер пункта:"
+  echo "           Чтобы продолжить, введите номер пункта и нажмите на Enter"
   read a
   printf "\n"
   case $a in
@@ -43,14 +42,14 @@ Zagolovok
 
 echo -en "\n" ; echo "# # Проверка на ранее установленную версию..."
 if dpkg -l homebridge &>/dev/null; then
-  echo "     - В вашей системе уже установлен HomeBridge как системный пакет..."
+  echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge как системный пакет..."
   GoToMenu
 elif dpkg -l nodejs &>/dev/null; then
   if npm list -g | grep -q homebridge; then
-  echo "     - В вашей системе уже установлен HomeBridge из NPM..."
+  echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge из NPM..."
   GoToMenu
   else
-  echo "     - В системе уже установлен пакет NodeJS $(nodejs -v), но HomeBridge не установлен..."
+  echo -en "\n" ; echo "     - В системе уже установлен пакет NodeJS $(nodejs -v), но HomeBridge не установлен..."
   GoToMenu
   fi
 else
