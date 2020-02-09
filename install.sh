@@ -182,6 +182,7 @@ _EOF_
 if [ -f ~/HB_BackUp/config.json.* ]; then 
 echo -en "\n" ; echo "# # Восстанавление резервной копии конфигурационного файла HomeBridge..."
 sudo mv -f ~/HB_BackUp/config.json.* ~/.homebridge/
+sudo rm -rf ~/HB_BackUp
 fi
 
 echo -en "\n" ; echo "# # Добавление служб в список автозагрузки и их запуск..."
