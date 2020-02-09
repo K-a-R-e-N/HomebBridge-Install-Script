@@ -175,7 +175,7 @@ HOMEBRIDGE_OPTS=-U $HOME/.homebridge -I
 _EOF_
 
 if [ -f /home/pi/config.json.* ]; then 
-echo -en "\n" ; echo "# # Восстанавливаем резервную копию конфигурационного файла HomeBridge..."
+echo -en "\n" ; echo "# # Восстанавление резервной копии конфигурационного файла HomeBridge..."
 sudo mv -f /home/pi/config.json.* ~/.homebridge/
 fi
 
