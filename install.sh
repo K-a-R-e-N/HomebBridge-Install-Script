@@ -27,8 +27,8 @@ function GoToMenu {
   read a
   printf "\n"
   case $a in
-  1)     echo "                     - Предварительная очистка системы..." && sleep 2 && clear && bash uninstall.sh && return;;
-  2)     echo "                  - Выполнение скрипта без очистки системы..." && sleep 2 && clear
+  1)     echo "                     - Предварительная очистка системы..." && sleep 2 && clear && Zagolovok && bash uninstall.sh && return;;
+  2)     echo "                  - Выполнение скрипта без очистки системы..." && sleep 2 && clear && Zagolovok
                                             if [ -f ~/.homebridge/config.json ]; then
                                             echo -en "\n" ; echo "  # # Создание резервной копии конфигурационного файла HomeBridge..."
                                             sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
