@@ -27,8 +27,8 @@ function GoToMenu {
   1)     echo "                     - Предварительная очистка системы..." && sleep 2 && clear && bash uninstall.sh && return;;
   2)     echo "                  - Выполнение скрипта без очистки системы..." && sleep 2 && clear
                                             if [ -f ~/.homebridge/config.json ]; then
-                                            sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
                                             echo -en "\n" ; echo "  # # Создание резервной копии конфигурационного файла HomeBridge..."
+                                            sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
                                             sudo cp -f ~/.homebridge/config.json ~/HB_BackUp/config.json.$(date +%s)000
                                             fi
                                             return;;
