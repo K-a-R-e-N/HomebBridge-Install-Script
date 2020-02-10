@@ -58,6 +58,8 @@ fi
 
 clear && Zagolovok
 
+#echo -en "\n" ; echo "# # Установка необходимых зависимостей"
+
 echo -en "\n" ; echo "# # Установка Node.js..."
 echo "    - Добавление ключа подписи пакета NodeSource..."
 curl -sSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | sudo apt-key --quiet add -
