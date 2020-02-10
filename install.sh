@@ -43,60 +43,60 @@ function GoToMenu {
 
 Zagolovok
 
-echo -en "\n" ; echo "# # Проверка на ранее установленную версию..."
+echo -en "\n" ; echo "  # # Проверка на ранее установленную версию..."
 if dpkg -l homebridge &>/dev/null; then
-  echo -en "\n" ; echo "    - В вашей системе уже установлен HomeBridge как системный пакет..."
+  echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge как системный пакет..."
   GoToMenu
 elif dpkg -l nodejs &>/dev/null; then
   if npm list -g | grep -q homebridge; then
-  echo -en "\n" ; echo "    - В вашей системе уже установлен HomeBridge из NPM..."
+  echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge из NPM..."
   GoToMenu
   else
-  echo -en "\n" ; echo "    - В системе уже установлен пакет NodeJS $(nodejs -v), но HomeBridge не установлен..."
+  echo -en "\n" ; echo "     - В системе уже установлен пакет NodeJS $(nodejs -v), но HomeBridge не установлен..."
   GoToMenu
   fi
 else
-  echo "    - Ранее установленых пакетов не обнаружено..."
+  echo "     - Ранее установленых пакетов не обнаружено..."
 fi
 
-#echo -en "\n" ; echo "# # Установка необходимых зависимостей"
+#echo -en "\n" ; echo "  # # Установка необходимых зависимостей"
 
-echo -en "\n" ; echo "# # Установка Node.js..."
-echo "    - Добавление ключа подписи пакета NodeSource..."
+echo -en "\n" ; echo "  # # Установка Node.js..."
+echo "     - Добавление ключа подписи пакета NodeSource..."
 curl -sSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | sudo apt-key --quiet add -
-echo "    - Добавление репозитория NodeSource..."
+echo "     - Добавление репозитория NodeSource..."
 NODE_VERSION=node_12.x && DISTRO="$(lsb_release -s -c)"
 echo "deb https://deb.nodesource.com/$NODE_VERSION $DISTRO main" | sudo tee /etc/apt/sources.list.d/nodesource.list > /dev/null
 echo "deb-src https://deb.nodesource.com/$NODE_VERSION $DISTRO main" | sudo tee -a /etc/apt/sources.list.d/nodesource.list > /dev/null
-echo "    - Обновление списка пакетов и установка Node.js..."
+echo "     - Обновление списка пакетов и установка Node.js..."
 sudo apt-get update > /dev/null && sudo apt-get install -y nodejs > /dev/null
 
-echo -en "\n" ; echo "# # Установка пакетов gcc g++ make python..."
+echo -en "\n" ; echo "  # # Установка пакетов gcc g++ make python..."
 sudo apt-get install -y gcc g++ make python > /dev/null
 
-echo -en "\n" ; echo "# # Установка пакета libavahi-compat-libdnssd-dev..."
+echo -en "\n" ; echo "  # # Установка пакета libavahi-compat-libdnssd-dev..."
 sudo apt-get install -y libavahi-compat-libdnssd-dev > /dev/null
 
-echo -en "\n" ; echo "# # Устранение ранее известных проблем..."
+echo -en "\n" ; echo "  # # Устранение ранее известных проблем..."
 sudo npm cache verify > /dev/null
 
-echo -en "\n" ; echo "# # Установка HomeBridge..."
+echo -en "\n" ; echo "  # # Установка HomeBridge..."
 sudo npm install -g --unsafe-perm homebridge > /dev/null
 
-echo -en "\n" ; echo "# # Установка интерфейса для HomeBridge..."
+echo -en "\n" ; echo "  # # Установка интерфейса для HomeBridge..."
 sudo npm install -g --unsafe-perm homebridge-config-ui-x > /dev/null
 
-echo -en "\n" ; echo "# # Создание основного пользователя для HomeBridge..."
+echo -en "\n" ; echo "  # # Создание основного пользователя для HomeBridge..."
 sudo useradd -rm homebridge -G dialout,gpio,i2c > /dev/null
 
-echo -en "\n" ; echo "# # Добавление полномочия по управлению через интерфейс..."
+echo -en "\n" ; echo "  # # Добавление полномочия по управлению через интерфейс..."
 sudo grep homebridge /etc/sudoers > /dev/null || echo 'homebridge    ALL=(ALL) NOPASSWD: ALL' | sudo EDITOR='tee -a' visudo > /dev/null
 
-echo -en "\n" ; echo "# # Создание основного каталога HomeBridge..."
+echo -en "\n" ; echo "  # # Создание основного каталога HomeBridge..."
 [ ! -d ~/.homebridge ] && sudo mkdir -p ~/.homebridge
 sudo chown -R homebridge: ~/.homebridge > /dev/null
 
-echo -en "\n" ; echo "# # Создание конфигурационного файла HomeBridge..."
+echo -en "\n" ; echo "  # # Создание конфигурационного файла HomeBridge..."
 sudo rm -rf ~/.homebridge/config.json
 sudo tee -a ~/.homebridge/config.json > /dev/null <<_EOF_
 {
@@ -125,7 +125,7 @@ sudo tee -a ~/.homebridge/config.json > /dev/null <<_EOF_
 }
 _EOF_
 
-echo -en "\n" ; echo "# # Создание служб автозапуска..."
+echo -en "\n" ; echo "  # # Создание служб автозапуска..."
 sudo rm -rf /etc/systemd/system/homebridge.service
 sudo tee -a /etc/systemd/system/homebridge.service > /dev/null <<_EOF_
 [Unit]
@@ -168,7 +168,7 @@ AmbientCapabilities=CAP_NET_RAW
 WantedBy=multi-user.target
 _EOF_
 
-echo -en "\n" ; echo "# # Создаем файл настроек HomeBridge..."
+echo -en "\n" ; echo "  # # Создаем файл настроек HomeBridge..."
 sudo rm -rf /etc/default/homebridge
 sudo tee -a /etc/default/homebridge > /dev/null <<_EOF_
 # Defaults / Configuration options for homebridge
@@ -184,12 +184,12 @@ HOMEBRIDGE_OPTS=-U $HOME/.homebridge -I
 _EOF_
 
 if [ -d ~/HB_BackUp/ ]; then 
-echo -en "\n" ; echo "# # Восстанавление резервной копии конфигурационного файла HomeBridge..."
+echo -en "\n" ; echo "  # # Восстанавление резервной копии конфигурационного файла HomeBridge..."
 sudo mv -f ~/HB_BackUp/config.json.* ~/.homebridge/
 sudo rm -rf ~/HB_BackUp
 fi
 
-echo -en "\n" ; echo "# # Добавление служб в список автозагрузки и их запуск..."
+echo -en "\n" ; echo "  # # Добавление служб в список автозагрузки и их запуск..."
 sudo systemctl -q daemon-reload
 sudo systemctl -q enable homebridge
 sudo systemctl -q start homebridge
