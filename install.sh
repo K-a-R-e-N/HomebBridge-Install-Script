@@ -21,8 +21,8 @@ function GoToMenu {
   echo "        │                                                             │"
   echo "        └─────────────────────────────────────────────────────────────┘"
   echo "           Чтобы продолжить, введите номер пункта и нажмите на Enter"
-  read a
   echo -e "\a"
+  read a
   printf "\n"
   case $a in
   1)     echo "                     - Предварительная очистка системы..." && sleep 2 && clear && bash uninstall.sh && return;;
