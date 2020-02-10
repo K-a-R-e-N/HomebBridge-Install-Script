@@ -43,20 +43,18 @@ Zagolovok
 echo -en "\n" ; echo "# # Проверка на ранее установленную версию..."
 if dpkg -l homebridge &>/dev/null; then
   echo -en "\n" ; echo "    - В вашей системе уже установлен HomeBridge как системный пакет..."
-  GoToMenu
+  clear && Zagolovok && GoToMenu
 elif dpkg -l nodejs &>/dev/null; then
   if npm list -g | grep -q homebridge; then
   echo -en "\n" ; echo "    - В вашей системе уже установлен HomeBridge из NPM..."
-  GoToMenu
+  clear && Zagolovok && GoToMenu
   else
   echo -en "\n" ; echo "    - В системе уже установлен пакет NodeJS $(nodejs -v), но HomeBridge не установлен..."
-  GoToMenu
+  clear && Zagolovok && GoToMenu
   fi
 else
   echo "    - Ранее установленых пакетов не обнаружено..."
 fi
-
-clear && Zagolovok
 
 #echo -en "\n" ; echo "# # Установка необходимых зависимостей"
 
