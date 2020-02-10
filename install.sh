@@ -23,8 +23,8 @@ function GoToMenu {
   echo "           Чтобы продолжить, введите номер пункта и нажмите на Enter"
   read a
   printf "\n"
-  case $a in
   echo -e "\a"
+  case $a in
   1)     echo "                     - Предварительная очистка системы..." && sleep 2 && clear && bash uninstall.sh && return;;
   2)     echo "                  - Выполнение скрипта без очистки системы..." && sleep 2 && clear
                                             if [ -f ~/.homebridge/config.json ]; then
