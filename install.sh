@@ -77,6 +77,9 @@ sudo apt-get install -y gcc g++ make python > /dev/null
 echo -en "\n" ; echo "  # # Установка пакета libavahi-compat-libdnssd-dev..."
 sudo apt-get install -y libavahi-compat-libdnssd-dev > /dev/null
 
+echo -en "\n" ; echo "  # # Обновление npm (version 6.13.4 has issues with git dependencies)..."
+sudo npm i -g npm
+
 echo -en "\n" ; echo "  # # Устранение ранее известных проблем..."
 #sudo npm cache clean --force > /dev/null
 #sudo npm install
