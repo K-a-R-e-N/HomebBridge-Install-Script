@@ -69,6 +69,7 @@ NODE_VERSION=node_12.x && DISTRO="$(lsb_release -s -c)"
 echo "deb https://deb.nodesource.com/$NODE_VERSION $DISTRO main" | sudo tee /etc/apt/sources.list.d/nodesource.list > /dev/null
 echo "deb-src https://deb.nodesource.com/$NODE_VERSION $DISTRO main" | sudo tee -a /etc/apt/sources.list.d/nodesource.list > /dev/null
 echo "     - Обновление списка пакетов и установка Node.js..."
+sudo npm cache clean --force > /dev/null
 sudo apt-get update > /dev/null && sudo apt-get install -y nodejs > /dev/null
 
 echo -en "\n" ; echo "  # # Установка пакетов gcc g++ make python..."
@@ -78,7 +79,6 @@ echo -en "\n" ; echo "  # # Установка пакета libavahi-compat-libd
 sudo apt-get install -y libavahi-compat-libdnssd-dev > /dev/null
 
 echo -en "\n" ; echo "  # # Устранение ранее известных проблем..."
-sudo npm cache clean --force > /dev/null
 sudo npm cache verify > /dev/null
 
 echo -en "\n" ; echo "  # # Установка HomeBridge..."
