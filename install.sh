@@ -78,12 +78,12 @@ echo -en "\n" ; echo "  # # Установка пакета libavahi-compat-libd
 sudo apt-get install -y libavahi-compat-libdnssd-dev > /dev/null
 
 echo -en "\n" ; echo "  # # Обновление npm (version 6.13.4 has issues with git dependencies)..."
-sudo npm i -g npm
+sudo npm i -g npm > /dev/null
 
 echo -en "\n" ; echo "  # # Устранение ранее известных проблем..."
 #sudo npm cache clean --force > /dev/null
 #sudo npm install
-#sudo npm cache verify > /dev/null
+sudo npm cache verify > /dev/null
 
 echo -en "\n" ; echo "  # # Установка HomeBridge..."
 sudo npm install -g --unsafe-perm homebridge > /dev/null
