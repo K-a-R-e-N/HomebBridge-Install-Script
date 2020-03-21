@@ -78,6 +78,7 @@ echo -en "\n" ; echo "  # # Установка пакета libavahi-compat-libd
 sudo apt-get install -y libavahi-compat-libdnssd-dev > /dev/null
 
 echo -en "\n" ; echo "  # # Устранение ранее известных проблем..."
+sudo npm cache clean --force > /dev/null
 sudo npm cache verify > /dev/null
 
 echo -en "\n" ; echo "  # # Установка HomeBridge..."
