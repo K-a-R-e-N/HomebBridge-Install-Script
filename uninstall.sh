@@ -8,7 +8,7 @@ echo -en "\n"
 
 echo -en "\n" ; echo "  # # Остановка и завершение процесса Homebridge..."
 sudo hb-service stop > /dev/null 2>&1
-sudo killall  -w -s 9 -u homebridge > /dev/null 2>&1
+sudo killall -w -s 9 -u homebridge > /dev/null 2>&1
 
 if [ -f ~/.homebridge/config.json ]; then
 echo -en "\n" ; echo "  # # Создание резервной копии конфигурационного файла HomeBridge..."
