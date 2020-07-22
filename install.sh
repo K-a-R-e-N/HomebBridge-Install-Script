@@ -39,7 +39,7 @@ function GoToMenu {
                                             sudo cp -f /var/lib/homebridge/config.json ~/HB_BackUp/config.json.$(date +%s)000
                                             
                                             echo -en "\n" ; echo "  # # Test2..."
-                                            return;;
+                                            return
   2)     echo "                  - Выполнение скрипта без очистки системы..." && sleep 2 && clear && Zagolovok
                                             if [ -f ~/.homebridge/config.json ]; then
                                             echo -en "\n" ; echo "  # # Создание резервной копии конфигурационного файла HomeBridge..."
