@@ -29,6 +29,9 @@ function GoToMenu {
   case $key in
   1)     echo "                     - Предварительная очистка системы..." && sleep 2 && clear && bash uninstall.sh && Zagolovok && return;;
   2)     echo "                  - Выполнение скрипта без очистки системы..." && sleep 2 && clear && Zagolovok
+                                            echo -en "\n" ; echo "  # # Остановка и завершение процесса Homebridge..."
+                                            sudo hb-service stop > /dev/null 2>&1
+                                            sudo killall -w -s 9 -u homebridge > /dev/null 2>&1
                                             if [ -f ~/.homebridge/config.json ]; then
                                             echo -en "\n" ; echo "  # # Создание резервной копии конфигурационного файла HomeBridge..."
                                             sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
@@ -101,8 +104,9 @@ echo -en "\n" ; echo "  # # Создание основного каталога
 echo -en "\n" ; echo "  # # Создание конфигурационного файла HomeBridge..."
 echo -en "\n" ; echo "  # # Создание служб автозапуска..."
 echo -en "\n" ; echo "  # # Создаем файл настроек HomeBridge..."
+sudo hb-service install --port 8080 --user homebridge > /dev/null 2>&1
 echo -en "\n" ; echo "  # # Добавление служб в список автозагрузки и их запуск..."
-sudo hb-service install --port 8080 --user homebridge &>/dev/null
+sudo hb-service start > /dev/null 2>&1
 
 if [ -d ~/HB_BackUp/ ]; then 
 echo -en "\n" ; echo "  # # Восстанавление резервной копии конфигурационного файла HomeBridge..."
