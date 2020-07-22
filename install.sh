@@ -95,6 +95,34 @@ echo -en "\n" ; echo "  # # Создание основного пользова
 echo -en "\n" ; echo "  # # Добавление полномочия по управлению через интерфейс..."
 echo -en "\n" ; echo "  # # Создание основного каталога HomeBridge..."
 echo -en "\n" ; echo "  # # Создание конфигурационного файла HomeBridge..."
+sudo rm -rf ~/.homebridge/config.json
+sudo tee -a ~/.homebridge/config.json > /dev/null <<_EOF_
+{
+    "bridge": {
+        "name": "Homebridge",
+        "username": "CB:22:3D:E2:CE:31",
+        "port": 51826,
+        "pin": "432-11-234"
+    },
+    "accessories": [],
+    "platforms": [
+        {
+            "platform": "config",
+            "name": "Config",
+            "port": 8080,
+            "auth": "form",
+            "standalone": true,
+            "restart": "sudo -n systemctl restart homebridge homebridge-config-ui-x",
+            "sudo": true,
+            "log": {
+                "method": "systemd",
+                "service": "homebridge"
+            }
+        }
+    ]
+}
+_EOF_
+
 echo -en "\n" ; echo "  # # Создание служб автозапуска..."
 echo -en "\n" ; echo "  # # Создаем файл настроек HomeBridge..."
 echo -en "\n" ; echo "  # # Добавление служб в список автозагрузки и их запуск..."
