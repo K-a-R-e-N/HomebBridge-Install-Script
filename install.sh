@@ -98,7 +98,7 @@ echo -en "\n" ; echo "  # # Создание конфигурационного 
 echo -en "\n" ; echo "  # # Создание служб автозапуска..."
 echo -en "\n" ; echo "  # # Создаем файл настроек HomeBridge..."
 echo -en "\n" ; echo "  # # Добавление служб в список автозагрузки и их запуск..."
-sudo hb-service install --user homebridge
+sudo hb-service install --port 8080 --user homebridge
 
 if [ -d ~/HB_BackUp/ ]; then 
 echo -en "\n" ; echo "  # # Восстанавление резервной копии конфигурационного файла HomeBridge..."
