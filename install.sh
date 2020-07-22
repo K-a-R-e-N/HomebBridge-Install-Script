@@ -27,12 +27,26 @@ function GoToMenu {
   read key
   printf "\n"
   case $key in
-  1)     echo "                     - Предварительная очистка системы..." && sleep 2 && clear && bash uninstall.sh && Zagolovok && return;;
+  1)     echo "                     - Предварительная очистка системы..." && sleep 2 && clear && bash uninstall.sh && Zagolovok
+                                            if [ -f ~/.homebridge/config.json ]; then
+                                            echo -en "\n" ; echo "  # # Создание резервной копии конфигурационного файла HomeBridge..."
+                                            sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
+                                            sudo cp -f ~/.homebridge/config.json ~/HB_BackUp/config.json.$(date +%s)000
+                                            if [ -f /var/lib/homebridge/config.json ]; then
+                                            echo -en "\n" ; echo "  # # Создание резервной копии конфигурационного файла HomeBridge..."
+                                            sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
+                                            sudo cp -f /var/lib/homebridge/config.json ~/HB_BackUp/config.json.$(date +%s)000
+                                            fi
+                                            return;;
   2)     echo "                  - Выполнение скрипта без очистки системы..." && sleep 2 && clear && Zagolovok
                                             if [ -f ~/.homebridge/config.json ]; then
                                             echo -en "\n" ; echo "  # # Создание резервной копии конфигурационного файла HomeBridge..."
                                             sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
                                             sudo cp -f ~/.homebridge/config.json ~/HB_BackUp/config.json.$(date +%s)000
+                                            if [ -f /var/lib/homebridge/config.json ]; then
+                                            echo -en "\n" ; echo "  # # Создание резервной копии конфигурационного файла HomeBridge..."
+                                            sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
+                                            sudo cp -f /var/lib/homebridge/config.json ~/HB_BackUp/config.json.$(date +%s)000
                                             fi
                                             return;;
   3)     echo "               - Завершение работы скрипта..." && exit 0;;
