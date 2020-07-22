@@ -95,42 +95,14 @@ echo -en "\n" ; echo "  # # Создание основного пользова
 echo -en "\n" ; echo "  # # Добавление полномочия по управлению через интерфейс..."
 echo -en "\n" ; echo "  # # Создание основного каталога HomeBridge..."
 echo -en "\n" ; echo "  # # Создание конфигурационного файла HomeBridge..."
-sudo rm -rf ~/.homebridge/config.json
-sudo tee -a ~/.homebridge/config.json > /dev/null <<_EOF_
-{
-    "bridge": {
-        "name": "Homebridge",
-        "username": "CB:22:3D:E2:CE:31",
-        "port": 51826,
-        "pin": "432-11-234"
-    },
-    "accessories": [],
-    "platforms": [
-        {
-            "platform": "config",
-            "name": "Config",
-            "port": 8080,
-            "auth": "form",
-            "standalone": true,
-            "restart": "sudo -n systemctl restart homebridge homebridge-config-ui-x",
-            "sudo": true,
-            "log": {
-                "method": "systemd",
-                "service": "homebridge"
-            }
-        }
-    ]
-}
-_EOF_
-
 echo -en "\n" ; echo "  # # Создание служб автозапуска..."
 echo -en "\n" ; echo "  # # Создаем файл настроек HomeBridge..."
 echo -en "\n" ; echo "  # # Добавление служб в список автозагрузки и их запуск..."
-sudo hb-service install --port 8080 --user homebridge
+sudo hb-service install --port 8080 --user homebridge &>/dev/null
 
 if [ -d ~/HB_BackUp/ ]; then 
 echo -en "\n" ; echo "  # # Восстанавление резервной копии конфигурационного файла HomeBridge..."
-sudo mv -f ~/HB_BackUp/config.json.* ~/.homebridge/
+sudo mv -f ~/HB_BackUp/config.json.* /var/lib/homebridge/
 sudo rm -rf ~/HB_BackUp
 fi
 echo -en "\n"
@@ -151,13 +123,13 @@ echo "    │                       Логин и пароль для входа
 echo "    │                            admin / admin                            │"
 echo "    │                                                                     │"
 echo "    │                  Редактирование файла конфигурации                  │"
-echo "    │                 sudo nano ~/.homebridge/config.json                 │"
+echo "    │              sudo nano /var/lib/homebridge/config.json              │"
 echo "    │                                                                     │"
 echo "    │                     Перезагрузка Home Assistant                     │"
-echo "    │                  sudo systemctl restart homebridge                  │"
+echo "    │                       sudo hb-service restart                       │"
 echo "    │                                                                     │"
 echo "    │                          Просмотр журналов                          │"
-echo "    │               sudo journalctl -f -n 100 -u homebridge               │"
+echo "    │                         sudo hb-service logs                        │"
 echo "    │                                                                     │"
 echo "    └─────────────────────────────────────────────────────────────────────┘"
 echo -en "\n"
