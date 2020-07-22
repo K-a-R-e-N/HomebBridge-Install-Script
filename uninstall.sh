@@ -10,9 +10,13 @@ echo -en "\n" ; echo "  # # Завершение процесса Homebridge..."
 sudo killall  -w -s 9 -u homebridge > /dev/null 2>&1
 
 if [ -f ~/.homebridge/config.json ]; then
-sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
 echo -en "\n" ; echo "  # # Создание резервной копии конфигурационного файла HomeBridge..."
+sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
 sudo cp -f ~/.homebridge/config.json ~/HB_BackUp/config.json.$(date +%s)000
+elif [ -f /var/lib/homebridge/config.json ]; then
+echo -en "\n" ; echo "  # # Создание резервной копии config.json старого образца..."
+sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
+sudo cp -f /var/lib/homebridge/config.json ~/HB_BackUp/config.json.$(date +%s)000
 fi
 
 echo -en "\n" ; echo "  # # Деинсталляция служб Homebridge..."
