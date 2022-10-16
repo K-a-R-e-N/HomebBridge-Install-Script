@@ -1,5 +1,6 @@
 #!/bin/bash
 #set -x
+cd ~
 clear
 
 function Zagolovok {
@@ -49,7 +50,7 @@ function GoToMenu {
 }
 
 Zagolovok
-
+GoToMenu
 echo -en "\n" ; echo "  # # Проверка на ранее установленную версию..."
 if dpkg -l homebridge &>/dev/null; then
   echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge как системный пакет..."
