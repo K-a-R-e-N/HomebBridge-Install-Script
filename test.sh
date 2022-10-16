@@ -13,6 +13,32 @@ echo "╚═══════════════════════�
 echo -en "\n"
 }
 
+# Изменение строки приветствия
+PS3='Выберите операционную систему: '
+
+select OS in "Linux" "Windows" "Mac OS" "BolgenOS"
+do
+  echo
+  echo "Вы выбрали $OS!"
+  echo
+  break
+done
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 red=$(tput setf 4)
 green=$(tput setf 2)
