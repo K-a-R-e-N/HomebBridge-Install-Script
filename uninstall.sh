@@ -1,5 +1,5 @@
 #!/bin/bash
-
+cd ~
 echo -en "\n"
 echo "╔═════════════════════════════════════════════════════════════════════════════╗"
 echo "                       Удаление HomeBridge и его хвостов"
@@ -11,7 +11,7 @@ sudo hb-service stop > /dev/null 2>&1
 sudo killall -w -s 9 -u homebridge > /dev/null 2>&1
 
 if [ -f ~/.homebridge/config.json ]; then
-echo -en "\n" ; echo "  # # Создание резервной копии конфигурационного файла HomeBridge..."
+echo -en "\n" ; echo "  # # Создание резервной копии конфигурационного файла HomeBridge в каталог ~/HB_BackUp/..."
 sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
 sudo cp -f ~/.homebridge/config.json ~/HB_BackUp/config.json.$(date +%s)000
 elif [ -f /var/lib/homebridge/config.json ]; then
@@ -20,11 +20,14 @@ sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
 sudo cp -f /var/lib/homebridge/config.json ~/HB_BackUp/config.json.$(date +%s)000
 fi
 
-echo -en "\n" ; echo "  # # Деинсталляция служб Homebridge..."
-sudo hb-service uninstall > /dev/null 2>&1
-
 echo -en "\n" ; echo "  # # Деинсталляция HomeBridge..."
-sudo npm uninstall -g homebridge > /dev/null 2>&1
+sudo apt-get remove homebridge -y > /dev/null 2>&1
+
+echo -en "\n" ; echo "  # # Удаление репозитория Homebridge..."
+sudo rm -rf /etc/apt/sources.list.d/homebridge.list
+
+echo -en "\n" ; echo "  # # Деинсталляция всех плагинов и конфигурацию Homebridge..."
+sudo apt-get purge homebridge -y > /dev/null 2>&1
 
 echo -en "\n" ; echo "  # # Деинсталляция интерфейса Homebridge Config UI X..."
 sudo npm uninstall -g homebridge-config-ui-x > /dev/null 2>&1
