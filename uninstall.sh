@@ -62,7 +62,6 @@ sudo rm -rf /home/homebridge*
 sudo rm -rf ~/.homebridge*
 
 echo -en "\n" ; echo "  # # Удаление хвостов от плагинов:"
-echo "     - Плагин ps4-waker"
 sudo rm -rf /usr/bin/ps4-waker
 sudo rm -rf /usr/lib/node_modules/ps4-waker
 
