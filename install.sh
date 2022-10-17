@@ -1,4 +1,5 @@
 #!/bin/bash
+#-x
 clear
 
 
@@ -9,7 +10,8 @@ red=$(tput setf 4)
 green=$(tput setf 2)
 reset=$(tput sgr0)
 #Ключ запуска командной строки
-cmdkey=0 && UninstallScriptSettings=0
+cmdkey=0
+UninstallScriptSettings=0
 # Автоопределение названия запускаемого скрипта
 ME=`basename $0`
 clear
@@ -346,7 +348,7 @@ do
   r)    UninstallScript
         InstallScript
       ;;
-  D|d)    RremovalItself
+  D|d)  RremovalItself
       ;;
   H|h)  print_help
       ;;
