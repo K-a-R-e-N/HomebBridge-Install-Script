@@ -111,8 +111,6 @@ elif dpkg -l nodejs &>/dev/null; then
     InstallInfo="${red}[fail]${reset}"
     GoToMenu
   fi
-else
-    echo -en "\n" ; echo "     - не установлен..."
 fi
 }
 
@@ -264,14 +262,14 @@ sudo apt-get purge homebridge -y > /dev/null 2>&1
 echo -en "\n" ; echo "  # # Удаление пользователя homebridge..."
 sudo userdel -rf homebridge > /dev/null 2>&1
 
-echo -en "\n" ; echo "  # # Удаление служб из списока автозагрузки:"
+echo -en "\n" ; echo "  # # Удаление служб из списока автозагрузки..."
 sudo update-rc.d homebridge remove > /dev/null 2>&1
 sudo rm -rf /etc/init.d/homebridge
 sudo rm -rf /etc/systemd/system/homebridge*
 sudo rm -rf /etc/systemd/system/multi-user.target.wants/homebridge*
 sudo systemctl --system daemon-reload > /dev/null
 
-echo -en "\n" ; echo "  # # Удаление хвостов, для возможности последующей нормальной установки:"
+echo -en "\n" ; echo "  # # Удаление хвостов, для возможности последующей нормальной установки..."
 sudo curl -sfL https://gist.githubusercontent.com/oznu/312b54364616082c3c1e0b6b02351f0e/raw/remove-node.sh | sudo bash > /dev/null 2>&1
 sudo rm -rf /usr/lib/node_modules/homebridge*
 sudo rm -rf /usr/bin/homebridge*
@@ -281,7 +279,7 @@ sudo rm -rf /home/pi/.homebridge*
 sudo rm -rf /home/homebridge*
 sudo rm -rf ~/.homebridge*
 
-echo -en "\n" ; echo "  # # Удаление хвостов от плагинов:"
+echo -en "\n" ; echo "  # # Удаление хвостов от плагинов..."
 sudo rm -rf /usr/bin/ps4-waker
 sudo rm -rf /usr/lib/node_modules/ps4-waker
 
