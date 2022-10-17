@@ -62,10 +62,12 @@ function GoToMenu {
   1)    InstallScript
       ;;
   2)    UninstallScript
+      ;;
+  3)    cmdkey=2
+        UninstallScript
+	cmdkey=0
         InstallScript
 	ReinstallInfo="${green}[OK]${reset}"
-      ;;
-  3)    UninstallScript
       ;;
   D|d)  RremovalItself
       ;;
