@@ -361,6 +361,11 @@ do
   r)    UninstallScript
         InstallScript
       ;;
+  d)    echo "                   Самоудаление папки со скриптом установки..."
+  	cd ~ && sudo rm -rf ~/HomebBridge-Install-Script2
+	echo -en "\n"
+	exit 0
+      ;;
   H|h)  print_help
       ;;
   *)    echo -en "\n" ; echo -en "\n" ; echo "${red}           Неправильный параметр!${reset}"
