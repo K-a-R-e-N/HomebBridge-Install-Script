@@ -82,11 +82,14 @@ done
 function ExitOrContinue() {
   echo -en "\n"
   if [ $cmdkey -eq 0 ]; then
+        echo -e "\a"
         read -p "${green}           Нажмите любую клавишу, чтобы вернуться в главное меню...${reset}"
   elif [ $cmdkey -eq 1 ]; then
+        echo -e "\a"
         read -p "${green}           Нажмите любую клавишу, чтобы завершить работу скрипта...${reset}"
 	exit 0
   elif [ $cmdkey -eq 2 ]; then
+        echo -e "\a"
         read -p "${green}           Нажмите любую клавишу, что бы установить HomeBridge...${reset}"
 	cmdkey=0
 	ReinstallInfo="${green}[OK]${reset}"
