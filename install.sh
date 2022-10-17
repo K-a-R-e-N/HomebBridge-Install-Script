@@ -49,6 +49,7 @@ function GoToMenu {
   echo "     │                                                                   │"
   echo "     └────────────────────────────────────────────── H - Вызов справки ──┘"
   echo -en "\n"
+  echo -e "\a"
   echo "           $GoToMenuInfo номер пункта и нажмите на Enter"
   echo -e "\a"
   read item
@@ -230,9 +231,9 @@ echo "    │               ${green}sudo hb-service add homebridge-example${rese
 echo "    │               ${green}sudo hb-service remove homebridge-example${reset}             │"
 echo "    │                                                                     │"
 echo "    └─────────────────────────────────────────────────────────────────────┘"
-echo "                                 ┌─── Установленная версия Node.js ───┐"
-echo "                                 │              ${green}$(node -v | tr -d ' ')${reset}              │"
-echo "                                 └────────────────────────────────────┘"
+echo "                                 ┌ Установленная версия Node.js ┐"
+echo "                                 │           ${green}$(node -v | tr -d ' ')${reset}           │"
+echo "                                 └──────────────────────────────┘"
 
 InstallInfo="${green}[OK]${reset}"
 ExitOrContinue
