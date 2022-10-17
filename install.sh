@@ -309,7 +309,6 @@ else
 fi
 echo -n "${reset}"
 echo
-cd !$
 exit 0
 }
 
