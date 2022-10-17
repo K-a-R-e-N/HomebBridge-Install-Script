@@ -370,7 +370,7 @@ do
       ;;
   u)    UninstallScript
       ;;
-  r)    cmdkey=2
+  r)    cmdkey=3
         UninstallScript
       ;;
   D|d)  RremovalItself
