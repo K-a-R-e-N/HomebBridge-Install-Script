@@ -102,19 +102,19 @@ function СheckingInstalledPackage() {
 echo -en "\n" ; echo "  # # Проверка на ранее установленную версию..."
 if dpkg -l homebridge &>/dev/null; then
   echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge как системный пакет..."
+  InstallInfo="${red}[уже установлен]${reset}"
   ExitOrContinue
-  InstallInfo="${red}[fail]${reset}"
   GoToMenu
 elif dpkg -l nodejs &>/dev/null; then
   if npm list -g | grep -q homebridge; then
     echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge из NPM..."
+    InstallInfo="${red}[уже установлен]${reset}"
     ExitOrContinue
-    InstallInfo="${red}[fail]${reset}"
     GoToMenu
   else
     echo -en "\n" ; echo "     - В системе уже установлен пакет Node.js ${green}$(node -v | tr -d ' ')${reset}, но HomeBridge не установлен..."
+    InstallInfo="${red}[Node.js]${reset}"
     ExitOrContinue
-    InstallInfo="${red}[fail]${reset}"
     GoToMenu
   fi
 fi
@@ -226,13 +226,13 @@ echo "    │               ${green}sudo hb-service add homebridge-example${rese
 echo "    │               ${green}sudo hb-service remove homebridge-example${reset}             │"
 echo "    │                                                                     │"
 echo "    └─────────────────────────────────────────────────────────────────────┘"
-echo "                                 ┌───── Установленная версия Node.js ─────┐"
-echo "                                 │                ${green}$(node -v | tr -d ' ')${reset}                │"
-echo "                                 └────────────────────────────────────────┘"
+echo "                                 ┌─── Установленная версия Node.js ───┐"
+echo "                                 │              ${green}$(node -v | tr -d ' ')${reset}              │"
+echo "                                 └────────────────────────────────────┘"
 
+InstallInfo="${green}[OK]${reset}"
 ExitOrContinue
 sleep 1
-InstallInfo="${green}[OK]${reset}"
 GoToMenu
 }
 
@@ -305,8 +305,8 @@ echo "╔═══════════════════════�
 echo "   ${green}Удаление Homebridge, а так же всех его плагинов с конфигурациями завершено${reset}"
 echo "╚═════════════════════════════════════════════════════════════════════════════╝"
 
-ExitOrContinue
 UninstallInfo="${green}[OK]${reset}"
+ExitOrContinue
 GoToMenu
 }
 
