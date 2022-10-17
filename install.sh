@@ -112,6 +112,7 @@ fi
 
 
 
+
 function BackUpScript() {
 if [ -f ~/.homebridge/config.json ]; then
 	echo -en "\n" ; echo "  # # Создание резервной копии конфигурационного файла HomeBridge..."
