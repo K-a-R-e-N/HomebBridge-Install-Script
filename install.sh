@@ -39,6 +39,7 @@ function GoToMenu {
   echo "     │                                                                   │"
   echo -en "\n" 
   echo "           1 - Установка Homebridge на чистой системе $InstallInfo"
+  echo -en "\n"
   echo "           2 - Полное удаление Homebridge с очисткой системы $UninstallInfo"
   echo -en "\n"
   echo "           3 - Установка Homebridge с полным удалением старой версии $ReinstallInfo"
@@ -59,9 +60,11 @@ function GoToMenu {
         RremovalItself
         exit 0
       ;;
-  1)    InstallScript
+  1)    ReinstallInfo=""
+        InstallScript
       ;;
-  2)    UninstallScript
+  2)    ReinstallInfo=""
+        UninstallScript
       ;;
   3)    cmdkey=2
         UninstallScript
@@ -230,7 +233,7 @@ clear
 echo -en "\n"
 echo "╔═════════════════════════════════════════════════════════════════════════════╗"
 echo "║                                                                             ║"
-echo "       Удаление Homebridge, а так же всех его плагинов с конфигурациями"
+echo "║      Удаление Homebridge, а так же всех его плагинов с конфигурациями       ║"
 echo "║                                                                             ║"
 echo "╚═════════════════════════════════════════════════════════════════════════════╝"
 echo -en "\n"
