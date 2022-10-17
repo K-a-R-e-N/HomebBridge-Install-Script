@@ -42,7 +42,7 @@ function GoToMenu {
   echo "           2 - Установка Homebridge с полным удалением старой версии $ReinstallInfo"
   echo "           3 - Полное удаление Homebridge с очисткой системы $UninstallInfo"
   echo -en "\n"
-  echo "           D -  Самоудаление папки со скриптом установки
+  echo "           D -  Самоудаление папки со скриптом установки"
   echo -en "\n"
   echo "            0 - Завершить работу скрипта"
   echo -en "\n"
@@ -67,6 +67,8 @@ function GoToMenu {
 	ReinstallInfo="${green}[OK]${reset}"
       ;;
   3)    UninstallScript
+      ;;
+  D|d)  RremovalItself
       ;;
   H|h)  print_help
       ;;
