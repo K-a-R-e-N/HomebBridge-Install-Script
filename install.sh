@@ -310,6 +310,8 @@ fi
 echo -n "${reset}"
 echo
 cd
+
+cd~
 exit 0
 }
 
