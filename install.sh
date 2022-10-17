@@ -301,8 +301,15 @@ clear
 echo -en "\n"
 echo "                   Самоудаление папки со скриптом установки..."
 cd
-cd~
 sudo rm -rf ~/HomebBridge-Install-Script
+if [ $? -eq 0 ]; then
+    echo -n "${green}${toend}[OK]"
+else
+    echo -n "${red}${toend}[fail]"
+fi
+echo -n "${reset}"
+echo
+cd
 exit 0
 }
 
