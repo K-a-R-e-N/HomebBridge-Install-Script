@@ -39,12 +39,11 @@ function GoToMenu {
   echo "     │                                                                   │"
   echo -en "\n" 
   echo "           1 - Установка Homebridge на чистой системе $InstallInfo"
-  echo "           2 - Установка Homebridge с полным удалением старой версии $ReinstallInfo"
-  echo "           3 - Полное удаление Homebridge с очисткой системы $UninstallInfo"
+  echo "           2 - Полное удаление Homebridge с очисткой системы $UninstallInfo"
   echo -en "\n"
-  echo "           D -  Самоудаление папки со скриптом установки"
+  echo "           3 - Установка Homebridge с полным удалением старой версии $ReinstallInfo"
   echo -en "\n"
-  echo "            0 - Завершить работу скрипта"
+  echo "           0 - Завершение работы с самоудалением скрипта"
   echo -en "\n"
   echo "     │                                                                   │"
   echo "     └────────────────────────────────────────────── H - Вызов справки ──┘"
@@ -56,8 +55,8 @@ function GoToMenu {
   case "$item" in
   0)    clear
         echo -en "\n" ; echo "${red}               - Завершение работы скрипта...${reset}" ; echo -en "\n"
-        sleep 2
-        clear
+        sleep 1
+        RremovalItself
         exit 0
       ;;
   1)    InstallScript
@@ -82,9 +81,11 @@ function ExitOrContinue() {
   echo -en "\n"
   if [ $cmdkey -eq 0 ]; then
         read -p "${green}           Нажмите любую клавишу, чтобы вернуться в главное меню...${reset}"
-  else
+  elif [ $cmdkey -eq 1 ]; then
         read -p "${green}           Нажмите любую клавишу, чтобы завершить работу скрипта...${reset}"
 	exit 0
+  else
+        read -p "${green}           Нажмите любую клавишу, что бы установить HomeBridge...${reset}"
   fi
 }
 function СheckingInstalledPackage() {
