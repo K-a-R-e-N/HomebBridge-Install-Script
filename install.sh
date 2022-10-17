@@ -1,6 +1,5 @@
 #!/bin/bash
 #-x
-clear
 
 
 
@@ -14,7 +13,7 @@ cmdkey=0
 UninstallScriptSettings=0
 # Автоопределение названия запускаемого скрипта
 ME=`basename $0`
-clear
+
 
 
 
@@ -75,36 +74,4 @@ function GoToMenu {
 esac
 done
 }
-        
-function ExitOrContinue() {
-  echo -en "\n"
-  if [ $cmdkey -eq 0 ]; then
-        read -p "${green}           Нажмите любую клавишу, чтобы вернуться в главное меню...${reset}"
-  else
-        read -p "${green}           Нажмите любую клавишу, чтобы завершить работу скрипта...${reset}"
-	exit 0
-  fi
-}
-function СheckingInstalledPackage() {
-echo -en "\n" ; echo "  # # Проверка на ранее установленную версию..."
-if dpkg -l homebridge &>/dev/null; then
-  echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge как системный пакет..."
-  ExitOrContinue
-  InstallInfo="${red}[fail]${reset}"
-  GoToMenu
-elif dpkg -l nodejs &>/dev/null; then
-  if npm list -g | grep -q homebridge; then
-    echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge из NPM..."
-    ExitOrContinue
-    InstallInfo="${red}[fail]${reset}"
-    GoToMenu
-  else
-    echo -en "\n" ; echo "     - В системе уже установлен пакет Node.js ${green}$(node -v | tr -d ' ')${reset}, но HomeBridge не установлен..."
-    ExitOrContinue
-    InstallInfo="${red}[fail]${reset}"
-    GoToMenu
-  fi
-else
-    echo -en "\n" ; echo "     - не установлен..."
-fi
-}
+
