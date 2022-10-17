@@ -90,8 +90,8 @@ function ExitOrContinue() {
 
 
 function СheckingInstalledPackage() {
-echo -en "\n" ; echo "  # # Проверка на ранее установленную версию..."
 
+echo -en "\n" ; echo "  # # Проверка на ранее установленную версию..."
 if dpkg -l homebridge &>/dev/null; then
   echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge как системный пакет..."
   ExitOrContinue
@@ -109,8 +109,12 @@ elif dpkg -l nodejs &>/dev/null; then
     InstallInfo="${red}[fail]${reset}"
     GoToMenu
   fi
+else
+    echo -en "\n" ; echo "     - не установлен..."
 fi
 }
+
+
 
 
 function BackUpScript() {
