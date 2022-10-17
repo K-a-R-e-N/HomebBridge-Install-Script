@@ -1,6 +1,4 @@
 #!/bin/bash
-#set -x
-#set -e
 clear
 
 
@@ -10,7 +8,6 @@ clear
 red=$(tput setf 4)
 green=$(tput setf 2)
 reset=$(tput sgr0)
-toend=$(tput hpa $(tput cols))$(tput cub 6)
 #Ключ запуска командной строки
 cmdkey=0 && UninstallScriptSettings=0
 # Автоопределение названия запускаемого скрипта
@@ -40,10 +37,11 @@ function GoToMenu {
   echo "     │                                                                   │"
   echo -en "\n" 
   echo "           1 - Установка Homebridge на чистой системе $InstallInfo"
-  echo "           2 - Установка Homebridge с полным удалением старой версии $UninstallInfo"
+  echo "           2 - Установка Homebridge с полным удалением старой версии $ReinstallInfo"
   echo "           3 - Полное удаление Homebridge с очисткой системы $UninstallInfo"
   echo -en "\n"
-
+  echo "           D -  Самоудаление папки со скриптом установки
+  echo -en "\n"
   echo "            0 - Завершить работу скрипта"
   echo -en "\n"
   echo "     │                                                                   │"
@@ -65,6 +63,7 @@ function GoToMenu {
       ;;
   2)    UninstallScript
         InstallScript
+	ReinstallInfo="${green}[OK]${reset}"
       ;;
   3)    UninstallScript
       ;;
@@ -295,6 +294,19 @@ GoToMenu
 
 
 
+function RremovalItself() {
+clear
+echo -en "\n"
+echo "                   Самоудаление папки со скриптом установки..."
+cd ~
+sudo rm -rf ~/HomebBridge-Install-Script
+exit 0
+}
+
+
+
+
+
 function print_help() {
 	echo -en "\n"
 	echo "  Справка по работе скрипта $ME из командной строки"
@@ -303,6 +315,7 @@ function print_help() {
 	echo "      -i        Установка Homebridge на чистой системе."
 	echo "      -u        Полное удаление Homebridge с очисткой системы."
 	echo "      -r        Установка Homebridge с полным удалением старой версии."
+	echo "      -d         Самоудаление папки со скриптом установки."
 	echo -en "\n"
 	echo "      -h        Вызов справки."
 	echo -en "\n"
@@ -317,39 +330,7 @@ if [ $# = 0 ]; then
 	GoToMenu
 fi
 
-
-
-# Обработка опций командной строки с помощью 'getopts'.
-
-# Попробуйте вызвать этот сценарий как:
-# 'scriptname -mn'
-# 'scriptname -oq qOption' (qOption может быть любой произвольной строкой.)
-# 'scriptname -qXXX -r'
-#
-# 'scriptname -qr'    - Неожиданный результат: "r" будет воспринят как дополнительный аргумент опции "q"
-# 'scriptname -q -r'  - То же самое, что и выше
-#  Если опция ожидает дополнительный аргумент ("flag:"), то следующий параметр
-#  в командной строке, будет воспринят как дополнительный аргумент этой опции.
-
-NO_ARGS=0
-E_OPTERROR=65
-
-if [ $# -eq "$NO_ARGS" ]  # Сценарий вызван без аргументов?
-then
-  echo "Порядок использования: `basename $0` options (-mnopqrs)"
-  exit $E_OPTERROR        # Если аргументы отсутствуют -- выход с сообщением
-                          # о порядке использования скрипта
-fi
-# Порядок использования: scriptname -options
-# Обратите внимание: дефис (-) обязателен
-
-
-
-
-# Начальное объявление цикла анализа опций.
-while getopts ":uUiIrRhH" Option
-# a, b, c, d, e, f, g -- это возможные опции (ключи).
-# Символ : после опции 'e' указывает на то, что с данной опцией может идти дополнительный аргумент.
+while getopts ":uUiIrRhHdD" Option
 do
  cmdkey=1
  case $Option in
@@ -361,10 +342,7 @@ do
   r)    UninstallScript
         InstallScript
       ;;
-  d)    echo "                   Самоудаление папки со скриптом установки..."
-  	cd ~ && sudo rm -rf ~/HomebBridge-Install-Script2
-	echo -en "\n"
-	exit 0
+  D|d)    RremovalItself
       ;;
   H|h)  print_help
       ;;
