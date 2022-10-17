@@ -123,16 +123,22 @@ fi
 
 function BackUpScript() {
 if [ -f ~/.homebridge/config.json ]; then
+	if ! [ -d ~/HB_BackUp/ ]; then
+		sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
+	fi
 	echo -en "\n" ; echo "  # # Создание резервной копии конфигурационного файла HomeBridge..."
-	sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
 	sudo cp -f ~/.homebridge/config.json ~/HB_BackUp/config.json.$(date +%s)000
 elif [ -f /var/lib/homebridge/config.json ]; then
+	if ! [ -d ~/HB_BackUp/ ]; then
+		sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
+	fi
 	echo -en "\n" ; echo "  # # Создание резервной копии конфигурационного файла HomeBridge..."
-	sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
 	sudo cp -f /var/lib/homebridge/config.json ~/HB_BackUp/config.json.$(date +%s)000
 elif [ -f /var/homebridge/config.json ]; then
+	if ! [ -d ~/HB_BackUp/ ]; then
+		sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
+	fi
 	echo -en "\n" ; echo "  # # Создание резервной копии конфигурационного файла HomeBridge..."
-	sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
 	sudo cp -f /var/homebridge/config.json ~/HB_BackUp/config.json.$(date +%s)000
 fi
 }
@@ -174,9 +180,12 @@ echo -en "\n" ; echo "  # # Установка HomeBridge..."
 sudo apt-get install homebridge -y > /dev/null 2>&1
 
 if [ -f ~/HB_BackUp/config.json.* ]; then
-echo -en "\n" ; echo "  # # Восстанавление резервной копии конфигурационного файла HomeBridge..."
-sudo mv -f ~/HB_BackUp/config.json.* /var/lib/homebridge/backups/config-backups/
-sudo rm -rf ~/HB_BackUp
+	if ! [ -d /var/lib/homebridge/backups/config-backups/ ]; then
+		sudo mkdir -p /var/lib/homebridge/backups/config-backups/ && sudo chmod 777 /var/lib/homebridge/backups/config-backups/
+	fi
+	echo -en "\n" ; echo "  # # Восстанавление резервной копии конфигурационного файла HomeBridge..."
+	sudo mv -f ~/HB_BackUp/config.json.* /var/lib/homebridge/backups/config-backups/
+	sudo rm -rf ~/HB_BackUp
 fi
 
 echo -en "\n"
