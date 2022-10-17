@@ -65,9 +65,6 @@ function GoToMenu {
       ;;
   3)    cmdkey=2
         UninstallScript
-	cmdkey=0
-        InstallScript
-	ReinstallInfo="${green}[OK]${reset}"
       ;;
   D|d)  RremovalItself
       ;;
@@ -88,6 +85,9 @@ function ExitOrContinue() {
 	exit 0
   elif [ $cmdkey -eq 2 ]; then
         read -p "${green}           Нажмите любую клавишу, что бы установить HomeBridge...${reset}"
+	cmdkey=0
+	ReinstallInfo="${green}[OK]${reset}"
+        InstallScript
   else
         read -p "${red}           Что то пошло не так...${reset}"
   fi
