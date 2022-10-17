@@ -48,30 +48,5 @@ function GoToMenu {
   echo "     │                                                                   │"
   echo "     └────────────────────────────────────────────── H - Вызов справки ──┘"
   echo -en "\n"
-  echo "           $GoToMenuInfo номер пункта и нажмите на Enter"
-  echo -e "\a"
-  read item
-  printf "\n"
-  case "$item" in
-  0)    clear
-        echo -en "\n" ; echo "${red}               - Завершение работы скрипта...${reset}" ; echo -en "\n"
-        sleep 2
-        clear
-        exit 0
-      ;;
-  1)    InstallScript
-      ;;
-  2)    UninstallScript
-        InstallScript
-	ReinstallInfo="${green}[OK]${reset}"
-      ;;
-  3)    UninstallScript
-      ;;
-  H|h)  print_help
-      ;;
-  *)     clear && GoToMenuInfo="Попробуйте еще раз ввести"
-      ;;
-esac
-done
-}
+
 
