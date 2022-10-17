@@ -266,7 +266,7 @@ sudo rm -rf /etc/systemd/system/multi-user.target.wants/homebridge*
 sudo systemctl --system daemon-reload > /dev/null
 
 echo -en "\n" ; echo "  # # Удаление хвостов, для возможности последующей нормальной установки:"
-sudo curl -sfL https://gist.githubusercontent.com/oznu/312b54364616082c3c1e0b6b02351f0e/raw/remove-node.sh > /dev/null 2>&1
+sudo curl -sfL https://gist.githubusercontent.com/oznu/312b54364616082c3c1e0b6b02351f0e/raw/remove-node.sh | sudo bash > /dev/null 2>&1
 sudo rm -rf /usr/lib/node_modules/homebridge*
 sudo rm -rf /usr/bin/homebridge*
 sudo rm -rf /etc/default/homebridge*
