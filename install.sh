@@ -86,8 +86,10 @@ function ExitOrContinue() {
   elif [ $cmdkey -eq 1 ]; then
         read -p "${green}           Нажмите любую клавишу, чтобы завершить работу скрипта...${reset}"
 	exit 0
-  else
+  elif [ $cmdkey -eq 2 ]; then
         read -p "${green}           Нажмите любую клавишу, что бы установить HomeBridge...${reset}"
+  else
+        read -p "${red}           Что то пошло не так...${reset}"
   fi
 }
 function СheckingInstalledPackage() {
