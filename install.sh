@@ -94,6 +94,10 @@ function ExitOrContinue() {
 	cmdkey=0
 	ReinstallInfo="${green}[OK]${reset}"
         InstallScript
+  elif [ $cmdkey -eq 3 ]; then
+        echo -e "\a"
+	cmdkey=1
+        InstallScript
   else
         read -p "${red}           Что то пошло не так...${reset}"
   fi
@@ -102,18 +106,18 @@ function СheckingInstalledPackage() {
 echo -en "\n" ; echo "  # # Проверка на ранее установленную версию..."
 if dpkg -l homebridge &>/dev/null; then
   echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge как системный пакет..."
-  InstallInfo="${red}[уже установлен]${reset}"
+  InstallInfo="${green}[уже установлен]${reset}"
   ExitOrContinue
   GoToMenu
 elif dpkg -l nodejs &>/dev/null; then
   if npm list -g | grep -q homebridge; then
     echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge из NPM..."
-    InstallInfo="${red}[уже установлен]${reset}"
+    InstallInfo="${green}[уже установлен]${reset}"
     ExitOrContinue
     GoToMenu
   else
     echo -en "\n" ; echo "     - В системе уже установлен пакет Node.js ${green}$(node -v | tr -d ' ')${reset}, но HomeBridge не установлен..."
-    InstallInfo="${red}[Node.js]${reset}"
+    InstallInfo="${red}[установлен NodeJS]${reset}"
     ExitOrContinue
     GoToMenu
   fi
@@ -366,8 +370,8 @@ do
       ;;
   u)    UninstallScript
       ;;
-  r)    UninstallScript
-        InstallScript
+  r)    cmdkey=2
+        UninstallScript
       ;;
   D|d)  RremovalItself
       ;;
