@@ -1,14 +1,9 @@
 #!/bin/bash
-red=$(tput setf 4) ; green=$(tput setf 2) ; reset=$(tput sgr0)
-#Ключ запуска командной строки
-cmdkey=0
-# Автоопределение названия запускаемого скрипта
-ME=`basename $0`
-clear
+red=$(tput setf 4) ; green=$(tput setf 2) ; reset=$(tput sgr0) ; cmdkey=0 ; ME=`basename $0` ; cd~ ; clear
 
 
 
-cd ~
+
 function Zagolovok {
 echo -en "\n"
 echo "╔═════════════════════════════════════════════════════════════════════════════╗"
