@@ -337,22 +337,23 @@ exit 0
 
 
 
-
-
 function print_help() {
 	echo -en "\n"
 	echo "  Справка по работе скрипта $ME из командной строки"
 	echo -en "\n"
-	echo "    Параметры:"
-	echo "      -i        Установка Homebridge на чистой системе."
-	echo "      -u        Полное удаление Homebridge с очисткой системы."
-	echo "      -r        Установка Homebridge с полным удалением старой версии."
-	echo "      -d         Самоудаление папки со скриптом установки."
+	echo "    Использование: $ME [-i] [-u] [-r] [-d] [-h] "
 	echo -en "\n"
-	echo "      -h        Вызов справки."
+	echo "        Параметры:"
+	echo "            -i        Установка Homebridge на чистой системе."
+	echo "            -u        Полное удаление Homebridge с очисткой системы."
+	echo "            -r        Установка Homebridge с полным удалением старой версии."
+	echo "            -d         Самоудаление папки со скриптом установки."
+	echo -en "\n"
+	echo "            -h        Вызов справки."
 	echo -en "\n"
 exit 0
 }
+
 
 
 
@@ -363,27 +364,28 @@ if [ $# = 0 ]; then
 fi
 
 while getopts ":uUiIrRhHdD" Option
-do
- cmdkey=1
- case $Option in
+	do
 
-  i)    InstallScript
-      ;;
-  u)    UninstallScript
-      ;;
-  r)    cmdkey=3
-        UninstallScript
-      ;;
-  D|d)  RremovalItself
-      ;;
-  H|h)  print_help
-      ;;
-  *)    echo -en "\n" ; echo -en "\n" ; echo "${red}           Неправильный параметр!${reset}"
-        print_help
-        exit 1
-      ;;
- esac
+	cmdkey=1
+ 
+	case $Option in
+
+		I|i)  InstallScript ;;
+
+		U|u)  UninstallScript ;;
+
+		R|r)  cmdkey=3 ; UninstallScript ;;
+
+		D|d)  RremovalItself ;;
+
+		H|h)  print_help ;;
+
+		*)    echo -en "\n" ; echo -en "\n"
+		echo "${red}           Неправильный параметр!${reset}"
+		print_help ; exit 1 ;;
+	esac
 done
+
 shift $(($OPTIND - 1))
 
-ExitOrContinue
+exit 0
