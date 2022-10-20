@@ -96,7 +96,7 @@ fi
 
 
 function СheckingInstalledPackage() {
-InstalledPackageKey=0 ; echo -en "\n" ; echo "  # # Проверка на ранее установленную версию..."
+echo -en "\n" ; echo "  # # Проверка на ранее установленную версию..."
 if dpkg -l homebridge &>/dev/null; then
 	echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge как системный пакет..."
 	InstallInfo="${green}[уже установлен]${reset}"
@@ -114,13 +114,15 @@ elif dpkg -l nodejs &>/dev/null; then
 fi
 echo "InstalledPackageKey = $InstalledPackageKey"
 if [ $InstalledPackageKey -eq 1 ]; then
-	echo -en "\n" ; echo -e "\a"
-	read -p "${green}           Нажмите любую клавишу, чтобы вернуться в главное меню...${reset}"
-	GoToMenu
-else
-	echo -en "\n" ; echo -e "\a"
-	read -p "${green}           Нажмите любую клавишу, чтобы завершить работу скрипта...${reset}"
-	exit 0
+	if [ $cmdkey -eq 1 ]; then
+		echo -en "\n" ; echo -e "\a"
+		read -p "${green}           Нажмите любую клавишу, чтобы завершить работу скрипта...${reset}"
+		exit 0
+	else
+		echo -en "\n" ; echo -e "\a"
+		read -p "${green}           Нажмите любую клавишу, чтобы вернуться в главное меню...${reset}"
+		GoToMenu
+	fi
 fi
 read -p "${green}           Конец проверки...${reset}"
 }
