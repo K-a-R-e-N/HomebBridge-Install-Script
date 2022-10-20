@@ -123,8 +123,6 @@ fi
 if [ $CheckBackUp -eq 1 ]; then
 	echo -en "\n" ; echo "  # # Создание резервной копии конфигурационных файлов HomeBridge..."
 fi
-
-read -p "${green}           Конец бекапа...${reset}"
 }
 
 
@@ -216,6 +214,7 @@ InstallInfo="${green}[OK]${reset}"
 
 if [ $cmdkey -eq 1 ]; then
 	return
+	sleep 3
 fi
 
 read -p "${green}           Нажмите любую клавишу, чтобы вернуться в главное меню...${reset}"
@@ -297,6 +296,7 @@ UninstallInfo="${green}[OK]${reset}"
 
 if [ $cmdkey -eq 1 ]; then
 	return
+	sleep 3
 fi
 
 read -p "${green}           Нажмите любую клавишу, чтобы вернуться в главное меню...${reset}"
@@ -316,7 +316,7 @@ echo "                               ${green}[Успешно удалено]${re
 else
 echo "                             ${red}[Удаление не удалось]${reset}"
 fi
-echo -en "\n" ; echo "${red}                               - Завершение работы скрипта...${reset}" ; echo -en "\n"
+echo -en "\n" ; echo "${red}                          - Завершение работы скрипта...${reset}" ; echo -en "\n"
 sleep 1
 exit 0
 }
