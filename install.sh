@@ -103,25 +103,37 @@ function ExitOrContinue() {
         read -p "${red}           Что то пошло не так...${reset}"
   fi
 }
+
+
+
+
+
 function СheckingInstalledPackage() {
 echo -en "\n" ; echo "  # # Проверка на ранее установленную версию..."
 if dpkg -l homebridge &>/dev/null; then
   echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge как системный пакет..."
   InstallInfo="${green}[уже установлен]${reset}"
-  ExitOrContinue
-  GoToMenu
+  InstalledPackageKey=1
 elif dpkg -l nodejs &>/dev/null; then
   if npm list -g | grep -q homebridge; then
     echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge из NPM..."
     InstallInfo="${green}[уже установлен]${reset}"
-    ExitOrContinue
-    GoToMenu
+    InstalledPackageKey=1
   else
     echo -en "\n" ; echo "     - В системе уже установлен пакет Node.js ${green}$(node -v | tr -d ' ')${reset}, но HomeBridge не установлен..."
     InstallInfo="${red}[установлен NodeJS]${reset}"
-    ExitOrContinue
-    GoToMenu
+    InstalledPackageKey=1
   fi
+fi
+
+if [ $InstalledPackageKey -eq 1 ]; then
+	echo -en "\n" ; echo -e "\a"
+	read -p "${green}           Нажмите любую клавишу, чтобы вернуться в главное меню...${reset}"
+	GoToMenu
+else
+	echo -en "\n" ; echo -e "\a"
+	read -p "${green}           Нажмите любую клавишу, чтобы завершить работу скрипта...${reset}"
+	exit 0
 fi
 }
 
@@ -130,25 +142,30 @@ fi
 
 
 function BackUpScript() {
-if [ -f ~/.homebridge/config.json ]; then
-	if ! [ -d ~/HB_BackUp/ ]; then
+if ! [ -d ~/HB_BackUp/ ]; then
 		sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
-	fi
-	echo -en "\n" ; echo "  # # Создание резервной копии конфигурационного файла HomeBridge..."
-	sudo cp -f ~/.homebridge/config.json ~/HB_BackUp/config.json.$(date +%s)000
-elif [ -f /var/lib/homebridge/config.json ]; then
-	if ! [ -d ~/HB_BackUp/ ]; then
-		sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
-	fi
-	echo -en "\n" ; echo "  # # Создание резервной копии конфигурационного файла HomeBridge..."
-	sudo cp -f /var/lib/homebridge/config.json ~/HB_BackUp/config.json.$(date +%s)000
-elif [ -f /var/homebridge/config.json ]; then
-	if ! [ -d ~/HB_BackUp/ ]; then
-		sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
-	fi
-	echo -en "\n" ; echo "  # # Создание резервной копии конфигурационного файла HomeBridge..."
-	sudo cp -f /var/homebridge/config.json ~/HB_BackUp/config.json.$(date +%s)000
 fi
+
+	if [ -f ~/.homebridge/config.json ]; then
+		CheckBackUp=1
+		sudo cp -f ~/.homebridge/config.json ~/HB_BackUp/config.json.$(date +%s)000
+	fi
+	if [ -f /var/lib/homebridge/config.json ]; then
+		CheckBackUp=1
+		sudo cp -f /var/lib/homebridge/config.json ~/HB_BackUp/config.json.$(date +%s)000
+	fi
+	if [ -f /var/homebridge/config.json ]; then
+		CheckBackUp=1
+		sudo cp -f /var/homebridge/config.json ~/HB_BackUp/config.json.$(date +%s)000
+	fi
+	if [ -f /var/lib/homebridge/backups/config-backups/config.json.* ]; then
+		CheckBackUp=1
+		sudo cp -f /var/lib/homebridge/backups/config-backups/config.json.* ~/HB_BackUp/
+	fi
+
+if [ $CheckBackUp -eq 1 ]; then
+	echo -en "\n" ; echo "  # # Создание резервной копии конфигурационных файлов HomeBridge..."
+fi	
 }
 
 
@@ -234,9 +251,15 @@ echo "    └──────────────────────�
 echo "                                 ┌ Установленная версия Node.js ┐"
 echo "                                 │           ${green}$(node -v | tr -d ' ')${reset}           │"
 echo "                                 └──────────────────────────────┘"
+echo -e "\a"
 
 InstallInfo="${green}[OK]${reset}"
-ExitOrContinue
+
+if [ $cmdkey -eq 1 ]; then
+	return
+fi
+
+read -p "${green}           Нажмите любую клавишу, чтобы вернуться в главное меню...${reset}"
 sleep 1
 GoToMenu
 }
@@ -309,9 +332,16 @@ echo -en "\n"
 echo "╔═════════════════════════════════════════════════════════════════════════════╗"
 echo "   ${green}Удаление Homebridge, а так же всех его плагинов с конфигурациями завершено${reset}"
 echo "╚═════════════════════════════════════════════════════════════════════════════╝"
+echo -e "\a"
 
 UninstallInfo="${green}[OK]${reset}"
-ExitOrContinue
+
+if [ $cmdkey -eq 1 ]; then
+	return
+fi
+
+read -p "${green}           Нажмите любую клавишу, чтобы вернуться в главное меню...${reset}"
+sleep 1
 GoToMenu
 }
 
