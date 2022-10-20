@@ -112,7 +112,7 @@ elif dpkg -l nodejs &>/dev/null; then
 		InstalledPackageKey=1
 	fi
 fi
-
+echo "InstalledPackageKey = $InstalledPackageKey"
 if [ $InstalledPackageKey -eq 1 ]; then
 	echo -en "\n" ; echo -e "\a"
 	read -p "${green}           Нажмите любую клавишу, чтобы вернуться в главное меню...${reset}"
