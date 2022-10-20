@@ -213,7 +213,7 @@ echo -e "\a"
 InstallInfo="${green}[OK]${reset}"
 
 if [ $cmdkey -eq 1 ]; then
-	sleep 3
+	sleep 5
 	return
 fi
 
@@ -295,7 +295,7 @@ echo -e "\a"
 UninstallInfo="${green}[OK]${reset}"
 
 if [ $cmdkey -eq 1 ]; then
-	sleep 3
+	sleep 5
 	return
 fi
 
