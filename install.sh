@@ -122,6 +122,7 @@ else
 	read -p "${green}           Нажмите любую клавишу, чтобы завершить работу скрипта...${reset}"
 	exit 0
 fi
+read -p "${green}           Конец проверки...${reset}"
 }
 
 
@@ -152,7 +153,9 @@ fi
 
 if [ $CheckBackUp -eq 1 ]; then
 	echo -en "\n" ; echo "  # # Создание резервной копии конфигурационных файлов HomeBridge..."
-fi	
+fi
+
+read -p "${green}           Конец бекапа...${reset}"
 }
 
 
