@@ -96,7 +96,7 @@ fi
 
 
 function СheckingInstalledPackage() {
-echo -en "\n" ; echo "  # # Проверка на ранее установленную версию..."
+InstalledPackageKey=0 ; echo -en "\n" ; echo "  # # Проверка на ранее установленную версию..."
 if dpkg -l homebridge &>/dev/null; then
 	echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge как системный пакет..."
 	InstallInfo="${green}[уже установлен]${reset}"
