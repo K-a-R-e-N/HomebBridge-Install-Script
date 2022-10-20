@@ -1,17 +1,7 @@
 #!/bin/bash
-#-x
-clear
-
-
-
-
-#Шаблоны для вывода информации
-red=$(tput setf 4)
-green=$(tput setf 2)
-reset=$(tput sgr0)
+red=$(tput setf 4) ; green=$(tput setf 2) ; reset=$(tput sgr0)
 #Ключ запуска командной строки
 cmdkey=0
-UninstallScriptSettings=0
 # Автоопределение названия запускаемого скрипта
 ME=`basename $0`
 clear
@@ -96,7 +86,7 @@ fi
 
 
 function СheckingInstalledPackage() {
-echo -en "\n" ; echo "  # # Проверка на ранее установленную версию..."
+InstalledPackageKey=1 ; echo -en "\n" ; echo "  # # Проверка на ранее установленную версию..."
 if dpkg -l homebridge &>/dev/null; then
 	echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge как системный пакет..."
 	InstallInfo="${green}[уже установлен]${reset}"
