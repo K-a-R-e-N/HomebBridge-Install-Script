@@ -316,7 +316,7 @@ echo "                               ${green}[Успешно удалено]${re
 else
 echo "                             ${red}[Удаление не удалось]${reset}"
 fi
-echo -en "\n" ; echo "${red}                          - Завершение работы скрипта...${reset}" ; echo -en "\n"
+echo -en "\n" ; echo "                         ${red}Завершение работы скрипта...${reset}" ; echo -en "\n"
 sleep 1
 exit 0
 }
