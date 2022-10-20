@@ -213,8 +213,8 @@ echo -e "\a"
 InstallInfo="${green}[OK]${reset}"
 
 if [ $cmdkey -eq 1 ]; then
-	return
 	sleep 3
+	return
 fi
 
 read -p "${green}           Нажмите любую клавишу, чтобы вернуться в главное меню...${reset}"
@@ -295,9 +295,8 @@ echo -e "\a"
 UninstallInfo="${green}[OK]${reset}"
 
 if [ $cmdkey -eq 1 ]; then
-	return
-read -p "${green}           Нажмите любую клавишу, таймер ...${reset}"
 	sleep 3
+	return
 fi
 
 read -p "${green}           Нажмите любую клавишу, чтобы вернуться в главное меню...${reset}"
@@ -313,11 +312,10 @@ function RremovalItself() {
 clear ; echo -en "\n" ; echo "                   Самоудаление папки со скриптом установки...  " ; cd
 sudo rm -rf ~/HomebBridge-Install-Script
 if [ $? -eq 0 ]; then
-echo "                               ${green}[Успешно удалено]${reset}"
+	echo "                   ${green}[Успешно удалено]${reset} ${red}Завершение работы скрипта...${reset}" ; echo "
 else
-echo "                             ${red}[Удаление не удалось]${reset}"
+	echo "                ${red}[Удаление не удалось] Завершение работы скрипта...${reset}" ; echo "
 fi
-echo -en "\n" ; echo "                         ${red}Завершение работы скрипта...${reset}" ; echo -en "\n"
 sleep 1
 exit 0
 }
