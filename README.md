@@ -46,7 +46,7 @@ bash ~/HomebBridge-Install-Script/InstallHB.sh -i -d
 git clone https://github.com/K-a-R-e-N/HomebBridge-Install-Script
 bash ~/HomebBridge-Install-Script/InstallHB.sh -u -i -d
 ```
->###### _Если в вашей системе ранее был установлен HomeBrige или Node.js, то прежде чем приступить к установке, надо предварительно очистить систему._
+>##### _Если в вашей системе ранее был установлен HomeBrige или Node.js, то прежде чем приступить к установке, надо предварительно очистить систему._
 
 #### _Ключи тихой установки:_
 * `-i` - Установка Homebridge на чистой системе.
