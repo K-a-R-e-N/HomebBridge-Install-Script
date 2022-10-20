@@ -30,78 +30,65 @@ echo -en "\n"
 }
 function GoToMenu {
   GoToMenuInfo="Чтобы продолжить, введите"
-  while :
-  do
-  clear
-  Zagolovok 
-  echo -en "\n"
-  echo "     ┌─ Выберите действие: ──────────────────────────────────────────────┐"
-  echo "     │                                                                   │"
-  echo -en "\n" 
-  echo "           1 - Установка Homebridge на чистой системе $InstallInfo"
-  echo -en "\n"
-  echo "           2 - Полное удаление Homebridge с очисткой системы $UninstallInfo"
-  echo -en "\n"
-  echo "           3 - Установка Homebridge с полным удалением старой версии $ReinstallInfo"
-  echo -en "\n"
-  echo "           0 - Завершение работы с самоудалением скрипта"
-  echo -en "\n"
-  echo "     │                                                                   │"
-  echo "     └────────────────────────────────────────────── H - Вызов справки ──┘"
-  echo -en "\n"
-  echo -e "\a"
-  echo "           $GoToMenuInfo номер пункта и нажмите на Enter"
-  echo -e "\a"
-  read item
-  printf "\n"
-  case "$item" in
-  0)    clear
-        echo -en "\n" ; echo "${red}               - Завершение работы скрипта...${reset}" ; echo -en "\n"
-        sleep 1
-        RremovalItself
-        exit 0
-      ;;
-  1)    ReinstallInfo=""
-        InstallScript
-      ;;
-  2)    ReinstallInfo=""
-        UninstallScript
-      ;;
-  3)    cmdkey=2
-        UninstallScript
-      ;;
-  D|d)  RremovalItself
-      ;;
-  H|h)  print_help
-      ;;
-  *)     clear && GoToMenuInfo="Попробуйте еще раз ввести"
-      ;;
-esac
+while :
+	do
+	clear
+	Zagolovok 
+	echo -en "\n"
+	echo "     ┌─ Выберите действие: ──────────────────────────────────────────────┐"
+	echo "     │                                                                   │"
+	echo -en "\n" 
+	echo "           1 - Установка Homebridge на чистой системе $InstallInfo"
+	echo -en "\n"
+	echo "           2 - Установка Homebridge с полным удалением старой версии $ReinstallInfo"
+	echo -en "\n"
+	echo "           3 - Полное удаление Homebridge с очисткой системы $UninstallInfo"
+	echo -en "\n"
+	echo "           0 - Завершение работы с самоудалением скрипта"
+	echo -en "\n"
+	echo "     │                                                                   │"
+	echo "     └────────────────────────────────────────────── H - Вызов справки ──┘"
+	echo -en "\n"
+	echo -e "\a"
+	echo "           $GoToMenuInfo номер пункта и нажмите на Enter"
+	echo -e "\a"
+	read item
+	printf "\n"
+	case "$item" in
+
+		0) 	RremovalItself ;;
+
+		1) 	ReinstallInfo="" ; InstallScript ;;
+
+		2) 	cmdkey=1 ; UninstallScript ; cmdkey=0 ; InstallScript ;;
+
+		3) 	ReinstallInfo="" ; UninstallScript ;;
+
+		D|d) 	RremovalItself ;;
+
+		H|h) 	print_help ;;
+
+		*) 	clear && GoToMenuInfo="Попробуйте еще раз ввести" ;;
+
+	esac
 done
 }
         
 function ExitOrContinue() {
   echo -en "\n"
-  if [ $cmdkey -eq 0 ]; then
-        echo -e "\a"
-        read -p "${green}           Нажмите любую клавишу, чтобы вернуться в главное меню...${reset}"
-  elif [ $cmdkey -eq 1 ]; then
-        echo -e "\a"
-        read -p "${green}           Нажмите любую клавишу, чтобы завершить работу скрипта...${reset}"
-	exit 0
-  elif [ $cmdkey -eq 2 ]; then
+if [ $cmdkey -eq 2 ]; then
         echo -e "\a"
         read -p "${green}           Нажмите любую клавишу, что бы установить HomeBridge...${reset}"
 	cmdkey=0
 	ReinstallInfo="${green}[OK]${reset}"
         InstallScript
-  elif [ $cmdkey -eq 3 ]; then
+elif [ $cmdkey -eq 3 ]; then
         echo -e "\a"
 	cmdkey=1
         InstallScript
-  else
+else
         read -p "${red}           Что то пошло не так...${reset}"
-  fi
+fi
 }
 
 
@@ -111,19 +98,19 @@ function ExitOrContinue() {
 function СheckingInstalledPackage() {
 echo -en "\n" ; echo "  # # Проверка на ранее установленную версию..."
 if dpkg -l homebridge &>/dev/null; then
-  echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge как системный пакет..."
-  InstallInfo="${green}[уже установлен]${reset}"
-  InstalledPackageKey=1
+	echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge как системный пакет..."
+	InstallInfo="${green}[уже установлен]${reset}"
+	InstalledPackageKey=1
 elif dpkg -l nodejs &>/dev/null; then
-  if npm list -g | grep -q homebridge; then
-    echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge из NPM..."
-    InstallInfo="${green}[уже установлен]${reset}"
-    InstalledPackageKey=1
-  else
-    echo -en "\n" ; echo "     - В системе уже установлен пакет Node.js ${green}$(node -v | tr -d ' ')${reset}, но HomeBridge не установлен..."
-    InstallInfo="${red}[установлен NodeJS]${reset}"
-    InstalledPackageKey=1
-  fi
+	if npm list -g | grep -q homebridge; then
+		echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge из NPM..."
+		InstallInfo="${green}[уже установлен]${reset}"
+		InstalledPackageKey=1
+	else
+		echo -en "\n" ; echo "     - В системе уже установлен пакет Node.js ${green}$(node -v | tr -d ' ')${reset}, но HomeBridge не установлен..."
+		InstallInfo="${red}[установлен NodeJS]${reset}"
+		InstalledPackageKey=1
+	fi
 fi
 
 if [ $InstalledPackageKey -eq 1 ]; then
@@ -355,13 +342,17 @@ echo -en "\n"
 echo "                   Самоудаление папки со скриптом установки..."
 cd
 sudo rm -rf ~/HomebBridge-Install-Script
+
 if [ $? -eq 0 ]; then
-    echo -n "${green}${toend}[OK]"
+	echo -n "${green}${toend}[OK]"
 else
-    echo -n "${red}${toend}[fail]"
+	echo -n "${red}${toend}[fail]"
 fi
+
 echo -n "${reset}"
 echo
+echo -en "\n" ; echo "${red}               - Завершение работы скрипта...${reset}" ; echo -en "\n"
+sleep 1
 exit 0
 }
 
@@ -377,7 +368,7 @@ function print_help() {
 	echo "            -i        Установка Homebridge на чистой системе."
 	echo "            -u        Полное удаление Homebridge с очисткой системы."
 	echo "            -r        Установка Homebridge с полным удалением старой версии."
-	echo "            -d         Самоудаление папки со скриптом установки."
+	echo "            -d        Самоудаление папки со скриптом установки."
 	echo -en "\n"
 	echo "            -h        Вызов справки."
 	echo -en "\n"
@@ -400,19 +391,19 @@ while getopts ":uUiIrRhHdD" Option
  
 	case $Option in
 
-		I|i)  InstallScript ;;
+		I|i) 	InstallScript ;;
 
-		U|u)  UninstallScript ;;
+		U|u) 	UninstallScript ;;
 
-		R|r)  cmdkey=3 ; UninstallScript ;;
+		R|r) 	UninstallScript ; InstallScript ;;
 
-		D|d)  RremovalItself ;;
+		D|d) 	RremovalItself ;;
 
-		H|h)  print_help ;;
+		H|h) 	print_help ;;
 
-		*)    echo -en "\n" ; echo -en "\n"
-		echo "${red}           Неправильный параметр!${reset}"
-		print_help ; exit 1 ;;
+		*) 	echo -en "\n" ; echo -en "\n"
+			echo "${red}           Неправильный параметр!${reset}"
+			print_help ; exit 1 ;;
 	esac
 done
 
