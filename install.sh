@@ -84,7 +84,7 @@ elif dpkg -l nodejs &>/dev/null; then
 		InstalledPackageKey=1
 	fi
 fi
-echo "InstalledPackageKey = $InstalledPackageKey"
+
 if [ $InstalledPackageKey -eq 1 ]; then
 	if [ $cmdkey -eq 1 ]; then
 		echo -en "\n" ; echo -e "\a"
@@ -96,7 +96,6 @@ if [ $InstalledPackageKey -eq 1 ]; then
 		GoToMenu
 	fi
 fi
-read -p "${green}           Конец проверки...${reset}"
 }
 
 
@@ -317,12 +316,11 @@ function RremovalItself() {
 clear ; echo -en "\n" ; echo "                   Самоудаление папки со скриптом установки...  " ; cd
 sudo rm -rf ~/HomebBridge-Install-Script
 if [ $? -eq 0 ]; then
-echo "                   Самоудаление папки со скриптом установки...  " ;
 echo "                               ${green}[Успешно удалено]${reset}"
 else
 echo "                             ${red}[Удаление не удалось]${reset}"
 fi
-echo -en "\n" ; echo "${red}                             - Завершение работы скрипта...${reset}" ; echo -en "\n"
+echo -en "\n" ; echo "${red}                                  - Завершение работы скрипта...${reset}" ; echo -en "\n"
 sleep 1
 exit 0
 }
