@@ -98,6 +98,7 @@ fi
 
 
 function BackUpScript() {
+CheckBackUp=0
 if ! [ -d ~/HB_BackUp/ ]; then
 		sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
 fi
@@ -315,7 +316,7 @@ echo "                               ${green}[Успешно удалено]${re
 else
 echo "                             ${red}[Удаление не удалось]${reset}"
 fi
-echo -en "\n" ; echo "${red}                                  - Завершение работы скрипта...${reset}" ; echo -en "\n"
+echo -en "\n" ; echo "${red}                               - Завершение работы скрипта...${reset}" ; echo -en "\n"
 sleep 1
 exit 0
 }
