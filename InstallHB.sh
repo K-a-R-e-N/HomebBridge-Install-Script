@@ -165,7 +165,7 @@ echo -en "\n" ; echo "  # # Установка порта HomeBridge по умо
 sudo sed -i 's|listen 80;  |listen 8080;|' /etc/nginx/sites-available/homebridge.local
 sudo sed -i 's|:80;  |:8080;|' /etc/nginx/sites-available/homebridge.local
 sudo sed -i 's|127.0.0.1:8581;|127.0.0.1:8080;|' /etc/nginx/sites-available/homebridge.local
-sudo sed -i 's|"port": 8581|"port": 8080|' /var/lib/homebridge/config.json
+#sudo sed -i 's|"port": 8581|"port": 8080|' /var/lib/homebridge/config.json
 sudo systemctl restart nginx > /dev/null 2>&1
 
 
