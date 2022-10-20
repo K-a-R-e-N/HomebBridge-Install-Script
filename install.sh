@@ -296,6 +296,7 @@ UninstallInfo="${green}[OK]${reset}"
 
 if [ $cmdkey -eq 1 ]; then
 	return
+read -p "${green}           Нажмите любую клавишу, таймер ...${reset}"
 	sleep 3
 fi
 
