@@ -63,30 +63,12 @@ while :
 	esac
 done
 }
-        
-function ExitOrContinue() {
-  echo -en "\n"
-if [ $cmdkey -eq 2 ]; then
-        echo -e "\a"
-        read -p "${green}           Нажмите любую клавишу, что бы установить HomeBridge...${reset}"
-	cmdkey=0
-	ReinstallInfo="${green}[OK]${reset}"
-        InstallScript
-elif [ $cmdkey -eq 3 ]; then
-        echo -e "\a"
-	cmdkey=1
-        InstallScript
-else
-        read -p "${red}           Что то пошло не так...${reset}"
-fi
-}
-
 
 
 
 
 function СheckingInstalledPackage() {
-InstalledPackageKey=1 ; echo -en "\n" ; echo "  # # Проверка на ранее установленную версию..."
+InstalledPackageKey=0 ; echo -en "\n" ; echo "  # # Проверка на ранее установленную версию..."
 if dpkg -l homebridge &>/dev/null; then
 	echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge как системный пакет..."
 	InstallInfo="${green}[уже установлен]${reset}"
@@ -340,7 +322,7 @@ echo "                               ${green}[Успешно удалено]${re
 else
 echo "                             ${red}[Удаление не удалось]${reset}"
 fi
-echo -en "\n" ; echo "${red}               - Завершение работы скрипта...${reset}" ; echo -en "\n"
+echo -en "\n" ; echo "${red}                             - Завершение работы скрипта...${reset}" ; echo -en "\n"
 sleep 1
 exit 0
 }
