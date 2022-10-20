@@ -312,9 +312,9 @@ function RremovalItself() {
 clear ; echo -en "\n" ; echo "                   Самоудаление папки со скриптом установки...  " ; cd
 sudo rm -rf ~/HomebBridge-Install-Script
 if [ $? -eq 0 ]; then
-	echo "                   ${green}[Успешно удалено]${reset} ${red}Завершение работы скрипта...${reset}" ; echo -en "\n"
+	echo "                ${green}[Успешно удалено]${reset} - ${red}Завершение работы скрипта...${reset}" ; echo -en "\n"
 else
-	echo "                ${red}[Удаление не удалось] Завершение работы скрипта...${reset}" ; echo -en "\n"
+	echo "            ${red}[Удаление не удалось] - Завершение работы скрипта...${reset}" ; echo -en "\n"
 fi
 sleep 1
 exit 0
