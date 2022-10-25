@@ -1,7 +1,7 @@
 #!/bin/bash
 red=$(tput setf 4) ; green=$(tput setf 2) ; reset=$(tput sgr0) ; cmdkey=0 ; ME=`basename $0` ; cd~ ; clear
 
-
+BackupsFolder=~/HB_Backup
 
 
 function Zagolovok {
@@ -98,27 +98,21 @@ fi
 
 
 function BackUpScript() {
-CheckBackUp=0
-if ! [ -d ~/HB_BackUp/ ]; then
-		sudo mkdir -p ~/HB_BackUp && sudo chmod 777 ~/HB_BackUp
-fi
 
-	if [ -f ~/.homebridge/config.json ]; then
-		CheckBackUp=1
-		sudo cp -f ~/.homebridge/config.json ~/HB_BackUp/config.json.$(date +%s)000
-	fi
-	if [ -f /var/lib/homebridge/config.json ]; then
-		CheckBackUp=1
-		sudo cp -f /var/lib/homebridge/config.json ~/HB_BackUp/config.json.$(date +%s)000
-	fi
-	if [ -f /var/homebridge/config.json ]; then
-		CheckBackUp=1
-		sudo cp -f /var/homebridge/config.json ~/HB_BackUp/config.json.$(date +%s)000
-	fi
-	if [ -f /var/lib/homebridge/backups/config-backups/config.json.* ]; then
-		CheckBackUp=1
-		sudo cp -f /var/lib/homebridge/backups/config-backups/config.json.* ~/HB_BackUp/
-	fi
+CheckBackUp=0
+[ ! -d $BackupsFolder ] && sudo mkdir -p $BackupsFolder && sudo chmod 777 $BackupsFolder
+
+	HA_SOURCE=/var/lib/homebridge/backups/config-backups
+	[ ! -f $HA_SOURCE/config.json.* ] && CheckBackUp=1 && sudo cp -f $HA_SOURCE/config.json.* $BackupsFolder >/dev/null 2>&1
+
+	HA_SOURCE=/var/homebridge
+	[ ! -f $HA_SOURCE/config.json ] && CheckBackUp=1 && sudo cp -f $HA_SOURCE/config.json $BackupsFolder/config.json.$(date +%s)000 >/dev/null 2>&1
+
+	HA_SOURCE=/var/homebridge
+	[ ! -f $HA_SOURCE/config.json ] && CheckBackUp=1 && sudo cp -f $HA_SOURCE/config.json $BackupsFolder/config.json.$(date +%s)000 >/dev/null 2>&1
+
+	HA_SOURCE=~/.homebridge
+	[ ! -f $HA_SOURCE/config.json ] && CheckBackUp=1 && sudo cp -f $HA_SOURCE/config.json $BackupsFolder/config.json.$(date +%s)000 >/dev/null 2>&1
 
 if [ $CheckBackUp -eq 1 ]; then
 	echo -en "\n" ; echo "  # # Создание резервной копии конфигурационных файлов HomeBridge..."
@@ -168,14 +162,15 @@ sudo sed -i 's|127.0.0.1:8581;|127.0.0.1:8080;|' /etc/nginx/sites-available/home
 #sudo sed -i 's|"port": 8581|"port": 8080|' /var/lib/homebridge/config.json
 sudo systemctl restart nginx > /dev/null 2>&1
 
+# Восстанавление резервной копии
+if [ -f $BackupsFolder/config.json.* ]; then
+	echo -en "\n" ; echo "  # # Восстанавление резервной копии конфигурационных файлов HomeBridge..."
 
-if [ -f ~/HB_BackUp/config.json.* ]; then
-echo -en "\n" ; echo "  # # Восстанавление резервной копии конфигурационных файлов HomeBridge..."
-	if ! [ -d /var/lib/homebridge/backups/config-backups/ ]; then
-		sudo mkdir -p /var/lib/homebridge/backups/config-backups/ && sudo chmod 777 /var/lib/homebridge/backups/config-backups/
+	if [ ! -d /var/lib/homebridge/backups/config-backups ] ; then 
+		sudo mkdir -p /var/lib/homebridge/backups/config-backups && sudo chmod 777 /var/lib/homebridge/backups/config-backup
 	fi
-	sudo mv -f ~/HB_BackUp/config.json.* /var/lib/homebridge/backups/config-backups/
-	sudo rm -rf ~/HB_BackUp
+	sudo mv -f $BackupsFolder/config.json.* /var/lib/homebridge/backups/config-backups
+	sudo rm -rf $BackupsFolder
 fi
 
 echo -en "\n"
