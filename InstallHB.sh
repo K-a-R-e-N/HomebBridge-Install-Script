@@ -6,15 +6,13 @@ BackupsFolder=~/HB_Backup
 
 
 function Zagolovok {
-${yellow}
-echo -en "\n"
+echo -en "${yellow} \n"
 echo "╔═════════════════════════════════════════════════════════════════════════════╗"
 echo "║                                                                             ║"
 echo "║                   $ZI HomeBridge и его зависимостей.                  ║"
 echo "║                                                                             ║"
 echo "╚═════════════════════════════════════════════════════════════════════════════╝"
-echo -en "\n"
-${reset}
+echo -en "\n ${reset}"
 }
 function GoToMenu {
   GoToMenuInfo="Чтобы продолжить, введите"
@@ -238,7 +236,7 @@ GoToMenu
 
 function UninstallScript() {
 clear
-ZI=Удаление && Zagolovok
+ZI= Удаление && Zagolovok
 
 echo -en "\n" ; echo "  # # Остановка и завершение процесса Homebridge..."
 sudo hb-service stop > /dev/null 2>&1
