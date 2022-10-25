@@ -17,7 +17,7 @@ function GoToMenu {
   GoToMenuInfo="Чтобы продолжить, введите"
 while :
 	do
-	clear
+	clear ; CheckBackUp=0 ; BackupRecovery=0
 	Zagolovok 
 	echo -en "\n"
 	echo "     ┌─ Выберите действие: ──────────────────────────────────────────────┐"
@@ -99,7 +99,6 @@ fi
 
 function BackUpScript() {
 
-CheckBackUp=0
 [ ! -d $BackupsFolder ] && sudo mkdir -p $BackupsFolder && sudo chmod 777 $BackupsFolder
 
 	HA_SOURCE=/var/lib/homebridge/backups/config-backups
@@ -164,7 +163,7 @@ sudo systemctl restart nginx > /dev/null 2>&1
 
 # Восстанавление резервной копии
 if [ -f $BackupsFolder/config.json.* ]; then
-	echo -en "\n" ; echo "  # # Восстанавление резервной копии конфигурационных файлов HomeBridge..."
+	BackupRecovery=1 && echo -en "\n" && echo "  # # Восстанавление резервной копии конфигурационных файлов HomeBridge..."
 
 	if [ ! -d /var/lib/homebridge/backups/config-backups ] ; then 
 		sudo mkdir -p /var/lib/homebridge/backups/config-backups && sudo chmod 777 /var/lib/homebridge/backups/config-backup
