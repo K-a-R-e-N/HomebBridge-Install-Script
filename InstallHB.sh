@@ -124,7 +124,7 @@ fi
 
 function InstallScript() {
 clear
-Zagolovok
+ZI="Установка" && Zagolovok
 СheckingInstalledPackage
 BackUpScript
 
@@ -234,7 +234,7 @@ GoToMenu
 
 function UninstallScript() {
 clear
-ZI= Удаление && Zagolovok
+ZI=" Удаление" && Zagolovok
 
 echo -en "\n" ; echo "  # # Остановка и завершение процесса Homebridge..."
 sudo hb-service stop > /dev/null 2>&1
