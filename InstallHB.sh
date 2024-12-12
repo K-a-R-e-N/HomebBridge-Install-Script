@@ -156,9 +156,10 @@ echo -en "\n" ; echo "  # # Установка HomeBridge..."
 sudo apt-get install homebridge -y > /dev/null 2>&1
 
 echo -en "\n" ; echo "  # # Установка порта HomeBridge по умолчанию на 8080..."
-sudo sed -i 's|listen 80;  |listen 8080;|' /etc/nginx/sites-available/homebridge.local
-sudo sed -i 's|:80;  |:8080;|' /etc/nginx/sites-available/homebridge.local
-sudo sed -i 's|127.0.0.1:8581;|127.0.0.1:8080;|' /etc/nginx/sites-available/homebridge.local
+sudo hb-service install --port 8080
+#sudo sed -i 's|listen 80;  |listen 8080;|' /etc/nginx/sites-available/homebridge.local
+#sudo sed -i 's|:80;  |:8080;|' /etc/nginx/sites-available/homebridge.local
+#sudo sed -i 's|127.0.0.1:8581;|127.0.0.1:8080;|' /etc/nginx/sites-available/homebridge.local
 #sudo sed -i 's|"port": 8581|"port": 8080|' /var/lib/homebridge/config.json
 sudo systemctl restart nginx > /dev/null 2>&1
 
