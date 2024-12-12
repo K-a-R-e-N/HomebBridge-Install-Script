@@ -133,7 +133,7 @@ curl -sSfL https://repo.homebridge.io/KEY.gpg | sudo gpg --dearmor | sudo tee /u
 echo "deb [signed-by=/usr/share/keyrings/homebridge.gpg] https://repo.homebridge.io stable main" | sudo tee /etc/apt/sources.list.d/homebridge.list > /dev/null
 
 echo -en "\n" ; echo "  # # Добавление репозитория Node.js..."
-curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash - > /dev/null 2>&1
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - > /dev/null 2>&1
 
 echo -en "\n" ; echo "  # # Обновление кеша данных и индексов репозиторий..."
 sudo rm -Rf /var/lib/apt/lists
