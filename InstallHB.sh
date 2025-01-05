@@ -314,7 +314,7 @@ GoToMenu
 
 function UpdatingScript() {
 clear ; CheckBackUp=0 ; BackupRecovery=0
-ZI="Обновление" && Zagolovok
+ZI=" Обновление" && Zagolovok
 
 BackUpScript
 
