@@ -30,6 +30,8 @@ while :
 	echo -en "\n"
 	echo "           3 - Полное удаление Homebridge с очисткой системы $UninstallInfo"
 	echo -en "\n"
+	echo "           4 - Обновление Homebridge до актуально версии $UpdatingInfo"
+	echo -en "\n"
 	echo "           0 - Завершение работы с самоудалением скрипта"
 	echo -en "\n"
 	echo "     │                                                                   │"
@@ -49,6 +51,8 @@ while :
 		2) 	cmdkey=1 ; UninstallScript ; cmdkey=0 ; InstallScript ;;
 
 		3) 	ReinstallInfo="" ; UninstallScript ;;
+
+		4) 	UpdatingInfo="" ; UpdatingScript ;;
 
 		D|d) 	RremovalItself ;;
 
@@ -293,6 +297,41 @@ echo "╚═══════════════════════�
 echo -e "\a"
 
 UninstallInfo="${green}[OK]${reset}"
+
+if [ $cmdkey -eq 1 ]; then
+	sleep 5
+	return
+fi
+
+read -p "${green}           Нажмите любую клавишу, чтобы вернуться в главное меню...${reset}"
+sleep 1
+GoToMenu
+}
+
+
+
+
+
+function UpdatingScript() {
+clear ; CheckBackUp=0 ; BackupRecovery=0
+ZI=" Обновление" && Zagolovok
+
+BackUpScript
+
+echo -en "\n" ; echo "  # # Update repositories..."
+sudo apt-get update
+
+echo -en "\n" ; echo "  # # Install latest version of the Homebridge package..."
+sudo apt-get install homebridge
+
+echo -en "\n"
+echo -en "\n"
+echo "╔═════════════════════════════════════════════════════════════════════════════╗"
+echo "   ${green}Обновление Homebridge, а так же всех его плагинов с конфигурациями завершена${reset}"
+echo "╚═════════════════════════════════════════════════════════════════════════════╝"
+echo -e "\a"
+
+UpdatingInfo="${green}[OK]${reset}"
 
 if [ $cmdkey -eq 1 ]; then
 	sleep 5
