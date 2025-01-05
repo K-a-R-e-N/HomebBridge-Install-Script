@@ -19,7 +19,7 @@ function GoToMenu {
 while :
 	do
 	clear ; CheckBackUp=0 ; BackupRecovery=0
-	ZI=  Установка && Zagolovok 
+	ZI="  Установка" && Zagolovok 
 	echo -en "\n"
 	echo "     ┌─ Выберите действие: ──────────────────────────────────────────────┐"
 	echo "     │                                                                   │"
