@@ -318,11 +318,14 @@ ZI=" Обновление" && Zagolovok
 
 BackUpScript
 
-echo -en "\n" ; echo "  # # Update repositories..."
-sudo apt-get update
+echo -en "\n" ; echo "  # # Обновление кеша данных и индексов репозиторий..."
+sudo rm -Rf /var/lib/apt/lists
+sudo apt update -y > /dev/null 2>&1
+sudo apt-get update -y > /dev/null 2>&1
+sudo apt upgrade -y > /dev/null 2>&1
 
-echo -en "\n" ; echo "  # # Install latest version of the Homebridge package..."
-sudo apt-get install homebridge
+echo -en "\n" ; echo "  # # Обновление HomeBridge..."
+sudo apt-get install homebridge -y > /dev/null 2>&1
 
 echo -en "\n"
 echo -en "\n"
