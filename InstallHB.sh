@@ -418,3 +418,4 @@ shift $(($OPTIND - 1))
 exit 0
 # https://github.com/homebridge/homebridge/wiki/Install-Homebridge-on-Raspbian
 # https://github.com/homebridge/homebridge-config-ui-x/wiki/Homebridge-Service-Command
+# https://github.com/homebridge/homebridge-raspbian-image/wiki#default-ports
