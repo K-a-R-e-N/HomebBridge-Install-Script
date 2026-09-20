@@ -148,7 +148,7 @@ sudo apt upgrade -y > /dev/null 2>&1
 #echo -en "\n" ; echo "  # # Устранение ранее известных проблем..."
 
 echo -en "\n" ; echo "  # # Установка пакетов gcc g++ make python..."
-sudo apt-get install -y gcc g++ make python > /dev/null
+sudo apt-get install -y gcc g++ make python3 > /dev/null
 
 echo -en "\n" ; echo "  # # Установка пакета libavahi-compat-libdnssd-dev..."
 sudo apt-get install -y libavahi-compat-libdnssd-dev > /dev/null
@@ -159,8 +159,8 @@ sudo apt-get install -y nodejs > /dev/null 2>&1
 echo -en "\n" ; echo "  # # Установка HomeBridge..."
 sudo apt-get install homebridge -y > /dev/null 2>&1
 
-echo -en "\n" ; echo "  # # Установка порта HomeBridge по умолчанию на 8080..."
-sudo hb-service install --port 8080
+#echo -en "\n" ; echo "  # # Установка порта HomeBridge по умолчанию на 8080..."
+#sudo hb-service install --port 8080
 #sudo sed -i 's|listen 80;  |listen 8080;|' /etc/nginx/sites-available/homebridge.local
 #sudo sed -i 's|:80;  |:8080;|' /etc/nginx/sites-available/homebridge.local
 #sudo sed -i 's|127.0.0.1:8581;|127.0.0.1:8080;|' /etc/nginx/sites-available/homebridge.local
@@ -178,6 +178,15 @@ if [ -f $BackupsFolder/config.json.* ]; then
 	sudo rm -rf $BackupsFolder
 fi
 
+# 1. Читаем порт из конфига HomeBridge (вырежет только цифры из строки "port": XXXX)
+HB_PORT=$(grep -o '"port":\s*[0-9]*' /var/lib/homebridge/config.json | grep -o '[0-9]*')
+
+# 2. Если вдруг файл пустой или не найден, ставим дефолтный 8581
+HB_PORT=${HB_PORT:-8581}
+
+# 3. Получаем IP-адрес (берем первый из списка, если их несколько)
+HB_IP=$(hostname -I | awk '{print $1}')
+
 echo -en "\n"
 echo -en "\n"
 echo "╔═════════════════════════════════════════════════════════════════════════════╗"
@@ -187,7 +196,8 @@ echo -en "\n"
 echo "    ┌──────────── Полезная информация для работы с HomeBridge ────────────┐"
 echo "    │                                                                     │"
 echo "    │                    Доступ к HomeBridge по адресу                    │"
-echo "    │                      ${green}http://$(hostname -I | tr -d ' '):8080/${reset}                      │"
+echo "    │                      ${green}http://$(hostname -I | tr -d ' '):${HB_PORT}/${reset}                      │"
+echo -e "    │                      ${green}http://${HB_IP}:${HB_PORT}/${reset}                    │"
 echo "    │                                                                     │"
 echo "    │                  Редактирование файла конфигурации                  │"
 echo "    │              ${green}sudo nano /var/lib/homebridge/config.json${reset}              │"
