@@ -137,12 +137,18 @@ curl -sSfL https://repo.homebridge.io/KEY.gpg | sudo gpg --dearmor | sudo tee /u
 echo "deb [signed-by=/usr/share/keyrings/homebridge.gpg] https://repo.homebridge.io stable main" | sudo tee /etc/apt/sources.list.d/homebridge.list > /dev/null
 
 echo -en "\n" ; echo "  # # Добавление репозитория Node.js..."
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - > /dev/null 2>&1
+# Гарантируем наличие необходимых утилит для работы с репозиторием
+sudo apt-get install -y ca-certificates curl gnupg > /dev/null
+# Создаем директорию для ключей apt, если её нет
+sudo mkdir -p /etc/apt/keyrings
+# Скачиваем официальный GPG-ключ NodeSource
+curl -fsSL https://deb.nodesource[ТОЧКА]com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg > /dev/null 2>&1
+# Добавляем современную запись репозитория для Node.js
+echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_24.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list > /dev/null
+# (Если вам нужна еще более новая Node.js, просто замените в коде выше node_24.x на node_2X.x).
 
 echo -en "\n" ; echo "  # # Обновление кеша данных и индексов репозиторий..."
-sudo rm -Rf /var/lib/apt/lists
 sudo apt update -y > /dev/null 2>&1
-sudo apt upgrade -y > /dev/null 2>&1
 
 #echo -en "\n" ; echo "  # # Установка необходимых зависимостей"
 #echo -en "\n" ; echo "  # # Устранение ранее известных проблем..."
