@@ -178,19 +178,17 @@ if [ -f $BackupsFolder/config.json.* ]; then
 	BackupRecovery=1 && echo -en "\n" && echo "  # # Восстанавление резервной копии конфигурационных файлов HomeBridge..."
 
 	if [ ! -d /var/lib/homebridge/backups/config-backups ] ; then 
-		sudo mkdir -p /var/lib/homebridge/backups/config-backups && sudo chmod 777 /var/lib/homebridge/backups/config-backup
+		sudo mkdir -p /var/lib/homebridge/backups/config-backups && sudo chmod 777 /var/lib/homebridge/backups/config-backups
 	fi
 	sudo mv -f $BackupsFolder/config.json.* /var/lib/homebridge/backups/config-backups
 	sudo rm -rf $BackupsFolder
 fi
 
-# 1. Читаем порт из конфига HomeBridge (вырежет только цифры из строки "port": XXXX)
+# Читаем порт из конфига HomeBridge (вырежет только цифры из строки "port": XXXX)
 HB_PORT=$(grep -o '"port":\s*[0-9]*' /var/lib/homebridge/config.json | grep -o '[0-9]*')
-
-# 2. Если вдруг файл пустой или не найден, ставим дефолтный 8581
+# Если вдруг файл пустой или не найден, ставим дефолтный 8581
 HB_PORT=${HB_PORT:-8581}
-
-# 3. Получаем IP-адрес (берем первый из списка, если их несколько)
+# Получаем IP-адрес (берем первый из списка, если их несколько)
 HB_IP=$(hostname -I | awk '{print $1}')
 
 echo -en "\n"
