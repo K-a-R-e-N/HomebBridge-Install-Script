@@ -64,9 +64,6 @@ while :
 done
 }
 
-
-
-
 function СheckingInstalledPackage() {
     InstalledPackageKey=0
     echo -en "\n" ; echo "  # # Проверка на ранее установленную версию..."
@@ -93,7 +90,6 @@ function СheckingInstalledPackage() {
         fi
     fi
 }
-
 
 
 if [ $InstalledPackageKey -eq 1 ]; then
