@@ -63,6 +63,8 @@ while :
 	esac
 done
 }
+
+
 function СheckingInstalledPackage() {
     InstalledPackageKey=0
     echo -en "\n" ; echo "  # # Проверка на ранее установленную версию..."
@@ -84,9 +86,9 @@ function СheckingInstalledPackage() {
             InstalledPackageKey=1
         fi
     fi
-} # ФУНКЦИЯ ЗАКРЫВАЕТСЯ СТРОГО ЗДЕСЬ!
+}
 
-# Блок обработки условий вынесен наружу и защищен кавычками от пустых переменных
+
 if [ "$InstalledPackageKey" -eq 1 ]; then
     if [ "$cmdkey" -eq 1 ]; then
         echo -en "\n" ; echo -e "\a"
@@ -98,7 +100,6 @@ if [ "$InstalledPackageKey" -eq 1 ]; then
         GoToMenu
     fi
 fi
-
 
 
 function BackUpScript() {
@@ -124,7 +125,6 @@ fi
 
 
 
-
 function InstallScript() {
 clear ; CheckBackUp=0 ; BackupRecovery=0
 ZI="  Установка" && Zagolovok
@@ -141,33 +141,24 @@ curl -sSfL https://repo.homebridge.io/KEY.gpg | sudo gpg --dearmor | sudo tee /u
 echo "deb [signed-by=/usr/share/keyrings/homebridge.gpg] https://repo.homebridge.io stable main" | sudo tee /etc/apt/sources.list.d/homebridge.list > /dev/null
 
 echo -en "\n" ; echo "  # # Проверка доступности репозитория Homebridge..."
-# Проверяем реальный ответ репозитория
 if curl -m 4 -sI https://repo.homebridge.io/stable/InRelease | grep -q "200"; then
     HB_NET_STATUS=0
 else
     HB_NET_STATUS=1
+
 fi
-
-    # Объявляем дополнительный код для красного фона с белым текстом
     bg_red=$(tput setab 1)$(tput setaf 7)
-
     if [ "$HB_NET_STATUS" -ne 0 ]; then
         echo -e "\n"
         echo "  ╔═════════════════════════════════════════════════════════════════════════════╗"
         echo -e "  ║               ${bg_red} КРИТИЧЕСКАЯ ОШИБКА: РЕПОЗИТОРИЙ НЕДОСТУПЕН! ${reset}                 ║"
         echo "  ╚═════════════════════════════════════════════════════════════════════════════╝"
-        
-        # Добавлен отступ перед адресом назначения
         echo -e "\n    ${yellow}Адрес назначения:${reset} https://repo.homebridge.io"
-        
-        # Добавлен отступ перед причинами ответа сервера
         echo -e "\n    ${yellow}Возможные причины ответа сервера:${reset}"
         echo "    • Сетевые адреса Cloudflare заблокированы вашим провайдером (РКН)."
         echo "    • На плате SprutHub отсутствует внешнее интернет-соединение."
         echo "    • Системные DNS-серверы не могут разрешить имя хоста."
         echo -en "\n"
-        
-        # Меню подогнано ровно под границы рамки, длинный текст заменен на лаконичный
         echo "    ┌─────────────────────────────────────────────────────┐"
         echo "    │                                                     │"
         echo "    │  1. Автоматически настроить сеть через AmneziaWG    │"
@@ -180,7 +171,6 @@ fi
             read -p "    Введите номер пункта (1-2): " NET_CHOICE
             case $NET_CHOICE in
                 1)
-                    # Команда clear ПОЛНОСТЬЮ очищает экран, убирая старый текст ошибки
                     clear
                     SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
                     
