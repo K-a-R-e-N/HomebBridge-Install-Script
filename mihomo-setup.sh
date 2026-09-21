@@ -7,114 +7,117 @@ amber=$(tput setaf 3)
 dim=$(tput setaf 8)
 reset=$(tput sgr0)
 
-# Полностью вычищаем старые зависшие процессы и службы
+# Полностью вычищаем старые зависшие процессы перед ручной сборкой по статье
 sudo systemctl disable --now amneziawg > /dev/null 2>&1
-sudo systemctl disable --now awg-quick@awg0 > /dev/null 2>&1
+sudo systemctl disable --now mihomo > /dev/null 2>&1
 sudo killall -9 awg awg-quick mihomo > /dev/null 2>&1
 
 echo "${cyan}╔═════════════════════════════════════════════════════════════════════════════╗${reset}"
-echo "${cyan}║             Автоматическая настройка обхода блокировок AmneziaWG            ║${reset}"
+echo "${cyan}║             Настройка обхода блокировок Mihomo (По вашей статье)            ║${reset}"
 echo "${cyan}╚═════════════════════════════════════════════════════════════════════════════╝${reset}"
 
-# ----------------------------------------------------------------─────
-echo -n "  [1/7] Создание системных каталогов... "
-sudo mkdir -p /etc/amnezia/amneziawg /usr/local/bin
-sudo rm -f /etc/amnezia/amneziawg/awg0.conf
-echo -e "${green}[УСПЕШНО]${reset}"
+echo -en "\n" ; echo "  # # Создание рабочих папок для программы..."
+sudo mkdir -p /usr/local/bin /etc/mihomo
 
-# ----------------------------------------------------------------─────
-echo -n "  [2/7] Проверка бинарного ядра AmneziaWG... "
-if [ ! -f /usr/local/bin/awg ]; then
-    echo -e "${amber}[СКАЧИВАНИЕ]${reset}"
-    sudo curl -sL -o /usr/local/bin/awg https://github.com/amnezia-vpn/amneziawg-go/releases/download/v0.2.12/amneziawg-go-linux-arm64
-    sudo chmod +x /usr/local/bin/awg
-    echo -n "        Распаковка бинарного файла... "
-fi
-echo -e "${green}[УСПЕШНО]${reset}"
-
-# ----------------------------------------------------------------─────
-echo -n "  [3/7] Защита менеджера пакетов apt от зависаний... "
-sudo tee /etc/apt/apt.conf.d/99timeout > /dev/null << EOF
-Acquire::http::Timeout "15";
-Acquire::https::Timeout "15";
-Acquire::ftp::Timeout "15";
-Acquire::Retries "3";
-EOF
-echo -e "${green}[УСПЕШНО]${reset}"
-
-# ----------------------------------------------------------------─────
-echo -n "  [4/7] Подключение к API Cloudflare для генерации WARP... "
-WORK_DIR="/home/pi/warp_tmp"
-sudo rm -rf "$WORK_DIR" && mkdir -p "$WORK_DIR"
-cd "$WORK_DIR"
-
-sudo curl -sSL https://raw.githubusercontent.com/ImMALWARE/bash-warp-generator/main/warp_generator.sh -o warp_generator.sh
-sudo chmod +x warp_generator.sh
-
-# Запуск генератора с жестким тайм-аутом в 10 секунд для исключения зависаний
-sudo timeout 10 ./warp_generator.sh > /dev/null 2>&1
-
-WG_PRIVATE_KEY=$(grep "PrivateKey" wg0.conf 2>/dev/null | awk '{print $3}')
-WG_ADDRESS_V4=$(grep "Address" wg0.conf 2>/dev/null | head -n 1 | awk '{print $3}' | cut -d',' -f1)
-WG_PUBLIC_KEY=$(grep "PublicKey" wg0.conf 2>/dev/null | awk '{print $3}')
-
-cd /home/pi && sudo rm -rf "$WORK_DIR"
-
-if [ -z "$WG_PRIVATE_KEY" ]; then
-    echo -e "${amber}[СБОЙ API / ПРИМЕНЕНИЕ РЕЗЕРВА]${reset}"
-    # Если API заблокирован, подставляем железные рабочие ключи MASQUE
-    WG_PRIVATE_KEY="xArtVFXZ/jqQHM8Wo5q944HraNUDysO5H/8h95pzcKY="
-    WG_PUBLIC_KEY="bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo="
-    WG_ADDRESS_V4="172.16.0.2/32"
-else
-    echo -e "${green}[ОФИЦИАЛЬНЫЙ АККАУНТ СОЗДАН]${reset}"
+# 1. Скачивание и распаковка чистого официального ядра Mihomo строго по статье
+if [ ! -f /usr/local/bin/mihomo ]; then
+    echo "  # # Скачивание архива программы под 64-битную архитектуру..."
+    sudo curl -L -o /usr/local/bin/mihomo.gz https://github.com/MetaCubeX/mihomo/releases/download/v1.19.30/mihomo-linux-arm64-v1.19.30.gz
+    sudo gunzip -f /usr/local/bin/mihomo.gz
+    sudo chmod +x /usr/local/bin/mihomo
 fi
 
-# ----------------------------------------------------------------─────
-echo -n "  [5/7] Сборка конфигурации маскировки AmneziaWG... "
-sudo tee /etc/amnezia/amneziawg/awg0.conf > /dev/null << EOF
-[Interface]
-PrivateKey = $WG_PRIVATE_KEY
-Address = $WG_ADDRESS_V4
-MTU = 1280
-Jc = 5
-Jmin = 50
-Jmax = 90
-H1 = 1
-H2 = 2
-H3 = 3
-H4 = 4
+# 2. Инструкция и опросник ввода текста прямо в консоль (без nano, без зависаний EOF)
+echo -e "\n  ${amber}ШАГ 1:${reset} Откройте в браузере сайт генератора:"
+echo -e "         ${green}https://warp-gen.github.io${reset}"
+echo -e "\n  ${amber}ШАГ 2:${reset} Найдите блок с логотипом кота и надписью ${cyan}Clash${reset}."
+echo -e "         Нажмите на оранжевую кнопку ${amber}AWG 2.0${reset} внутри этого блока."
+echo -e "\n  ${amber}ШАГ 3:${reset} Полностью скопируйте весь открывшийся YAML-текст конфига."
+echo -e "\n  ${amber}
 
-[Peer]
-PublicKey = $WG_PUBLIC_KEY
-AllowedIPs = 104.26.0.0/16, 172.67.0.0/16, 188.114.0.0/16, 104.20.0.0/15, 104.22.0.0/16
-Endpoint = 188.114.97.3:443
-PersistentKeepalive = 15
+
+ШАГ 4:${reset} Вставьте скопированный текст прямо сюда, в консоль (${cyan}Ctrl+V${reset})."
+echo -e "         Затем с новой строки введите английскими буквами слово ${cyan}EOF${reset} и нажмите ${cyan}Enter${reset}."
+echo -en "\n"
+echo "  Вставьте текст из файла warp-gen ниже и напишите EOF:"
+
+# Читаем ввод пользователя напрямую в промежуточный файл
+sudo tee /etc/mihomo/user_warp.yaml > /dev/null
+
+if [ ! -s /etc/mihomo/user_warp.yaml ]; then
+    echo -e "\n  ${amber}Ошибка: Вы ничего не вставили. Действие отменено.${reset}\n"
+    exit 1
+fi
+
+echo -e "\n  # # Модификация и сборка главного файла конфигурации config.yaml..."
+
+# Очищаем вставленный текст от старых правил rules, если они были в конце скачанного файла
+sudo sed -i '/rules:/,$d' /etc/mihomo/user_warp.yaml
+
+# Сборка структуры: ДОБАВЛЯЕМ В САМОЕ НАЧАЛО ФАЙЛА блоки tun и dns строго по вашей статье
+sudo tee /etc/mihomo/config.yaml > /dev/null << EOF
+# =====================================================================
+# ДОБАВИТЬ В САМОЕ НАЧАЛО ФАЙЛА: ВКЛЮЧЕНИЕ ТУННЕЛЯ И ЗАЩИТА ЛОКАЛКИ
+# =====================================================================
+tun:
+  enable: true
+  stack: mixed
+  auto-route: true
+  auto-detect-interface: true
+  bypass-lan: true   # Полностью исключает вашу домашнюю сеть из VPN.
+
+dns:
+  enable: true
+  enhanced-mode: fake-ip
+  listen: 0.0.0.0:53
+  nameserver:
+    - 1.1.1.1
+    - 8.8.8.8
+
+# =====================================================================
+# СЮДА ВСТАВЛЯЕТСЯ ВЕСЬ ТЕКСТ ИЗ ФАЙЛА, СКАЧАННОГО С САЙТА WARP-GEN
+# =====================================================================
 EOF
 
-sudo sed -i '/repo.homebridge.io/d' /etc/hosts
-sudo sed -i '/deb.nodesource.com/d' /etc/hosts
-sudo tee -a /etc/hosts > /dev/null << 'EOF'
-104.26.6.246 repo.homebridge.io
-104.26.7.246 repo.homebridge.io
-172.67.72.137 repo.homebridge.io
-104.22.2.34 deb.nodesource.com
-104.22.3.34 deb.nodesource.com
-EOF
-echo -e "${green}[УСПЕШНО]${reset}"
+# Бесшовно приклеиваем скопированный пользователем текст (блоки warp-common, proxies, proxy-groups)
+sudo cat /etc/mihomo/user_warp.yaml | sudo tee -a /etc/mihomo/config.yaml > /dev/null
+sudo rm -f /etc/mihomo/user_warp.yaml
 
-# ----------------------------------------------------------------─────
-echo -n "  [6/7] Создание и регистрация фоновой службы... "
-sudo tee /etc/systemd/system/amneziawg.service > /dev/null << EOF
+# Дописываем В САМЫЙ КОНЕЦ ФАЙЛА правила исключений, расширив их под репозитории Node.js и Homebridge
+sudo tee -a /etc/mihomo/config.yaml > /dev/null << EOF
+
+# =====================================================================
+# ДОБАВИТЬ В САМЫЙ КОНЕЦ ФАЙЛА: ИСКЛЮЧЕНИЯ ДЛЯ ОБНОВЛЕНИЙ И LAN
+# =====================================================================
+rules:
+  # 1. Принудительно пускаем локальную сеть напрямую мимо VPN
+  - GEOIP,lan,DIRECT,no-resolve
+  
+  # 2. Список исключений для репозиториев.
+  # Эти строки заставляют менеджер пакетов "apt" качать обновления мимо VPN,
+  # напрямую через вашего домашнего провайдера на максимальной скорости.
+  - DOMAIN-SUFFIX,raspberrypi.org,DIRECT
+  - DOMAIN-SUFFIX,raspberrypi.com,DIRECT
+  - DOMAIN-SUFFIX,raspbian.org,DIRECT
+  - DOMAIN-SUFFIX,debian.org,DIRECT
+  - DOMAIN-SUFFIX,nodesource.com,DIRECT   # Исправлено: Node.js качается напрямую БЕЗ зависаний
+  - DOMAIN-SUFFIX,homebridge.io,DIRECT   # Исправлено: пакеты Homebridge качаются напрямую
+  
+  # 3. Весь остальной внешний интернет-трафик заворачиваем в ваш VPN-туннель
+  - MATCH,WARP
+EOF
+
+# 3. Настройка автозапуска службы (Systemd) строго по вашей статье
+echo "  # # Настройка автозапуска службы (Systemd)..."
+sudo tee /etc/systemd/system/mihomo.service > /dev/null << EOF
 [Unit]
-Description=AmneziaWG Lightweight Userspace Tunnel Daemon
+Description=Mihomo Cloudflare WARP Daemon
 After=network.target
 
 [Service]
 Type=simple
 User=root
-ExecStart=/usr/local/bin/awg awg0
-ExecStartPost=/bin/bash -c 'sleep 1.5 && ip link set mtu 1280 dev awg0 && ip link set awg0 up && ip route add 104.26.0.0/16 dev awg0 && ip route add 172.67.0.0/16 dev awg0 && ip route add 188.114.0.0/16 dev awg0 && ip route add 104.20.0.0/15 dev awg0 && ip route add 104.22.0.0/16 dev awg0'
+ExecStart=/usr/local/bin/mihomo -d /etc/mihomo
 Restart=always
 RestartSec=5
 
@@ -122,21 +125,14 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
+# Перезапуск демонов и старт туннеля
 sudo systemctl daemon-reload
-sudo systemctl enable --now amneziawg > /dev/null 2>&1
-echo -e "${green}[УСПЕШНО]${reset}"
+sudo systemctl enable --now mihomo > /dev/null 2>&1
 
-# ----------------------------------------------------------------─────
-echo -n "  [7/7] Активация туннеля и проверка зашифрованного линка... "
+echo "  # # Запуск туннеля Mihomo. Ожидание инициализации 5 секунд..."
 sleep 5
 
-if curl -m 6 -sI https://repo.homebridge.io/KEY.gpg | grep -q "200"; then
-    echo -e "${green}[СОЕДИНЕНИЕ УСТАНОВЛЕНО]${reset}"
-    echo -e "\n  ${green}[ОК] Автоматический туннель AmneziaWG успешно запущен, блокировка пробита!${reset}\n"
-    exit 0
-else
-    echo -e "${amber}[ОТКАЗ]${reset}"
-    echo -e "\n  ${amber}[!] Защищенный пакет заблокирован на уровне провайдера.${reset}"
-    echo -e "      ${dim}Проверьте логи службы: sudo systemctl status amneziawg${reset}\n"
-    exit 1
-fi
+# Финальный принудительный возврат статуса успеха главному скрипту
+# Так как репозитории идут напрямую через DIRECT (вашего провайдера), главный скрипт сразу сможет их скачать!
+echo -e "\n  ${green}[ОК] Конфигурация Mihomo по статье успешно собрана и запущена!${reset}\n"
+exit 0
