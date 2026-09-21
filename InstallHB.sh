@@ -63,49 +63,41 @@ while :
 	esac
 done
 }
-
 function СheckingInstalledPackage() {
     InstalledPackageKey=0
     echo -en "\n" ; echo "  # # Проверка на ранее установленную версию..."
     
-    # Проверяем реальный статус установки пакета homebridge
     if dpkg -s homebridge 2>/dev/null | grep -q "Status: install ok installed"; then
         echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge как системный пакет..."
         InstallInfo="${green}[уже установлен]${reset}"
         InstalledPackageKey=1
         
-    # Проверяем реальный статус установки пакета nodejs
     elif dpkg -s nodejs 2>/dev/null | grep -q "Status: install ok installed"; then
-        # Проверяем наличие npm и установленный глобально homebridge
         if command -v npm >/dev/null 2>&1 && npm list -g --depth=0 2>/dev/null | grep -q homebridge; then
             echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge из NPM..."
             InstallInfo="${green}[уже установлен]${reset}"
             InstalledPackageKey=1
         else
-            # Без экранирования слэшами — чистый системный синтаксис (Исправлено!)
             NODE_VER=$(node -v 2>/dev/null | tr -d ' ' || echo "неизвестно")
             echo -en "\n" ; echo "     - В системе уже установлен пакет Node.js ${green}$NODE_VER${reset}, но HomeBridge не установлен..."
             InstallInfo="${red}[установлен NodeJS]${reset}"
             InstalledPackageKey=1
         fi
     fi
-}
+} # ФУНКЦИЯ ЗАКРЫВАЕТСЯ СТРОГО ЗДЕСЬ!
 
-
-if [ $InstalledPackageKey -eq 1 ]; then
-	if [ $cmdkey -eq 1 ]; then
-		echo -en "\n" ; echo -e "\a"
-		read -p "${green}           Нажмите любую клавишу, чтобы завершить работу скрипта...${reset}"
-		exit 0
-	else
-		echo -en "\n" ; echo -e "\a"
-		read -p "${green}           Нажмите любую клавишу, чтобы вернуться в главное меню...${reset}"
-		GoToMenu
-	fi
+# Блок обработки условий вынесен наружу и защищен кавычками от пустых переменных
+if [ "$InstalledPackageKey" -eq 1 ]; then
+    if [ "$cmdkey" -eq 1 ]; then
+        echo -en "\n" ; echo -e "\a"
+        read -p "${green}           Нажмите любую клавишу, чтобы завершить работу скрипта...${reset}"
+        exit 0
+    else
+        echo -en "\n" ; echo -e "\a"
+        read -p "${green}           Нажмите любую клавишу, чтобы вернуться в главное меню...${reset}"
+        GoToMenu
+    fi
 fi
-}
-
-
 
 
 
