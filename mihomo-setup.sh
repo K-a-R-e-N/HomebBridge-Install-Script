@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Объявляем цвета
-red=\$(tput setaf 1)
-green=\$(tput setaf 2)
-yellow=\$(tput setaf 3)
-reset=\$(tput sgr0)
+# Объявляем цвета в чистом синтаксисе без каких-либо косых черт
+red=$(tput setaf 1)
+green=$(tput setaf 2)
+yellow=$(tput setaf 3)
+reset=$(tput sgr0)
 
 clear
 echo "╔═════════════════════════════════════════════════════════════════════════════╗"
@@ -22,8 +22,8 @@ if [ ! -f /usr/local/bin/mihomo ]; then
     sudo chmod +x /usr/local/bin/mihomo
 fi
 
-# 2. Пауза для ручной вставки скопированного файла
-echo -e "\n  \${yellow}[ИНСТРУКЦИЯ]\${reset}"
+# 2. Инструкция и вызов nano для ручной вставки скопированного файла
+echo -e "\n  ${yellow}[ИНСТРУКЦИЯ]${reset}"
 echo "  1. Сейчас откроется пустой текстовый редактор."
 echo "  2. Скопируйте ВЕСЬ текст скачанного файла с сайта warp-generation.github.io"
 echo "  3. Вставьте его в редактор, нажмите Ctrl+O -> Enter (сохранить) и Ctrl+X (выйти)."
@@ -34,17 +34,17 @@ read -p "  Нажмите [ENTER], чтобы открыть редактор и
 sudo nano /etc/mihomo/user_warp.yaml
 
 if [ ! -s /etc/mihomo/user_warp.yaml ]; then
-    echo -e "  \${red}[ОШИБКА] Файл пустой! Вы ничего не вставили.\${reset}"
+    echo -e "  ${red}[ОШИБКА] Файл пустой! Вы ничего не вставили.${reset}"
     exit 1
 fi
 
 # 3. Автоматическая очистка, вырезание IPv6 и внедрение правил защиты локальной сети
 echo -e "\n  # # Оптимизация конфигурации, отключение IPv6 и защита LAN..."
 
-# Вырезаем строки с ipv6, allowed-ips (Mihomo сам маршрутизирует трафик) и дефолтные правила rules
+# Вырезаем строки с ipv6, allowed-ips и дефолтные старые правила rules
 sudo sed -i '/ipv6:/d' /etc/mihomo/user_warp.yaml
 sudo sed -i '/allowed-ips:/d' /etc/mihomo/user_warp.yaml
-sudo sed -i '/rules:/,\$d' /etc/mihomo/user_warp.yaml
+sudo sed -i '/rules:/,$d' /etc/mihomo/user_warp.yaml
 
 # Собираем финальный config.yaml с правильной структурой туннеля и разделением трафика
 sudo tee /etc/mihomo/config.yaml > /dev/null << EOF
@@ -69,7 +69,7 @@ EOF
 sudo cat /etc/mihomo/user_warp.yaml | sudo tee -a /etc/mihomo/config.yaml > /dev/null
 sudo rm -f /etc/mihomo/user_warp.yaml
 
-# Дописываем PersistentKeepalive и жесткие правила раздельного туннелирования в самый конец файла
+# Дописываем PersistentKeepalive и жёсткие правила раздельного туннелирования в самый конец файла
 sudo tee -a /etc/mihomo/config.yaml > /dev/null << EOF
     keepalive: 25      # Удержание стабильной сессии за NAT домашнего роутера
 
@@ -114,10 +114,10 @@ sleep 5
 
 # 6. Контрольное тестирование соединения
 if curl -m 5 -sI https://repo.homebridge.io/stable/InRelease | grep -q "200"; then
-    echo -e "\n  \${green}[УСПЕХ] Обход блокировок AWG 2.0 MASQUE успешно настроен и запущен!\${reset}"
+    echo -e "\n  ${green}[УСПЕХ] Обход блокировок AWG 2.0 MASQUE успешно настроен и запущен!${reset}"
     exit 0
 else
-    echo -e "\n  \${red}[ВНИМАНИЕ] Служба запущена, но тестовый пакет не прошел через Amnezia-туннель.\${reset}"
+    echo -e "\n  ${red}[ВНИМАНИЕ] Служба запущена, но тестовый пакет не прошел через Amnezia-туннель.${reset}"
     echo "  Посмотрите подробный лог ошибок ядра: sudo journalctl -u mihomo -n 20"
     exit 1
 fi
