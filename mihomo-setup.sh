@@ -17,23 +17,23 @@ sudo mkdir -p /usr/local/bin /etc/mihomo
 # 1. Скачивание ядра Mihomo
 if [ ! -f /usr/local/bin/mihomo ]; then
     echo "  # # Скачивание и распаковка ядра Mihomo..."
-    sudo curl -L -o /usr/local/bin/mihomo[ТОЧКА]gz https://github[ТОЧКА]com/MetaCubeX/mihomo/releases/download/v1[ТОЧКА]19[ТОЧКА]30/mihomo-linux-arm64-v1[ТОЧКА]19[ТОЧКА]30[ТОЧКА]gz
-    sudo gunzip -f /usr/local/bin/mihomo[ТОЧКА]gz
+    sudo curl -L -o /usr/local/bin/mihomo.gz https://github.com/MetaCubeX/mihomo/releases/download/v1.19.30/mihomo-linux-arm64-v1.19.30.gz
+    sudo gunzip -f /usr/local/bin/mihomo.gz
     sudo chmod +x /usr/local/bin/mihomo
 fi
 
 # 2. Пауза для ручной вставки скопированного файла
 echo -e "\n  \${yellow}[ИНСТРУКЦИЯ]\${reset}"
 echo "  1. Сейчас откроется пустой текстовый редактор."
-echo "  2. Скопируйте ВЕСЬ текст скачанного файла с сайта warp-generation[ТОЧКА]github[ТОЧКА]io"
+echo "  2. Скопируйте ВЕСЬ текст скачанного файла с сайта warp-generation.github.io"
 echo "  3. Вставьте его в редактор, нажмите Ctrl+O -> Enter (сохранить) и Ctrl+X (выйти)."
 echo -en "\n"
 read -p "  Нажмите [ENTER], чтобы открыть редактор и вставить текст..."
 
 # Открываем временный файл для вставки оригинального конфига
-sudo nano /etc/mihomo/user_warp[ТОЧКА]yaml
+sudo nano /etc/mihomo/user_warp.yaml
 
-if [ ! -s /etc/mihomo/user_warp[ТОЧКА]yaml ]; then
+if [ ! -s /etc/mihomo/user_warp.yaml ]; then
     echo -e "  \${red}[ОШИБКА] Файл пустой! Вы ничего не вставили.\${reset}"
     exit 1
 fi
@@ -42,12 +42,12 @@ fi
 echo -e "\n  # # Оптимизация конфигурации, отключение IPv6 и защита LAN..."
 
 # Вырезаем строки с ipv6, allowed-ips (Mihomo сам маршрутизирует трафик) и дефолтные правила rules
-sudo sed -i '/ipv6:/d' /etc/mihomo/user_warp[ТОЧКА]yaml
-sudo sed -i '/allowed-ips:/d' /etc/mihomo/user_warp[ТОЧКА]yaml
-sudo sed -i '/rules:/,\$d' /etc/mihomo/user_warp[ТОЧКА]yaml
+sudo sed -i '/ipv6:/d' /etc/mihomo/user_warp.yaml
+sudo sed -i '/allowed-ips:/d' /etc/mihomo/user_warp.yaml
+sudo sed -i '/rules:/,\$d' /etc/mihomo/user_warp.yaml
 
-# Собираем финальный config[ТОЧКА]yaml с правильной структурой туннеля и разделением трафика
-sudo tee /etc/mihomo/config[ТОЧКА]yaml > /dev/null << EOF
+# Собираем финальный config.yaml с правильной структурой туннеля и разделением трафика
+sudo tee /etc/mihomo/config.yaml > /dev/null << EOF
 tun:
   enable: true
   stack: mixed
@@ -66,11 +66,11 @@ dns:
 EOF
 
 # Склеиваем очищенные прокси пользователя с шапкой конфига
-sudo cat /etc/mihomo/user_warp[ТОЧКА]yaml | sudo tee -a /etc/mihomo/config[ТОЧКА]yaml > /dev/null
-sudo rm -f /etc/mihomo/user_warp[ТОЧКА]yaml
+sudo cat /etc/mihomo/user_warp.yaml | sudo tee -a /etc/mihomo/config.yaml > /dev/null
+sudo rm -f /etc/mihomo/user_warp.yaml
 
 # Дописываем PersistentKeepalive и жесткие правила раздельного туннелирования в самый конец файла
-sudo tee -a /etc/mihomo/config[ТОЧКА]yaml > /dev/null << EOF
+sudo tee -a /etc/mihomo/config.yaml > /dev/null << EOF
     keepalive: 25      # Удержание стабильной сессии за NAT домашнего роутера
 
 rules:
@@ -78,10 +78,10 @@ rules:
   - GEOIP,lan,DIRECT,no-resolve
   
   # Системные репозитории Linux пускаем напрямую на максимальной скорости провайдера
-  - DOMAIN-SUFFIX,raspberrypi[ТОЧКА]org,DIRECT
-  - DOMAIN-SUFFIX,raspberrypi[ТОЧКА]com,DIRECT
-  - DOMAIN-SUFFIX,raspbian[ТОЧКА]org,DIRECT
-  - DOMAIN-SUFFIX,debian[ТОЧКА]org,DIRECT
+  - DOMAIN-SUFFIX,raspberrypi.org,DIRECT
+  - DOMAIN-SUFFIX,raspberrypi.com,DIRECT
+  - DOMAIN-SUFFIX,raspbian.org,DIRECT
+  - DOMAIN-SUFFIX,debian.org,DIRECT
   
   # Весь остальной внешний интернет-трафик (включая репозиторий Homebridge) заворачиваем в туннель WARP
   - MATCH,WARP
@@ -89,7 +89,7 @@ EOF
 
 # 4. Создание системной службы автозапуска (Systemd)
 echo "  # # Настройка фоновой службы туннеля (Systemd)..."
-sudo tee /etc/systemd/system/mihomo[ТОЧКА]service > /dev/null << EOF
+sudo tee /etc/systemd/system/mihomo.service > /dev/null << EOF
 [Unit]
 Description=Mihomo Cloudflare WARP Daemon
 After=network.target
@@ -113,7 +113,7 @@ echo "  # # Запуск службы Mihomo. Ожидаем поднятия л
 sleep 5
 
 # 6. Контрольное тестирование соединения
-if curl -m 5 -sI https://repo[ТОЧКА]homebridge[ТОЧКА]io/stable/InRelease | grep -q "200"; then
+if curl -m 5 -sI https://repo.homebridge.io/stable/InRelease | grep -q "200"; then
     echo -e "\n  \${green}[УСПЕХ] Обход блокировок AWG 2.0 MASQUE успешно настроен и запущен!\${reset}"
     exit 0
 else
