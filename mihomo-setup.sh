@@ -1,9 +1,10 @@
 #!/bin/bash
 
-red=\$(tput setaf 1)
-green=\$(tput setaf 2)
-yellow=\$(tput setaf 3)
-reset=\$(tput sgr0)
+# Объявляем цветной вывод без экранирования (Исправлено!)
+red=$(tput setaf 1)
+green=$(tput setaf 2)
+yellow=$(tput setaf 3)
+reset=$(tput sgr0)
 
 clear
 echo "╔═════════════════════════════════════════════════════════════════════════════╗"
@@ -20,13 +21,13 @@ if [ ! -f /usr/local/bin/mihomo ]; then
     sudo chmod +x /usr/local/bin/mihomo
 fi
 
-echo -e "\n  \${yellow}[ИНСТРУКЦИЯ]\${reset}"
+echo -e "\n  ${yellow}[ИНСТРУКЦИЯ]${reset}"
 echo "  1. Откройте в браузере сайт: https://warp-gen.github.io"
 echo "  2. В блоке 'Clash' нажмите кнопку 'AWG 2.0' для скачивания конфига."
 echo "  3. Откройте скачанный YAML-файл в текстовом редакторе."
 echo -en "\n"
 
-while [ -z "\$USER_PRIVATE_KEY" ]; do
+while [ -z "$USER_PRIVATE_KEY" ]; do
     read -p "  Вставьте значение private-key: " USER_PRIVATE_KEY
 done
 
@@ -34,7 +35,7 @@ while [ -z "$USER_PUBLIC_KEY" ]; do
     read -p "  Вставьте значение public-key: " USER_PUBLIC_KEY
 done
 
-while [ -z "\$USER_IP" ]; do
+while [ -z "$USER_IP" ]; do
     read -p "  Вставьте значение ip (например, 172.16.0.2/32): " USER_IP
 done
 
@@ -60,9 +61,9 @@ proxies:
     type: wireguard
     server: 162.159.192.1
     port: 2408
-    ip: \$USER_IP
-    public-key: \$USER_PUBLIC_KEY
-    private-key: \$USER_PRIVATE_KEY
+    ip: $USER_IP
+    public-key: $USER_PUBLIC_KEY
+    private-key: $USER_PRIVATE_KEY
     udp: true
     remote-dns-resolve: true
     keepalive: 25
@@ -106,9 +107,9 @@ echo "  # # Запуск службы Mihomo. Ожидаем поднятия л
 sleep 5
 
 if curl -m 5 -sI https://repo.homebridge.io/stable/InRelease | grep -q "200"; then
-    echo -e "\n  \${green}[УСПЕХ] Обход блокировок успешно настроен и запущен!\${reset}"
+    echo -e "\n  ${green}[УСПЕХ] Обход блокировок успешно настроен и запущен!${reset}"
     exit 0
 else
-    echo -e "\n  \${red}[ВНИМАНИЕ] Служба запущена, но тестовый пакет не прошел через WARP.\${reset}"
+    echo -e "\n  ${red}[ВНИМАНИЕ] Служба запущена, но тестовый пакет не прошел через WARP.${reset}"
     exit 1
 fi
