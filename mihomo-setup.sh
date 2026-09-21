@@ -19,7 +19,7 @@ echo "${cyan}╚═════════════════════�
 echo -en "\n" ; echo "  # # Подготовка системных компонентов..."
 sudo mkdir -p /etc/amnezia/amneziawg /usr/local/bin
 
-# 1. Принудительное удаление старого файла конфигурации перед вводом (Исправлено!)
+# 1. Принудительное удаление старого файла конфигурации перед вводом
 sudo rm -f /etc/amnezia/amneziawg/awg0.conf
 
 # 2. Скачивание официального бинарника ядра AmneziaWG
@@ -53,14 +53,12 @@ echo -e "\n  # # Оптимизация сетевых параметров и �
 sudo sed -i '/ipv6:/d' /etc/amnezia/amneziawg/awg0.conf
 sudo sed -i '/:,/d' /etc/amnezia/amneziawg/awg0.conf
 sudo sed -i '/\[::\]/d' /etc/amnezia/amneziawg/awg0.conf
-sudo sed -i 's/AllowedIPs = 0.0.0.0\/0/AllowedIPs = 104.26.0.0\/16, 172.67.0.0\/16/g' /etc/amnezia/amneziawg/awg0.conf
 
 # Извлекаем локальный виртуальный IPv4 адрес, выданный Cloudflare
 USER_TUN_IP=$(grep -i "Address" /etc/amnezia/amneziawg/awg0.conf | awk '{print $3}' | cut -d',' -f1)
 USER_TUN_IP=${USER_TUN_IP:-172.16.0.2/32}
 
-# Извлекаем и преобразуем скрытые параметры AmneziaWG из файла
-J_VERSION=$(grep -i "S1" /etc/amnezia/amneziawg/awg0.conf | awk '{print $3}')
+# Извлекаем скрытые параметры AmneziaWG из файла
 J_C=$(grep -i "Jc" /etc/amnezia/amneziawg/awg0.conf | awk '{print $3}')
 J_MIN=$(grep -i "Jmin" /etc/amnezia/amneziawg/awg0.conf | awk '{print $3}')
 J_MAX=$(grep -i "Jmax" /etc/amnezia/amneziawg/awg0.conf | awk '{print $3}')
@@ -69,8 +67,15 @@ H_2=$(grep -i "H2" /etc/amnezia/amneziawg/awg0.conf | awk '{print $3}')
 H_3=$(grep -i "H3" /etc/amnezia/amneziawg/awg0.conf | awk '{print $3}')
 H_4=$(grep -i "H4" /etc/amnezia/amneziawg/awg0.conf | awk '{print $3}')
 
-# Насильно прописываем параметры маскировки прямо в блок [Interface] для awg-go
-sudo sed -i "/\[Interface\]/a Jc = ${J_C:-4}\nJmin = ${J_MIN:-40}\nJmax = ${J_MAX:-70}\nH1 = ${H_1:-1}\nH2 = ${H_2:-2}\nH3 = ${H_3:-3}\nH4 = ${H_4:-4}" /etc/amnezia/amneziawg/awg0.conf
+# Исправлено: Ювелирное внедрение параметров маскировки через безопасный awk вместо ломающегося sed
+sudo awk -v jc="${J_C:-4}" -v jmin="${J_MIN:-40}" -v jmax="${J_MAX:-70}" \
+         -v h1="${H_1:-1}" -v h2="${H_2:-2}" -v h3="${H_3:-3}" -v h4="${H_4:-4}" \
+         '{ print $0; if ($0 ~ /\[Interface\]/) { printf "Jc = %s\nJmin = %s\nJmax = %s\nH1 = %s\nH2 = %s\nH3 = %s\nH4 = %s\n", jc, jmin, jmax, h1, h2, h3, h4 } }' \
+         /etc/amnezia/amneziawg/awg0.conf > /tmp/awg_tmp.conf
+sudo mv -f /tmp/awg_tmp.conf /etc/amnezia/amneziawg/awg0.conf
+
+# Сужаем AllowedIPs до конкретных диапазонов репозитория для защиты локальной сети
+sudo sed -i 's/AllowedIPs = 0.0.0.0\/0/AllowedIPs = 104.26.0.0\/16, 172.67.0.0\/16/g' /etc/amnezia/amneziawg/awg0.conf
 
 # Насильно прописываем PersistentKeepalive для удержания сессии за домашним NAT роутером
 if ! grep -q "PersistentKeepalive" /etc/amnezia/amneziawg/awg0.conf; then
@@ -80,7 +85,7 @@ fi
 # 4. Жесткая привязка хоста к IP (Полный обход заблокированного DNS вашего провайдера)
 sudo sed -i '/repo.homebridge.io/d' /etc/hosts
 sudo tee -a /etc/hosts > /dev/null << 'EOF'
-104.26.6.246 repo.homebridge.io
+104.26.6[ТО`ЧКА]246 repo.homebridge.io
 104.26.7.246 repo.homebridge.io
 172.67.72.137 repo.homebridge.io
 EOF
