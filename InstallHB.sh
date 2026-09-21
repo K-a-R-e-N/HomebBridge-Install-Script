@@ -133,10 +133,10 @@ BackUpScript
 
 echo -en "\n" ; echo "  # # Очистка старых репозиториев Node.js и Homebridge..."
 # Удаляем старые файлы списков, если они остались от прошлых установок
+sudo rm -f /etc/apt/keyrings/nodesource.gpg
+sudo rm -f /etc/apt/sources.list.d/nodesource.list
 sudo rm -f /etc/apt/sources.list.d/nodesource*.list
 sudo rm -f /etc/apt/sources.list.d/homebridge*.list
-# Remove the GPG keyring file associated with the old repository
-sudo rm /etc/apt/keyrings/nodesource.gpg
 
 echo -en "\n" ; echo "  # # Устранение ранее известных проблем..."
 # Автоматический принудительный сброс зависших блокировок apt/dpkg перед установкой
@@ -148,7 +148,7 @@ sudo mkdir -p /etc/apt/keyrings
 echo -en "\n" ; echo "  # # Обновление индексов репозиторий..."
 sudo apt update -y > /dev/null 2>&1
 
-echo -en "\n" ; echo "  # # Установка необходимых зависимостей..."
+echo -en "\n" ; echo "  # # Устанавливаем необходимые системные пакеты для скачивания и верификации..."
 sudo apt-get install -y ca-certificates curl gnupg > /dev/null
 
 echo -en "\n" ; echo "  # # Добавление репозитория HomeBridge..."
@@ -237,6 +237,10 @@ URIs: https://deb.nodesource.com/node_${NODE_MAJOR}.x/
 Suites: nodistro
 Components: main
 Signed-By: /etc/apt/keyrings/nodesource.gpg" | sudo tee /etc/apt/sources.list.d/nodesource.sources
+
+echo -en "\n" ; echo "  # # Обновление индексов под новый репозиторий..."
+# Обновляем индекс пакетов, чтобы система увидела новый добавленный файл .sources
+sudo apt-get update
 
 echo -en "\n" ; echo "  # # Установка пакетов gcc g++ make python..."
 sudo apt-get install -y gcc g++ make python3 > /dev/null
