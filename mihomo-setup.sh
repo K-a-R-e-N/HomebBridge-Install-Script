@@ -46,6 +46,10 @@ sudo sed -i '/allowed-ips:/d' /etc/mihomo/user_warp.yaml
 sudo sed -i '/proxy-groups:/,$d' /etc/mihomo/user_warp.yaml
 sudo sed -i '/rules:/,$d' /etc/mihomo/user_warp.yaml
 
+# Умный обход: если порты стандартные (4500 или 2408), принудительно меняем их на рабочие нестандартные
+sudo sed -i 's/port: 4500/port: 3248/g' /etc/mihomo/user_warp.yaml
+sudo sed -i 's/port: 2408/port: 8431/g' /etc/mihomo/user_warp.yaml
+
 # Сборка чистой и безопасной системной шапки туннеля
 sudo tee /etc/mihomo/config.yaml > /dev/null << EOF
 tun:
@@ -69,7 +73,7 @@ EOF
 sudo cat /etc/mihomo/user_warp.yaml | sudo tee -a /etc/mihomo/config.yaml > /dev/null
 sudo rm -f /etc/mihomo/user_warp.yaml
 
-# Исправлено: убраны неверные косые черты перед знаками доллара
+# Динамический сбор имен всех сгенерированных серверов
 PROXY_NAMES=$(grep -- "- name:" /etc/mihomo/config.yaml | awk -F'"' '{print $2}')
 
 # Дозапись отказоустойчивой proxy-группы и жёстких правил раздельного маршрута
@@ -122,10 +126,10 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now mihomo > /dev/null 2>&1
 
 # Ожидание инициализации и поднятия сетевого линка с Cloudflare
-sleep 5
+sleep 6
 
 # 5. Итоговое контрольное тестирование линка до заблокированного сервера
-if curl -m 5 -sI https://repo.homebridge.io/stable/InRelease | grep -q "200"; then
+if curl -m 6 -sI https://repo.homebridge.io/stable/InRelease | grep -q "200"; then
     echo -e "\n  ${green}[ОК] Настройка обхода блокировок успешно завершена!${reset}\n"
     exit 0
 else
