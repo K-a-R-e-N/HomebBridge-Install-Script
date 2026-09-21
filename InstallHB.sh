@@ -148,17 +148,21 @@ else
 
 fi
     bg_red=$(tput setab 1)$(tput setaf 7)
+
     if [ "$HB_NET_STATUS" -ne 0 ]; then
         echo -e "\n"
         echo "  ╔═════════════════════════════════════════════════════════════════════════════╗"
         echo -e "  ║               ${bg_red} КРИТИЧЕСКАЯ ОШИБКА: РЕПОЗИТОРИЙ НЕДОСТУПЕН! ${reset}                 ║"
         echo "  ╚═════════════════════════════════════════════════════════════════════════════╝"
+        
         echo -e "\n    ${yellow}Адрес назначения:${reset} https://repo.homebridge.io"
+        
         echo -e "\n    ${yellow}Возможные причины ответа сервера:${reset}"
         echo "    • Сетевые адреса Cloudflare заблокированы вашим провайдером (РКН)."
         echo "    • На плате SprutHub отсутствует внешнее интернет-соединение."
         echo "    • Системные DNS-серверы не могут разрешить имя хоста."
         echo -en "\n"
+        
         echo "    ┌─────────────────────────────────────────────────────┐"
         echo "    │                                                     │"
         echo "    │  1. Автоматически настроить сеть через AmneziaWG    │"
@@ -179,7 +183,8 @@ fi
                         bash "$SCRIPT_DIR/mihomo-setup.sh"
                         
                         echo "  # # Проверка связи после настройки туннеля..."
-                        if curl -m 6 -sI https://repo.homebridge.io/stable/InRelease | grep -q "200"; then
+                        # Исправлено: проверяем связь через файл ключей KEY.gpg
+                        if curl -m 6 -sI https://repo.homebridge.io/KEY.gpg | grep -q "200"; then
                             echo -e "    ${green}[ОК] Сеть успешно восстановлена! Продолжаем установку Homebridge...${reset}"
                             break 
                         else
@@ -203,6 +208,7 @@ fi
     else
         echo -e "  ${green}[ОК] Репозиторий доступен напрямую. Продолжаем установку...${reset}"
     fi
+
 
 
 echo -en "\n" ; echo "  # # Добавление репозитория Node.js 24.x..."
