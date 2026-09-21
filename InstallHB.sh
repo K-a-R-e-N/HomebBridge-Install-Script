@@ -142,7 +142,13 @@ curl -sSfL https://repo.homebridge.io/KEY.gpg | sudo gpg --dearmor | sudo tee /u
 echo "deb [signed-by=/usr/share/keyrings/homebridge.gpg] https://repo.homebridge.io stable main" | sudo tee /etc/apt/sources.list.d/homebridge.list > /dev/null
 
 echo -en "\n" ; echo "  # # Проверка доступности репозитория Homebridge..."
-if ! curl -m 3 -sI https://homebridge.io > /dev/null 2>&1; then
+if curl -m 4 -sI https://repo.homebridge.io/stable/InRelease | grep -q "200"; then
+    HB_NET_STATUS=0
+else
+    HB_NET_STATUS=1
+fi
+
+if [ $HB_NET_STATUS -ne 0 ]; then
     echo -e "\n"
     echo "  ╔═════════════════════════════════════════════════════════════════════════════╗"
     echo -e "  ║               ${red}КРИТИЧЕСКАЯ ОШИБКА: СКАЧИВАНИЕ НЕВОЗМОЖНО!${reset}                    ║"
@@ -154,9 +160,9 @@ if ! curl -m 3 -sI https://homebridge.io > /dev/null 2>&1; then
     echo "    │                                                                     │"
     echo "    │  Вам необходимо настроить обход блокировок через Mihomo (Clash).    │"
     echo "    │                                                                     │"
-    echo "    │  1. Сгенерируйте файл конфигурации AWG 2.0 на warp-gen.github.io     │"
+    echo "    │  1. Сгенерируйте файл конфигурации AWG 2.0 на warp-gen.github.io │"
     echo "    │  2. Установите ядро Mihomo в /usr/local/bin/mihomo                  │"
-    echo "    │  3. Настройте конфигурацию в /etc/mihomo/config.yaml                │"
+    echo "    │  3. Настройте конфигурацию в /etc/mihomo/config.yaml          │"
     echo "    │  4. Обязательно включите 'bypass-lan: true' для защиты SSH-доступа! │"
     echo "    │  5. Настройте правила разделения (rules) для DIRECT и WARP          │"
     echo "    │  6. Запустите службу туннеля: sudo systemctl enable --now mihomo    │"
@@ -165,9 +171,9 @@ if ! curl -m 3 -sI https://homebridge.io > /dev/null 2>&1; then
     echo "    └─────────────────────────────────────────────────────────────────────┘"
     echo -e "\a"
     return 1
+else
+    echo -e "  ${green}[ОК] Репозиторий доступен напрямую. Продолжаем установку...${reset}"
 fi
-echo -e "  ${green}[ОК] Репозиторий доступен напрямую. Продолжаем установку...${reset}"
-# ======================================
 
 echo -en "\n" ; echo "  # # Добавление репозитория Node.js 24.x..."
 # Гарантируем наличие необходимых утилит для работы с репозиторием
