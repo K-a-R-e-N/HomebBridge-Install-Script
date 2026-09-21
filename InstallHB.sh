@@ -135,6 +135,10 @@ echo -en "\n" ; echo "  # # Очистка старых репозиториев
 # Удаляем старые файлы списков, если они остались от прошлых установок
 sudo rm -f /etc/apt/sources.list.d/nodesource*.list
 sudo rm -f /etc/apt/sources.list.d/homebridge*.list
+# Автоматический принудительный сброс зависших блокировок apt/dpkg перед установкой
+sudo killall -9 apt apt-get dpkg 2>/dev/null
+sudo rm -f /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock /var/lib/dpkg/lock
+	
 
 echo -en "\n" ; echo "  # # Добавление репозитория HomeBridge..."
 curl -sSfL https://repo.homebridge.io/KEY.gpg | sudo gpg --dearmor | sudo tee /usr/share/keyrings/homebridge.gpg > /dev/null
