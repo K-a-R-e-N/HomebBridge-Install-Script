@@ -141,9 +141,10 @@ echo -en "\n" ; echo "  # # Добавление репозитория Node.js 
 sudo apt-get install -y ca-certificates curl gnupg > /dev/null
 # Создаем директорию для ключей apt, если её нет
 sudo mkdir -p /etc/apt/keyrings
-# Скачиваем официальный GPG-ключ NodeSource
-curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg > /dev/null 2>&1
-# 2. Добавляем официальный репозиторий для Node.js 24.x
+# Скачиваем официальный GPG-ключ NodeSource с флагом --yes, чтобы принудительно перезаписать существующий ключ
+curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --yes --dearmor -o /etc/apt/keyrings/nodesource.gpg > /dev/null 2>&1
+
+# Добавляем официальный репозиторий для Node.js 24.x
 echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_24.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list > /dev/null
 # (Если вам нужна еще более новая Node.js, просто замените в коде выше node_24.x на node_2X.x).
 
