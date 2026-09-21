@@ -243,7 +243,8 @@ echo -en "\n" ; echo "  # # Установка Node.js..."
 sudo apt-get install -y nodejs > /dev/null 2>&1
 
 echo -en "\n" ; echo "  # # Установка HomeBridge..."
-sudo apt-get install homebridge -y > /dev/null 2>&1
+#sudo apt-get install homebridge -y > /dev/null 2>&1
+sudo apt-get install homebridge -y
 
 echo -en "\n" ; echo "  # # Включение и запуск службы HomeBridge..."
 # Так как это официальный пакет, просто включаем и перезапускаем стандартную службу:
