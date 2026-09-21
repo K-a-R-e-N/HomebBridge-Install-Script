@@ -133,7 +133,7 @@ ZI="  Установка" && Zagolovok
 BackUpScript
 
 echo -en "\n" ; echo "  # # Добавление репозитория HomeBridge..."
-curl -sSfL https://repo.homebridge.io/KEY.gpg | sudo gpg --dearmor | sudo tee /usr/share/keyrings/homebridge.gpg  > /dev/null
+curl -sSfL https://repo.homebridge.io/KEY.gpg | sudo gpg --dearmor | sudo tee /usr/share/keyrings/homebridge.gpg > /dev/null
 echo "deb [signed-by=/usr/share/keyrings/homebridge.gpg] https://repo.homebridge.io stable main" | sudo tee /etc/apt/sources.list.d/homebridge.list > /dev/null
 
 echo -en "\n" ; echo "  # # Добавление репозитория Node.js 24.x..."
@@ -142,8 +142,8 @@ sudo apt-get install -y ca-certificates curl gnupg > /dev/null
 # Создаем директорию для ключей apt, если её нет
 sudo mkdir -p /etc/apt/keyrings
 # Скачиваем официальный GPG-ключ NodeSource
-curl -fsSL https://deb.nodesource[ТОЧКА]com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg > /dev/null 2>&1
-# Добавляем современную запись репозитория для Node.js
+curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg > /dev/null 2>&1
+# 2. Добавляем официальный репозиторий для Node.js 24.x
 echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_24.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list > /dev/null
 # (Если вам нужна еще более новая Node.js, просто замените в коде выше node_24.x на node_2X.x).
 
@@ -165,8 +165,11 @@ sudo apt-get install -y nodejs > /dev/null 2>&1
 echo -en "\n" ; echo "  # # Установка HomeBridge..."
 sudo apt-get install homebridge -y > /dev/null 2>&1
 
-echo -en "\n" ; echo "  # # Создание и запуск системной службы HomeBridge..."
-sudo hb-service install --user homebridge > /dev/null 2>&1
+echo -en "\n" ; echo "  # # Включение и запуск службы HomeBridge..."
+# Так как это официальный пакет, просто включаем и перезапускаем стандартную службу:
+sudo systemctl enable homebridge > /dev/null 2>&1
+sudo systemctl restart homebridge > /dev/null 2>&1
+sudo systemctl restart nginx > /dev/null 2>&1
 
 #echo -en "\n" ; echo "  # # Установка порта HomeBridge по умолчанию на 8080..."
 #sudo hb-service install --port 8080
