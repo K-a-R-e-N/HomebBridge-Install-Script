@@ -142,7 +142,7 @@ curl -sSfL https://repo.homebridge.io/KEY.gpg | sudo gpg --dearmor | sudo tee /u
 echo "deb [signed-by=/usr/share/keyrings/homebridge.gpg] https://repo.homebridge.io stable main" | sudo tee /etc/apt/sources.list.d/homebridge.list > /dev/null
 
 echo -en "\n" ; echo "  # # Проверка доступности репозитория Homebridge..."
-# Сначала тихо проверяем сеть в переменную
+# Проверяем реальный ответ репозитория
 if curl -m 4 -sI https://repo.homebridge.io/stable/InRelease | grep -q "200"; then
     HB_NET_STATUS=0
 else
@@ -154,20 +154,18 @@ if [ $HB_NET_STATUS -ne 0 ]; then
     echo "  ╔═════════════════════════════════════════════════════════════════════════════╗"
     echo -e "  ║               ${red}КРИТИЧЕСКАЯ ОШИБКА: РЕПОЗИТОРИЙ НЕДОСТУПЕН!${reset}                   ║"
     echo "  ╚═════════════════════════════════════════════════════════════════════════════╝"
-    echo -e "    ${yellow}Адрес репозитория:${reset} https://repo.homebridge.io"
-    echo -e "    ${yellow}Возможные причины:${reset}"
-    echo "    • Сервер заблокирован вашим интернет-провайдером (РКН)."
-    echo "    • Отсутствует внешнее интернет-соединение на плате SprutHub."
-    echo "    • Проблемы со стандартными DNS-серверами системы."
-    echo -en "\n"
-    echo "    Для исправления ситуации требуется настроить обход блокировок Mihomo (Clash)."
+    echo -e "    ${yellow}Адрес назначения:${reset} https://repo.homebridge.io"
+    echo -e "    ${yellow}Возможные причины ответа сервера:${reset}"
+    echo "    • Сетевые адреса Cloudflare заблокированы вашим провайдером (РКН)."
+    echo "    • На плате SprutHub отсутствует внешнее интернет-соединение."
+    echo "    • Системные DNS-серверы не могут разрешить имя хоста."
     echo -en "\n"
     
-    # Выводим интерактивное меню выбора
+    # Интерактивное меню действий
     echo "    ┌────────────────── ВЫБЕРИТЕ ДЕЙСТВИЕ ────────────────┐"
     echo "    │                                                     │"
-    echo "    │  1. Запустить скрипт настройки Mihomo (Clash)       │"
-    echo "    │  2. Отказаться и выйти из установки                 │"
+    echo "    │  1. Автоматически исправить сеть через Mihomo (Clash) │"
+    echo "    │  2. Отказаться и завершить установку                │"
     echo "    │                                                     │"
     echo "    └─────────────────────────────────────────────────────┘"
     echo -en "\n"
@@ -176,13 +174,24 @@ if [ $HB_NET_STATUS -ne 0 ]; then
         read -p "    Введите номер пункта (1-2): " NET_CHOICE
         case $NET_CHOICE in
             1)
-                echo -e "\n    ${green}Запуск соседнего файла конфигурации Mihomo...${reset}"
-                # Проверяем, существует ли файл в текущей папке скрипта
+                echo -e "\n    ${green}Запуск скрипта автонастройки Mihomo и генерации WARP...${reset}"
                 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+                
+                # Проверяем наличие соседнего файла исправления сети
                 if [ -f "$SCRIPT_DIR/mihomo-setup.sh" ]; then
                     chmod +x "$SCRIPT_DIR/mihomo-setup.sh"
+                    # Запускаем соседний скрипт
                     bash "$SCRIPT_DIR/mihomo-setup.sh"
-                    return 1
+                    
+                    # Проверяем, починилась ли сеть после работы соседнего скрипта
+                    echo "  # # Проверка связи после настройки туннеля..."
+                    if curl -m 5 -sI https://repo.homebridge.io/stable/InRelease | grep -q "200"; then
+                        echo -e "    ${green}[ОК] Сеть успешно восстановлена! Продолжаем установку Homebridge...${reset}"
+                        break # Выходим из цикла меню и продолжаем выполнять ОСНОВНОЙ скрипт автоматизации
+                    else
+                        echo -e "    ${red}Ошибка: Туннель запущен, но репозиторий всё еще заблокирован.${reset}"
+                        return 1
+                    fi
                 else
                     echo -e "    ${red}Ошибка: Файл $SCRIPT_DIR/mihomo-setup.sh не найден!${reset}"
                     return 1
@@ -193,9 +202,9 @@ if [ $HB_NET_STATUS -ne 0 ]; then
                 return 1
                 ;;
             *)
-                echo -e "    ${red}Неверный ввод. Пожалуйста, выберите 1 или 2.${reset}"
+                echo -e "    ${red}Неверный ввод. Пожалуйста, введите цифру 1 или 2.${reset}"
                 ;;
-        case
+        esac
     done
 else
     echo -e "  ${green}[ОК] Репозиторий доступен напрямую. Продолжаем установку...${reset}"
