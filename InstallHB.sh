@@ -135,10 +135,21 @@ echo -en "\n" ; echo "  # # Очистка старых репозиториев
 # Удаляем старые файлы списков, если они остались от прошлых установок
 sudo rm -f /etc/apt/sources.list.d/nodesource*.list
 sudo rm -f /etc/apt/sources.list.d/homebridge*.list
+# Remove the GPG keyring file associated with the old repository
+sudo rm /etc/apt/keyrings/nodesource.gpg
+
+echo -en "\n" ; echo "  # # Устранение ранее известных проблем..."
 # Автоматический принудительный сброс зависших блокировок apt/dpkg перед установкой
 sudo killall -9 apt apt-get dpkg 2>/dev/null
 sudo rm -f /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock /var/lib/dpkg/lock
-	
+# Create a directory for the new repository's keyring, if it doesn't exist
+sudo mkdir -p /etc/apt/keyrings
+
+echo -en "\n" ; echo "  # # Обновление индексов репозиторий..."
+sudo apt update -y > /dev/null 2>&1
+
+echo -en "\n" ; echo "  # # Установка необходимых зависимостей..."
+sudo apt-get install -y ca-certificates curl gnupg > /dev/null
 
 echo -en "\n" ; echo "  # # Добавление репозитория HomeBridge..."
 curl -sSfL https://repo.homebridge.io/KEY.gpg | sudo gpg --dearmor | sudo tee /usr/share/keyrings/homebridge.gpg > /dev/null
@@ -215,22 +226,17 @@ fi
 
 
 
-echo -en "\n" ; echo "  # # Добавление репозитория Node.js 24.x..."
-sudo apt-get install -y ca-certificates curl gnupg > /dev/null
-sudo mkdir -p /etc/apt/keyrings
-# Скачиваем официальный GPG-ключ NodeSource с флагом --yes, чтобы принудительно перезаписать существующий ключ
-curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | sudo gpg --yes --dearmor -o /etc/apt/keyrings/nodesource.gpg > /dev/null 2>&1
-#curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --yes --dearmor -o /etc/apt/keyrings/nodesource.gpg > /dev/null 2>&1
-
-# Добавляем официальный репозиторий для Node.js 24.x
-echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_24.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list > /dev/null
-# (Если вам нужна еще более новая Node.js, просто замените в коде выше node_24.x на node_2X.x).
-
-echo -en "\n" ; echo "  # # Обновление индексов репозиторий..."
-sudo apt update -y > /dev/null 2>&1
-
-#echo -en "\n" ; echo "  # # Установка необходимых зависимостей"
-#echo -en "\n" ; echo "  # # Устранение ранее известных проблем..."
+echo -en "\n" ; echo "  # # Добавление официального репозитория Node.js 24.x..."
+# Define the desired Node.js major version
+NODE_MAJOR=24
+# Download the new repository's GPG key and save it in the keyring directory
+curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --yes --dearmor -o /etc/apt/keyrings/nodesource.gpg > /dev/null 2>&1
+# Add the new repository's source list with its GPG key for package verification
+echo "Types: deb
+URIs: https://deb.nodesource.com/node_${NODE_MAJOR}.x/
+Suites: nodistro
+Components: main
+Signed-By: /etc/apt/keyrings/nodesource.gpg" | sudo tee /etc/apt/sources.list.d/nodesource.sources
 
 echo -en "\n" ; echo "  # # Установка пакетов gcc g++ make python..."
 sudo apt-get install -y gcc g++ make python3 > /dev/null
@@ -247,9 +253,9 @@ sudo apt-get install homebridge -y
 
 echo -en "\n" ; echo "  # # Включение и запуск службы HomeBridge..."
 # Так как это официальный пакет, просто включаем и перезапускаем стандартную службу:
-sudo systemctl enable homebridge > /dev/null 2>&1
-sudo systemctl restart homebridge > /dev/null 2>&1
-sudo systemctl restart nginx > /dev/null 2>&1
+# sudo systemctl enable homebridge > /dev/null 2>&1
+# sudo systemctl restart homebridge > /dev/null 2>&1
+# sudo systemctl restart nginx > /dev/null 2>&1
 
 #echo -en "\n" ; echo "  # # Установка порта HomeBridge по умолчанию на 8080..."
 #sudo hb-service install --port 8080
@@ -276,24 +282,12 @@ HB_PORT=$(grep -o '"port":\s*[0-9]*' /var/lib/homebridge/config.json 2>/dev/null
 HB_PORT=${HB_PORT:-8581}
 # Получаем IP-адрес (берем первый из списка, если их несколько)
 HB_IP=$(hostname -I | awk '{print $1}')
-
 # Безопасно считываем реальную установленную версию Homebridge
 if command -v homebridge >/dev/null 2>&1; then
     FINAL_HB_VERSION=$(homebridge -v 2>/dev/null)
 else
     FINAL_HB_VERSION="Ошибка установки"
 fi
-
-    echo -en "\n"
-    echo "    ┌──────────── Полезная информация для работы с HomeBridge ────────────┐"
-    echo "    │                                                                     │"
-    echo "    │  Установленная версия:  ${green}$FINAL_HB_VERSION${reset}" # Выведет точную версию, например: 2.0.18
-    echo "    │                                                                     │"
-    echo "    │  Доступ к веб-интерфейсу HomeBridge по адресу:                      │"
-    echo "    │  ${green}http://$HB_IP:$HB_PORT/${reset}                                       │"
-    echo "    └─────────────────────────────────────────────────────────────────────┘"
-    echo -en "\n"
-
 
 echo -en "\n"
 echo -en "\n"
