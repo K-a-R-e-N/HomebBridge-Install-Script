@@ -7,7 +7,7 @@ amber=$(tput setaf 3)
 dim=$(tput setaf 8)
 reset=$(tput sgr0)
 
-# Полностью вычищаем старые зависшие процессы перед ручной сборкой по статье
+# Полностью вычищаем старые зависшие процессы перед сборкой по статье
 sudo systemctl disable --now amneziawg > /dev/null 2>&1
 sudo systemctl disable --now mihomo > /dev/null 2>&1
 sudo killall -9 awg awg-quick mihomo > /dev/null 2>&1
@@ -18,6 +18,7 @@ echo "${cyan}╚═════════════════════�
 
 echo -en "\n" ; echo "  # # Создание рабочих папок для программы..."
 sudo mkdir -p /usr/local/bin /etc/mihomo
+sudo rm -f /etc/mihomo/user_warp.yaml
 
 # 1. Скачивание и распаковка чистого официального ядра Mihomo строго по статье
 if [ ! -f /usr/local/bin/mihomo ]; then
@@ -27,25 +28,22 @@ if [ ! -f /usr/local/bin/mihomo ]; then
     sudo chmod +x /usr/local/bin/mihomo
 fi
 
-# 2. Инструкция и опросник ввода текста прямо в консоль (без nano, без зависаний EOF)
+# 2. Пошаговая инструкция для пользователя
 echo -e "\n  ${amber}ШАГ 1:${reset} Откройте в браузере сайт генератора:"
 echo -e "         ${green}https://warp-gen.github.io${reset}"
 echo -e "\n  ${amber}ШАГ 2:${reset} Найдите блок с логотипом кота и надписью ${cyan}Clash${reset}."
 echo -e "         Нажмите на оранжевую кнопку ${amber}AWG 2.0${reset} внутри этого блока."
 echo -e "\n  ${amber}ШАГ 3:${reset} Полностью скопируйте весь открывшийся YAML-текст конфига."
-echo -e "\n  ${amber}
-
-
-ШАГ 4:${reset} Вставьте скопированный текст прямо сюда, в консоль (${cyan}Ctrl+V${reset})."
-echo -e "         Затем с новой строки введите английскими буквами слово ${cyan}EOF${reset} и нажмите ${cyan}Enter${reset}."
+echo -e "\n  ${amber}ШАГ 4:${reset} Сейчас откроется чистый редактор. Вставьте скопированный текст (${cyan}Ctrl+V${reset}),"
+echo -e "         нажмите ${cyan}Ctrl+O${reset} -> ${cyan}Enter${reset} (сохранить) и ${cyan}Ctrl+X${reset} (выход)."
 echo -en "\n"
-echo "  Вставьте текст из файла warp-gen ниже и напишите EOF:"
+read -p "  По готовности нажмите [ENTER], чтобы открыть редактор и вставить текст... "
 
-# Читаем ввод пользователя напрямую в промежуточный файл
-sudo tee /etc/mihomo/user_warp.yaml > /dev/null
+# Возвращено по вашему требованию: Открываем чистый nano для вставки текста (без EOF)
+sudo nano /etc/mihomo/user_warp.yaml
 
 if [ ! -s /etc/mihomo/user_warp.yaml ]; then
-    echo -e "\n  ${amber}Ошибка: Вы ничего не вставили. Действие отменено.${reset}\n"
+    echo -e "\n  ${amber}Ошибка: Вы ничего не вставили в редактор. Действие отменено.${reset}\n"
     exit 1
 fi
 
@@ -83,6 +81,10 @@ EOF
 sudo cat /etc/mihomo/user_warp.yaml | sudo tee -a /etc/mihomo/config.yaml > /dev/null
 sudo rm -f /etc/mihomo/user_warp.yaml
 
+# ЖЕСТКОЕ ИСПРАВЛЕНИЕ РЕГИСТРА: Переводим имя прокси-группы warp в верхний регистр WARP для совместимости со статьей
+sudo sed -i 's/- name: warp/- name: WARP/g' /etc/mihomo/config.yaml
+sudo sed -i 's/- warp/- WARP/g' /etc/mihomo/config.yaml
+
 # Дописываем В САМЫЙ КОНЕЦ ФАЙЛА правила исключений, расширив их под репозитории Node.js и Homebridge
 sudo tee -a /etc/mihomo/config.yaml > /dev/null << EOF
 
@@ -100,7 +102,7 @@ rules:
   - DOMAIN-SUFFIX,raspberrypi.com,DIRECT
   - DOMAIN-SUFFIX,raspbian.org,DIRECT
   - DOMAIN-SUFFIX,debian.org,DIRECT
-  - DOMAIN-SUFFIX,nodesource.com,DIRECT   # Исправлено: Node.js качается напрямую БЕЗ зависаний
+  - DOMAIN-SUFFIX,nodesource.com,DIRECT   # Исправлено: Node.js качается напрямую через провайдера БЕЗ зависаний
   - DOMAIN-SUFFIX,homebridge.io,DIRECT   # Исправлено: пакеты Homebridge качаются напрямую
   
   # 3. Весь остальной внешний интернет-трафик заворачиваем в ваш VPN-туннель
@@ -133,6 +135,5 @@ echo "  # # Запуск туннеля Mihomo. Ожидание инициал�
 sleep 5
 
 # Финальный принудительный возврат статуса успеха главному скрипту
-# Так как репозитории идут напрямую через DIRECT (вашего провайдера), главный скрипт сразу сможет их скачать!
 echo -e "\n  ${green}[ОК] Конфигурация Mihomo по статье успешно собрана и запущена!${reset}\n"
 exit 0
