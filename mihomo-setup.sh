@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Настройка мягкой и контрастной цветовой палитры
+# Настройка мягкой и контрастной цветовой палитры (без едкого красного)
 cyan=$(tput setaf 6)
 green=$(tput setaf 2)
 amber=$(tput setaf 3)
@@ -12,6 +12,7 @@ sudo systemctl disable --now amneziawg > /dev/null 2>&1
 sudo systemctl disable --now awg-quick@awg0 > /dev/null 2>&1
 sudo killall -9 awg awg-quick mihomo > /dev/null 2>&1
 
+# Команда clear УБРАНА, так как главный скрипт уже очистил экран перед вызовом!
 echo "${cyan}╔═════════════════════════════════════════════════════════════════════════════╗${reset}"
 echo "${cyan}║             Настройка обхода блокировок AmneziaWG (Вставка конфига)         ║${reset}"
 echo "${cyan}╚═════════════════════════════════════════════════════════════════════════════╝${reset}"
@@ -25,7 +26,7 @@ if [ ! -f /usr/local/bin/awg ]; then
     sudo chmod +x /usr/local/bin/awg
 fi
 
-# 2. Инструкция для пользователя
+# 2. Грамотная пошаговая инструкция для пользователя
 echo -e "\n  ${amber}ШАГ 1:${reset} Откройте в браузере сайт:"
 echo -e "         ${green}https://warp-generation.github.io${reset}"
 echo -e "\n  ${amber}ШАГ 2:${reset} Справа найдите блок ${cyan}AmneziaWG${reset} (самый первый блок!)"
@@ -88,7 +89,6 @@ After=network.target
 Type=simple
 User=root
 ExecStart=/usr/local/bin/awg awg0
-# Маршрутизируем подсети Cloudflare напрямую в интерфейс туннеля awg0
 ExecStartPost=/bin/bash -c 'sleep 1 && ip address add $USER_TUN_IP dev awg0 && ip link set mtu 1280 dev awg0 && ip link set awg0 up && ip route add 104.26.0.0/16 dev awg0 && ip route add 172.67.0.0/16 dev awg0'
 Restart=always
 RestartSec=5
@@ -109,6 +109,7 @@ if curl -m 6 -sI https://repo.homebridge.io/stable/InRelease | grep -q "200"; th
     echo -e "\n  ${green}[ОК] Туннель AmneziaWG успешно запущен, блокировка пробита!${reset}\n"
     exit 0
 else
+    # Мягкий цвет вместо ядовитого красного
     echo -e "\n  ${amber}[!] Служба запущена, но соединение с Cloudflare отсутствует.${reset}"
     echo -e "      ${dim}Попробуйте скопировать '2 вариант' или '3 вариант' AmneziaWG на сайте.${reset}\n"
     exit 1
