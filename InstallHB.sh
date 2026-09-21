@@ -1,6 +1,10 @@
 #!/bin/bash
-yellow=$(tput setf 6) ; red=$(tput setf 4) ; green=$(tput setf 2) ; reset=$(tput sgr0)
-cmdkey=0 ; ME=`basename $0` cd~ ; clear
+yellow=$(tput setaf 3 2>/dev/null || tput setf 6)
+red=$(tput setaf 1 2>/dev/null || tput setf 4)
+green=$(tput setaf 2 2>/dev/null || tput setf 2)
+reset=$(tput sgr0)
+
+cmdkey=0 ; ME=`basename $0` ; cd ~ ; clear
 
 BackupsFolder=~/HB_Backup
 
@@ -14,6 +18,7 @@ echo "║                                                                       
 echo "╚═════════════════════════════════════════════════════════════════════════════╝"
 echo -en "\n ${reset}"
 }
+
 function GoToMenu {
   GoToMenuInfo="Чтобы продолжить, введите"
 while :
@@ -30,7 +35,7 @@ while :
 	echo -en "\n"
 	echo "           3 - Полное удаление Homebridge с очисткой системы $UninstallInfo"
 	echo -en "\n"
-	echo "           4 - Обновление Homebridge до актуально версии $UpdatingInfo"
+	echo "           4 - Обновление Homebridge до актуальной версии $UpdatingInfo"
 	echo -en "\n"
 	echo "           0 - Завершение работы с самоудалением скрипта"
 	echo -en "\n"
@@ -66,7 +71,7 @@ done
 
 
 function СheckingInstalledPackage() {
-    InstalledPackageKey=0
+    local InstalledPackageKey=0
     echo -en "\n" ; echo "  # # Проверка на ранее установленную версию..."
     
     if dpkg -s homebridge 2>/dev/null | grep -q "Status: install ok installed"; then
@@ -82,47 +87,60 @@ function СheckingInstalledPackage() {
         else
             NODE_VER=$(node -v 2>/dev/null | tr -d ' ' || echo "неизвестно")
             echo -en "\n" ; echo "     - В системе уже установлен пакет Node.js ${green}$NODE_VER${reset}, но HomeBridge не установлен..."
-            InstallInfo="${red}[установлен NodeJS]${reset}"
+            [ "$cmdkey" -ne 1 ] && InstallInfo="${red}[установлен NodeJS]${reset}"
             InstalledPackageKey=1
+        fi
+    fi
+
+    if [ "$InstalledPackageKey" -eq 1 ]; then
+        if [ "$cmdkey" -eq 1 ]; then
+            echo -en "\n" ; echo -e "\a"
+            read -p "${green}           Нажмите любую клавишу, чтобы завершить работу скрипта...${reset}"
+            exit 0
+        else
+            echo -en "\n" ; echo -e "\a"
+            read -p "${green}           Нажмите любую клавишу, чтобы вернуться в главное меню...${reset}"
+            return 1
         fi
     fi
 }
 
 
-if [ "$InstalledPackageKey" -eq 1 ]; then
-    if [ "$cmdkey" -eq 1 ]; then
-        echo -en "\n" ; echo -e "\a"
-        read -p "${green}           Нажмите любую клавишу, чтобы завершить работу скрипта...${reset}"
-        exit 0
-    else
-        echo -en "\n" ; echo -e "\a"
-        read -p "${green}           Нажмите любую клавишу, чтобы вернуться в главное меню...${reset}"
-        GoToMenu
-    fi
-fi
-
-
 function BackUpScript() {
+    # Создаем папку для бэкапов, если её нет
+    [ ! -d "$BackupsFolder" ] && sudo mkdir -p "$BackupsFolder" && sudo chmod 777 "$BackupsFolder"
 
-[ ! -d $BackupsFolder ] && sudo mkdir -p $BackupsFolder && sudo chmod 777 $BackupsFolder
+    # Бэкап основного рабочего конфига современного Homebridge
+    if [ -f /var/lib/homebridge/config.json ]; then
+        sudo cp -f /var/lib/homebridge/config.json "$BackupsFolder/config.json.main.$(date +%s)" >/dev/null 2>&1
+        CheckBackUp=1
+    fi
 
-	HA_SOURCE=/var/lib/homebridge/backups/config-backups
-	[ ! -f $HA_SOURCE/config.json.* ] && CheckBackUp=1 && sudo cp -f $HA_SOURCE/config.json.* $BackupsFolder >/dev/null 2>&1
+    # Безопасный бэкап папки с ротируемыми копиями config.json.* через find
+    HA_SOURCE=/var/lib/homebridge/backups/config-backups
+    if [ -d "$HA_SOURCE" ]; then
+        find "$HA_SOURCE" -maxdepth 1 -type f -name "config.json.*" -exec sudo cp -f {} "$BackupsFolder" \; >/dev/null 2>&1
+        CheckBackUp=1
+    fi
 
-	HA_SOURCE=/var/homebridge
-	[ ! -f $HA_SOURCE/config.json ] && CheckBackUp=1 && sudo cp -f $HA_SOURCE/config.json $BackupsFolder/config.json.$(date +%s)000 >/dev/null 2>&1
+    # Бэкап из старого пути /var/homebridge
+    HA_SOURCE=/var/homebridge
+    if [ -f "$HA_SOURCE/config.json" ]; then
+        sudo cp -f "$HA_SOURCE/config.json" "$BackupsFolder/config.json.old_var.$(date +%s)" >/dev/null 2>&1
+        CheckBackUp=1
+    fi
 
-	HA_SOURCE=/var/homebridge
-	[ ! -f $HA_SOURCE/config.json ] && CheckBackUp=1 && sudo cp -f $HA_SOURCE/config.json $BackupsFolder/config.json.$(date +%s)000 >/dev/null 2>&1
+    # Бэкап из домашней папки пользователя ~/.homebridge
+    HA_SOURCE=~/.homebridge
+    if [ -f "$HA_SOURCE/config.json" ]; then
+        sudo cp -f "$HA_SOURCE/config.json" "$BackupsFolder/config.json.user.$(date +%s)" >/dev/null 2>&1
+        CheckBackUp=1
+    fi
 
-	HA_SOURCE=~/.homebridge
-	[ ! -f $HA_SOURCE/config.json ] && CheckBackUp=1 && sudo cp -f $HA_SOURCE/config.json $BackupsFolder/config.json.$(date +%s)000 >/dev/null 2>&1
-
-if [ $CheckBackUp -eq 1 ]; then
-	echo -en "\n" ; echo "  # # Создание резервной копии конфигурационных файлов HomeBridge..."
-fi
+    if [ "$CheckBackUp" -eq 1 ]; then
+        echo -en "\n" ; echo "  # # Создание резервной копии конфигурационных файлов HomeBridge..."
+    fi
 }
-
 
 
 function InstallScript() {
@@ -224,37 +242,35 @@ fi
     fi
 
 
-
-echo -en "\n" ; echo "  # # Добавление официального репозитория Node.js 24.x..."
+#echo -en "\n" ; echo "  # # Добавление официального репозитория Node.js 24.x..."
 # Define the desired Node.js major version
-NODE_MAJOR=24
+#NODE_MAJOR=24
 # Download the new repository's GPG key and save it in the keyring directory
-curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --yes --dearmor -o /etc/apt/keyrings/nodesource.gpg > /dev/null 2>&1
+#curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --yes --dearmor -o /etc/apt/keyrings/nodesource.gpg > /dev/null 2>&1
 # Add the new repository's source list with its GPG key for package verification
-echo "Types: deb
-URIs: https://deb.nodesource.com/node_${NODE_MAJOR}.x/
-Suites: nodistro
-Components: main
-Signed-By: /etc/apt/keyrings/nodesource.gpg" | sudo tee /etc/apt/sources.list.d/nodesource.sources
+#echo "Types: deb
+#URIs: https://deb.nodesource.com/node_${NODE_MAJOR}.x/
+#Suites: nodistro
+#Components: main
+#Signed-By: /etc/apt/keyrings/nodesource.gpg" | sudo tee /etc/apt/sources.list.d/nodesource.sources
 
-echo -en "\n" ; echo "  # # Обновление индексов под новый репозиторий..."
-# Обновляем индекс пакетов, чтобы система увидела новый добавленный файл .sources
+echo -en "\n" ; echo "  # # Обновление индексов пакетов перед установкой зависимостей..."
 sudo apt-get update
 
-echo -en "\n" ; echo "  # # Установка пакетов gcc g++ make python..."
+echo -en "\n" ; echo "  # # Установка пакетов gcc g++ make python3 для сборки плагинов..."
 sudo apt-get install -y gcc g++ make python3 > /dev/null
 
 echo -en "\n" ; echo "  # # Установка пакета libavahi-compat-libdnssd-dev..."
 sudo apt-get install -y libavahi-compat-libdnssd-dev > /dev/null
 
-echo -en "\n" ; echo "  # # Установка Node.js..."
-sudo apt-get install -y nodejs > /dev/null 2>&1
+#echo -en "\n" ; echo "  # # Установка Node.js..."
+#sudo apt-get install -y nodejs > /dev/null 2>&1
 
 echo -en "\n" ; echo "  # # Установка HomeBridge..."
 #sudo apt-get install homebridge -y > /dev/null 2>&1
 sudo apt-get install homebridge -y
 
-echo -en "\n" ; echo "  # # Включение и запуск службы HomeBridge..."
+#echo -en "\n" ; echo "  # # Включение и запуск службы HomeBridge..."
 # Так как это официальный пакет, просто включаем и перезапускаем стандартную службу:
 # sudo systemctl enable homebridge > /dev/null 2>&1
 # sudo systemctl restart homebridge > /dev/null 2>&1
@@ -268,39 +284,60 @@ echo -en "\n" ; echo "  # # Включение и запуск службы Home
 #sudo sed -i 's|"port": 8581|"port": 8080|' /var/lib/homebridge/config.json
 #sudo systemctl restart nginx > /dev/null 2>&1
 
-# Восстанавление резервной копии
+# Восстановление резервной копии
 if [ -d "$BackupsFolder" ] && [ "$(ls -A "$BackupsFolder" 2>/dev/null)" ]; then
-	BackupRecovery=1 && echo -en "\n" && echo "  # # Восстанавление резервной копии конфигурационных файлов HomeBridge..."
+    BackupRecovery=1
+    echo -en "\n" ; echo "  # # Восстановление резервной копии конфигурационных файлов HomeBridge..."
 
-	if [ ! -d /var/lib/homebridge/backups/config-backups ] ; then 
-		sudo mkdir -p /var/lib/homebridge/backups/config-backups && sudo chmod 777 /var/lib/homebridge/backups/config-backups
-	fi
-	sudo mv -f $BackupsFolder/config.json.* /var/lib/homebridge/backups/config-backups
-	sudo rm -rf $BackupsFolder
+    if [ ! -d /var/lib/homebridge/backups/config-backups ] ; then 
+        sudo mkdir -p /var/lib/homebridge/backups/config-backups && sudo chmod 777 /var/lib/homebridge/backups/config-backups
+    fi
+    
+    sudo cp -f "$BackupsFolder"/config.json.* /var/lib/homebridge/backups/config-backups/ 2>/dev/null
+    
+    # Ищем самый свежий бэкап и делаем его основным рабочим конфигом, чтобы система не запустилась пустой
+    LATEST_CONF=$(ls -t "$BackupsFolder"/config.json.* 2>/dev/null | head -n 1)
+    if [ -n "$LATEST_CONF" ]; then
+        sudo cp -f "$LATEST_CONF" /var/lib/homebridge/config.json
+        sudo chown homebridge:homebridge /var/lib/homebridge/config.json
+    fi
+    
+    rm -f "$BackupsFolder"/config.json.* 2>/dev/null
 fi
 
 # Читаем порт из конфига HomeBridge (вырежет только цифры из строки "port": XXXX)
 HB_PORT=$(grep -o '"port":\s*[0-9]*' /var/lib/homebridge/config.json 2>/dev/null | grep -o '[0-9]*')
 # Если вдруг файл пустой или не найден, ставим дефолтный 8581
 HB_PORT=${HB_PORT:-8581}
+
 # Получаем IP-адрес (берем первый из списка, если их несколько)
 HB_IP=$(hostname -I | awk '{print $1}')
+
 # Безопасно считываем реальную установленную версию Homebridge
 if command -v homebridge >/dev/null 2>&1; then
     FINAL_HB_VERSION=$(homebridge -v 2>/dev/null)
+elif [ -f /opt/homebridge/bin/homebridge ]; then
+    FINAL_HB_VERSION=$(/opt/homebridge/bin/homebridge -v 2>/dev/null)
 else
     FINAL_HB_VERSION="Ошибка установки"
+fi
+
+# Считываем версию Node.js (приоритет изолированной версии Homebridge на Debian 13)
+if [ -f /opt/homebridge/bin/node ]; then
+    NODE_VERSION_DISPLAY=$(/opt/homebridge/bin/node -v 2>/dev/null | tr -d ' ')
+else
+    NODE_VERSION_DISPLAY=$(node -v 2>/dev/null | tr -d ' ' || echo "неизвестно")
 fi
 
 echo -en "\n"
 echo -en "\n"
 echo "╔═════════════════════════════════════════════════════════════════════════════╗"
-echo "║              ${green}Установки HomeBridge и его зависимостей завершена${reset}              ║"
+echo "║              ${green}Установка HomeBridge и его зависимостей завершена${reset}              ║"
 echo "╚═════════════════════════════════════════════════════════════════════════════╝"
 echo -en "\n"
 echo "    ┌──────────── Полезная информация для работы с HomeBridge ────────────┐"
 echo "    │                                                                     │"
-echo "    │  Установленная версия:  ${green}$FINAL_HB_VERSION${reset}" # Выведет точную версию, например: 2.0.18
+echo "    │  Установленная версия:  ${green}$FINAL_HB_VERSION${reset}" 
 echo "    │                                                                     │"
 echo "    │            Доступ к веб-интерфейсу HomeBridge по адресу:            │"
 echo "    │  ${green}http://$HB_IP:$HB_PORT/${reset}                                       │"
@@ -308,8 +345,8 @@ echo "    │                                                                   
 echo "    │                  Редактирование файла конфигурации                  │"
 echo "    │              ${green}sudo nano /var/lib/homebridge/config.json${reset}              │"
 echo "    │                                                                     │"
-if [ $CheckBackUp -eq 1 ]; then
-echo "    │               Путь к восстанавленым резервным копиям:               │"
+if [ "$CheckBackUp" -eq 1 ]; then
+echo "    │               Путь к восстановленным резервным копиям:              │"
 echo "    │             ${green}/var/lib/homebridge/backups/config-backups/${reset}              │"
 echo "    │                                                                     │"
 fi
@@ -333,24 +370,21 @@ echo "    │                            ${green}sudo hb-shell${reset}          
 echo "    │                                                                     │"
 echo "    └─────────────────────────────────────────────────────────────────────┘"
 echo "                                 ┌ Установленная версия Node.js ┐"
-echo "                                 │           ${green}$(node -v | tr -d ' ')${reset}           │"
+echo "                                 │           ${green}$NODE_VERSION_DISPLAY${reset}           │"
 echo "                                 └──────────────────────────────┘"
 echo -e "\a"
 
 InstallInfo="${green}[OK]${reset}"
 
-if [ $cmdkey -eq 1 ]; then
-	sleep 5
-	return
+if [ "$cmdkey" -eq 1 ]; then
+    sleep 5
+    return
 fi
 
 read -p "${green}           Нажмите любую клавишу, чтобы вернуться в главное меню...${reset}"
 sleep 1
 GoToMenu
 }
-
-
-
 
 
 function UninstallScript() {
@@ -364,34 +398,36 @@ sudo service homebridge stop > /dev/null 2>&1
 sudo pm2 stop all > /dev/null 2>&1
 sudo killall -w -s 9 -u homebridge > /dev/null 2>&1
 
+# Обязательно делаем бэкап перед тем, как всё снести
 BackUpScript
 
-echo -en "\n" ; echo "  # # Деинсталляция HomeBridge..."
+echo -en "\n" ; echo "  # # Деинсталляция пакета HomeBridge..."
 sudo apt-get remove homebridge -y > /dev/null 2>&1
 
-echo -en "\n" ; echo "  # # Деинсталляция NodeJS..."
+echo -en "\n" ; echo "  # # Деинсталляция NodeJS (если осталась в системе)..."
 sudo apt-get purge --auto-remove nodejs -y > /dev/null 2>&1
 
-echo -en "\n" ; echo "  # # Удаление репозитория Homebridge..."
-sudo rm -rf /etc/apt/sources.list.d/homebridge.list
+echo -en "\n" ; echo "  # # Удаление репозитория и ключей Homebridge..."
+sudo rm -f /etc/apt/sources.list.d/homebridge.list
+sudo rm -f /usr/share/keyrings/homebridge.gpg
 
-echo -en "\n" ; echo "  # # Удаление репозитория NodeJS..."
-sudo rm -rf /etc/apt/sources.list.d/chris-lea-node_js-*
+#echo -en "\n" ; echo "  # # Удаление репозитория NodeJS..."
+#sudo rm -rf /etc/apt/sources.list.d/chris-lea-node_js-*
 
-echo -en "\n" ; echo "  # # Деинсталляция всех плагинов и конфигурацию Homebridge..."
+echo -en "\n" ; echo "  # # Деинсталляция всех плагинов и конфигураций Homebridge..."
 sudo apt-get purge homebridge -y > /dev/null 2>&1
 
 echo -en "\n" ; echo "  # # Удаление пользователя homebridge..."
 sudo userdel -rf homebridge > /dev/null 2>&1
 
-echo -en "\n" ; echo "  # # Удаление служб из списока автозагрузки..."
+echo -en "\n" ; echo "  # # Удаление служб из списка автозагрузки..."
 sudo update-rc.d homebridge remove > /dev/null 2>&1
-sudo rm -rf /etc/init.d/homebridge
+sudo rm -f /etc/init.d/homebridge
 sudo rm -rf /etc/systemd/system/homebridge*
 sudo rm -rf /etc/systemd/system/multi-user.target.wants/homebridge*
 sudo systemctl --system daemon-reload > /dev/null
 
-echo -en "\n" ; echo "  # # Удаление хвостов, для возможности последующей нормальной установки..."
+echo -en "\n" ; echo "  # # Удаление хвостов для возможности последующей нормальной установки..."
 sudo curl -sfL https://gist.githubusercontent.com/oznu/312b54364616082c3c1e0b6b02351f0e/raw/remove-node.sh | sudo bash > /dev/null 2>&1
 sudo rm -rf /usr/lib/node_modules/homebridge*
 sudo rm -rf /usr/bin/homebridge*
@@ -408,13 +444,13 @@ sudo rm -rf /usr/lib/node_modules/ps4-waker
 echo -en "\n"
 echo -en "\n"
 echo "╔═════════════════════════════════════════════════════════════════════════════╗"
-echo "   ${green}Удаление Homebridge, а так же всех его плагинов с конфигурациями завершена${reset}"
+echo "   ${green}Удаление Homebridge, а так же всех его плагинов с конфигурациями завершено${reset}"
 echo "╚═════════════════════════════════════════════════════════════════════════════╝"
 echo -e "\a"
 
 UninstallInfo="${green}[OK]${reset}"
 
-if [ $cmdkey -eq 1 ]; then
+if [ "$cmdkey" -eq 1 ]; then
 	sleep 5
 	return
 fi
@@ -423,8 +459,6 @@ read -p "${green}           Нажмите любую клавишу, чтобы
 sleep 1
 GoToMenu
 }
-
-
 
 
 
@@ -432,27 +466,32 @@ function UpdatingScript() {
 clear ; CheckBackUp=0 ; BackupRecovery=0
 ZI=" Обновление" && Zagolovok
 
+# Перед любым обновлением обязательно страхуемся бэкапом
 BackUpScript
 
-echo -en "\n" ; echo "  # # Обновление кеша данных и индексов репозиторий..."
-sudo rm -Rf /var/lib/apt/lists
-sudo apt update -y > /dev/null 2>&1
+echo -en "\n" ; echo "  # # Обновление индексов пакетов..."
 sudo apt-get update -y > /dev/null 2>&1
-sudo apt upgrade -y > /dev/null 2>&1
 
 echo -en "\n" ; echo "  # # Обновление HomeBridge..."
-sudo apt-get install homebridge -y > /dev/null 2>&1
+# Флаг --only-upgrade обновит только Homebridge, не трогая остальную операционную систему
+sudo apt-get install --only-upgrade homebridge -y > /dev/null 2>&1
+
+echo -en "\n" ; echo "  # # Обновление встроенного окружения Node.js до ветки 24..."
+# Проверяем, обновился ли бинарник hb-service, и обновляем внутренний Node.js
+if command -v hb-service >/dev/null 2>&1; then
+    sudo hb-service update-node 24 > /dev/null 2>&1
+fi
 
 echo -en "\n"
 echo -en "\n"
 echo "╔═════════════════════════════════════════════════════════════════════════════╗"
-echo "   ${green}Обновление Homebridge, а так же всех его плагинов с конфигурациями завершена${reset}"
+echo "   ${green}Обновление Homebridge успешно завершено!${reset}"
 echo "╚═════════════════════════════════════════════════════════════════════════════╝"
 echo -e "\a"
 
 UpdatingInfo="${green}[OK]${reset}"
 
-if [ $cmdkey -eq 1 ]; then
+if [ "$cmdkey" -eq 1 ]; then
 	sleep 5
 	return
 fi
@@ -463,75 +502,63 @@ GoToMenu
 }
 
 
-
-
-
 function RremovalItself() {
-echo -en "\n" ; echo "                   Самоудаление папки со скриптом установки...  " ; cd
-sudo rm -rf ~/HomebBridge-Install-Script
-if [ $? -eq 0 ]; then
-	echo "                ${green}[Успешно удалено]${reset} - ${red}Завершение работы скрипта...${reset}" ; echo -en "\n"
-else
-	echo "            ${red}[Удаление не удалось] - Завершение работы скрипта...${reset}" ; echo -en "\n"
-fi
-sleep 1
-exit 0
+    echo -en "\n" ; echo "                   Самоудаление папки со скриптом установки...  " ; cd
+    
+    SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+    sudo rm -rf "$SCRIPT_DIR"
+    if [ $? -eq 0 ]; then
+        echo "                ${green}[Успешно удалено]${reset} - ${red}Завершение работы скрипта...${reset}" ; echo -en "\n"
+    else
+        echo "            ${red}[Удаление не удалось] - Завершение работы скрипта...${reset}" ; echo -en "\n"
+    fi
+    sleep 1
+    exit 0
 }
-
-
 
 function print_help() {
-	echo -en "\n"
-	echo "  ${yellow}Справка по работе скрипта $ME из командной строки${reset}"
-	echo -en "\n"
-	echo "    Использование: $ME [-i] [-u] [-r] [-d] [-h] "
-	echo -en "\n"
-	echo "        Параметры:"
-	echo "            -i        Установка Homebridge на чистой системе."
-	echo "            -u        Полное удаление Homebridge с очисткой системы."
-	echo "            -r        Установка Homebridge с полным удалением старой версии."
-	echo "            -d        Самоудаление папки со скриптом установки."
-	echo -en "\n"
-	echo "            -h        Вызов справки."
-	echo -en "\n"
-exit 0
+    echo -en "\n"
+    echo "  ${yellow}Справка по работе скрипта $ME из командной строки${reset}"
+    echo -en "\n"
+    echo "    Использование: $ME [-i] [-u] [-r] [-d] [-h] "
+    echo -en "\n"
+    echo "        Параметры:"
+    echo "            -i        Установка Homebridge на чистой системе."
+    echo "            -u        Полное удаление Homebridge с очисткой системы."
+    echo "            -r        Установка Homebridge с полным удалением старой версии."
+    echo "            -d        Самоудаление папки со скриптом установки."
+    echo -en "\n"
+    echo "            -h        Вызов справки."
+    echo -en "\n"
+    exit 0
 }
 
-
-
-
-
-# Если скрипт запущен без аргументов, открываем справку.
+# Если аргументов нет — запускаем интерактивное меню
 if [ $# = 0 ]; then
-	GoToMenu
+    GoToMenu
 fi
 
 while getopts ":uUiIrRhHdD" Option
-	do
-
-	cmdkey=1
- 
-	case $Option in
-
-		I|i) 	InstallScript ;;
-
-		U|u) 	UninstallScript ;;
-
-		R|r) 	UninstallScript ; InstallScript ;;
-
-		D|d) 	RremovalItself ;;
-
-		H|h) 	print_help ;;
-
-		*) 	echo -en "\n" ; echo -en "\n"
-			echo "${red}           Неправильный параметр!${reset}"
-			print_help ; exit 1 ;;
-	esac
+do
+    cmdkey=1
+    case $Option in
+        I|i)    InstallScript ;;
+        U|u)    UninstallScript ;;
+        R|r)    UninstallScript ; InstallScript ;;
+        D|d)    RremovalItself ;;
+        H|h)    print_help ;;
+        *)      echo -en "\n" ; echo -en "\n"
+                echo "${red}           Неправильный параметр!${reset}"
+                print_help
+                exit 1 # ИСПРАВЛЕНО: возвращаем явную ошибку для операционной системы
+                ;;
+    esac
 done
 
 shift $(($OPTIND - 1))
-
 exit 0
+
+# Info
 # https://github.com/homebridge/homebridge/wiki/Install-Homebridge-on-Raspbian
 # https://github.com/homebridge/homebridge-config-ui-x/wiki/Homebridge-Service-Command
 # https://github.com/homebridge/homebridge-raspbian-image/wiki#default-ports
