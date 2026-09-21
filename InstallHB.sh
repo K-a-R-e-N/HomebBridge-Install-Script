@@ -174,40 +174,38 @@ if [ $HB_NET_STATUS -ne 0 ]; then
         read -p "    Введите номер пункта (1-2): " NET_CHOICE
         case $NET_CHOICE in
             1)
-                echo -e "\n    ${green}Запуск скрипта автонастройки Mihomo и генерации WARP...${reset}"
-                SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+                echo -e "\n    \${green}Запуск скрипта автонастройки Mihomo и генерации WARP...\${reset}"
+                SCRIPT_DIR=\$(dirname "\$(readlink -f "\$0")")
                 
-                # Проверяем наличие соседнего файла исправления сети
-                if [ -f "$SCRIPT_DIR/mihomo-setup.sh" ]; then
-                    chmod +x "$SCRIPT_DIR/mihomo-setup.sh"
-                    # Запускаем соседний скрипт
-                    bash "$SCRIPT_DIR/mihomo-setup.sh"
+                if [ -f "\$SCRIPT_DIR/mihomo-setup.sh" ]; then
+                    chmod +x "\$SCRIPT_DIR/mihomo-setup.sh"
+                    bash "\$SCRIPT_DIR/mihomo-setup.sh"
                     
-                    # Проверяем, починилась ли сеть после работы соседнего скрипта
                     echo "  # # Проверка связи после настройки туннеля..."
                     if curl -m 5 -sI https://repo.homebridge.io/stable/InRelease | grep -q "200"; then
-                        echo -e "    ${green}[ОК] Сеть успешно восстановлена! Продолжаем установку Homebridge...${reset}"
-                        break # Выходим из цикла меню и продолжаем выполнять ОСНОВНОЙ скрипт автоматизации
+                        echo -e "    \${green}[ОК] Сеть успешно восстановлена! Продолжаем установку Homebridge...\${reset}"
+                        break 
                     else
-                        echo -e "    ${red}Ошибка: Туннель запущен, но репозиторий всё еще заблокирован.${reset}"
-                        return 1
+                        echo -e "    \${red}Ошибка: Туннель запущен, но репозиторий всё еще заблокирован.\${reset}"
+                        echo "    Завершение работы без удаления файлов скрипта. Разберитесь с VPN."
+                        exit 1 
                     fi
                 else
-                    echo -e "    ${red}Ошибка: Файл $SCRIPT_DIR/mihomo-setup.sh не найден!${reset}"
-                    return 1
+                    echo -e "    \${red}Ошибка: Файл \$SCRIPT_DIR/mihomo-setup.sh не найден!\${reset}"
+                    exit 1
                 fi
                 ;;
             2)
-                echo -e "    ${yellow}Установка отменена пользователем.${reset}"
-                return 1
+                echo -e "    \${yellow}Установка отменена пользователем.\${reset}"
+                exit 1
                 ;;
             *)
-                echo -e "    ${red}Неверный ввод. Пожалуйста, введите цифру 1 или 2.${reset}"
+                echo -e "    \${red}Неверный ввод. Пожалуйста, введите цифру 1 или 2.\${reset}"
                 ;;
         esac
     done
 else
-    echo -e "  ${green}[ОК] Репозиторий доступен напрямую. Продолжаем установку...${reset}"
+    echo -e "  \${green}[ОК] Репозиторий доступен напрямую. Продолжаем установку...\${reset}"
 fi
 
 echo -en "\n" ; echo "  # # Добавление репозитория Node.js 24.x..."
