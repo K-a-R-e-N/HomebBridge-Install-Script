@@ -7,8 +7,7 @@ amber=$(tput setaf 3)
 dim=$(tput setaf 8)
 reset=$(tput sgr0)
 
-# Принудительно и намертво гасим старые зависшие службы, освобождаем сетевые порты
-sudo systemctl disable --now mihomo > /dev/null 2>&1
+# Полностью вычищаем старые зависшие процессы и службы
 sudo systemctl disable --now amneziawg > /dev/null 2>&1
 sudo systemctl disable --now awg-quick@awg0 > /dev/null 2>&1
 sudo killall -9 awg awg-quick mihomo > /dev/null 2>&1
@@ -17,27 +16,30 @@ echo "${cyan}╔═════════════════════�
 echo "${cyan}║             Настройка обхода блокировок AmneziaWG (Вставка конфига)         ║${reset}"
 echo "${cyan}╚═════════════════════════════════════════════════════════════════════════════╝${reset}"
 
+echo -en "\n" ; echo "  # # Подготовка системных компонентов..."
 sudo mkdir -p /etc/amnezia/amneziawg /usr/local/bin
 
-# 1. Скачивание официального бинарного ядра AmneziaWG (работает в пространстве пользователя, не вешает ОС)
+# 1. Принудительное удаление старого файла конфигурации перед вводом (Исправлено!)
+sudo rm -f /etc/amnezia/amneziawg/awg0.conf
+
+# 2. Скачивание официального бинарника ядра AmneziaWG
 if [ ! -f /usr/local/bin/awg ]; then
-    echo "  # # Скачивание и распаковка ядра AmneziaWG..."
     sudo curl -sL -o /usr/local/bin/awg https://github.com/amnezia-vpn/amneziawg-go/releases/download/v0.2.12/amneziawg-go-linux-arm64
     sudo chmod +x /usr/local/bin/awg
 fi
 
-# 2. Грамотная пошаговая инструкция для пользователя
+# 3. Грамотная пошаговая инструкция для пользователя
 echo -e "\n  ${amber}ШАГ 1:${reset} Откройте в браузере сайт:"
 echo -e "         ${green}https://warp-generation.github.io${reset}"
-echo -e "\n  ${amber}ШАГ 2:${reset} Найдите блок ${cyan}AmneziaWG${reset} (самый первый блок сверху!)"
+echo -e "\n  ${amber}ШАГ 2:${reset} Справа найдите блок ${cyan}AmneziaWG${reset} (самый первый блок сверху!)"
 echo -e "         и нажмите оранжевую кнопку ${amber}AWG 2.0 (1 вариант)${reset}."
 echo -e "\n  ${amber}ШАГ 3:${reset} Полностью скопируйте весь открывшийся текст (${cyan}Ctrl+A${reset}, затем ${cyan}Ctrl+C${reset})."
 echo -e "\n  ${amber}ШАГ 4:${reset} Сейчас откроется редактор. Вставьте скопированный текст (${cyan}Ctrl+V${reset}),"
 echo -e "         нажмите ${cyan}Ctrl+O${reset} -> ${cyan}Enter${reset} (сохранить) и ${cyan}Ctrl+X${reset} (выход)."
 echo -en "\n"
-read -p "  По готовности нажмите [ENTER], чтобы открыть редактор и вставить текст... "
+read -p "  По готовности нажмите [ENTER], чтобы открыть чистый редактор... "
 
-# Открываем nano для вставки оригинального текста формата AmneziaWG (НЕ Clash!)
+# Открываем nano для вставки оригинального текста формата AmneziaWG
 sudo nano /etc/amnezia/amneziawg/awg0.conf
 
 if [ ! -s /etc/amnezia/amneziawg/awg0.conf ]; then
@@ -45,33 +47,37 @@ if [ ! -s /etc/amnezia/amneziawg/awg0.conf ]; then
     exit 1
 fi
 
-echo -e "\n  # # Оптимизация сетевых параметров..."
+echo -e "\n  # # Оптимизация сетевых параметров и маскировки..."
 
-# Вырезаем IPv6 маршруты, которые вешают и ломают сетевой стек Raspberry Pi
+# Вырезаем IPv6 маршруты, которые ломают сетевой стек Raspberry Pi
 sudo sed -i '/ipv6:/d' /etc/amnezia/amneziawg/awg0.conf
 sudo sed -i '/:,/d' /etc/amnezia/amneziawg/awg0.conf
 sudo sed -i '/\[::\]/d' /etc/amnezia/amneziawg/awg0.conf
+sudo sed -i 's/AllowedIPs = 0.0.0.0\/0/AllowedIPs = 104.26.0.0\/16, 172.67.0.0\/16/g' /etc/amnezia/amneziawg/awg0.conf
 
 # Извлекаем локальный виртуальный IPv4 адрес, выданный Cloudflare
 USER_TUN_IP=$(grep -i "Address" /etc/amnezia/amneziawg/awg0.conf | awk '{print $3}' | cut -d',' -f1)
 USER_TUN_IP=${USER_TUN_IP:-172.16.0.2/32}
 
-# Извлекаем удаленный эндпоинт и порт
-AWG_ENDPOINT=$(grep -i "Endpoint" /etc/amnezia/amneziawg/awg0.conf | awk '{print $3}')
-AWG_PORT=$(echo "$AWG_ENDPOINT" | cut -d':' -f2)
+# Извлекаем и преобразуем скрытые параметры AmneziaWG из файла
+J_VERSION=$(grep -i "S1" /etc/amnezia/amneziawg/awg0.conf | awk '{print $3}')
+J_C=$(grep -i "Jc" /etc/amnezia/amneziawg/awg0.conf | awk '{print $3}')
+J_MIN=$(grep -i "Jmin" /etc/amnezia/amneziawg/awg0.conf | awk '{print $3}')
+J_MAX=$(grep -i "Jmax" /etc/amnezia/amneziawg/awg0.conf | awk '{print $3}')
+H_1=$(grep -i "H1" /etc/amnezia/amneziawg/awg0.conf | awk '{print $3}')
+H_2=$(grep -i "H2" /etc/amnezia/amneziawg/awg0.conf | awk '{print $3}')
+H_3=$(grep -i "H3" /etc/amnezia/amneziawg/awg0.conf | awk '{print $3}')
+H_4=$(grep -i "H4" /etc/amnezia/amneziawg/awg0.conf | awk '{print $3}')
 
-# Если порты стандартные заблокированные (4500 или 2408), принудительно меняем их на рабочие Amnezia порты
-if [ "$AWG_PORT" == "4500" ] || [ "$AWG_PORT" == "2408" ]; then
-    sudo sed -i 's/:4500/:3852/g' /etc/amnezia/amneziawg/awg0.conf
-    sudo sed -i 's/:2408/:3852/g' /etc/amnezia/amneziawg/awg0.conf
-fi
+# Насильно прописываем параметры маскировки прямо в блок [Interface] для awg-go
+sudo sed -i "/\[Interface\]/a Jc = ${J_C:-4}\nJmin = ${J_MIN:-40}\nJmax = ${J_MAX:-70}\nH1 = ${H_1:-1}\nH2 = ${H_2:-2}\nH3 = ${H_3:-3}\nH4 = ${H_4:-4}" /etc/amnezia/amneziawg/awg0.conf
 
 # Насильно прописываем PersistentKeepalive для удержания сессии за домашним NAT роутером
 if ! grep -q "PersistentKeepalive" /etc/amnezia/amneziawg/awg0.conf; then
     sudo sed -i '/AllowedIPs/a PersistentKeepalive = 25' /etc/amnezia/amneziawg/awg0.conf
 fi
 
-# 3. Жесткая привязка хоста к IP (Полный обход заблокированного DNS вашего провайдера)
+# 4. Жесткая привязка хоста к IP (Полный обход заблокированного DNS вашего провайдера)
 sudo sed -i '/repo.homebridge.io/d' /etc/hosts
 sudo tee -a /etc/hosts > /dev/null << 'EOF'
 104.26.6.246 repo.homebridge.io
@@ -79,7 +85,7 @@ sudo tee -a /etc/hosts > /dev/null << 'EOF'
 172.67.72.137 repo.homebridge.io
 EOF
 
-# 4. Создание ультралегкой фоновой службы напрямую для бинарника awg (БЕЗ зависающего awg-quick!)
+# 5. Создание системной фоновой службы напрямую для бинарника awg
 sudo tee /etc/systemd/system/amneziawg.service > /dev/null << EOF
 [Unit]
 Description=AmneziaWG Lightweight Userspace Tunnel Daemon
@@ -88,10 +94,8 @@ After=network.target
 [Service]
 Type=simple
 User=root
-# Запуск изолированного интерфейса. Системная таблица ip route не ломается, локалка не отвалится!
 ExecStart=/usr/local/bin/awg awg0
-# Безопасное присвоение IP-адреса и точечный роутинг Cloudflare подсетей в созданный интерфейс
-ExecStartPost=/bin/bash -c 'sleep 1 && ip address add $USER_TUN_IP dev awg0 && ip link set mtu 1280 dev awg0 && ip link set awg0 up && ip route add 104.26.0.0/16 dev awg0 && ip route add 172.67.0.0/16 dev awg0'
+ExecStartPost=/bin/bash -c 'sleep 1.5 && ip address add $USER_TUN_IP dev awg0 && ip link set mtu 1280 dev awg0 && ip link set awg0 up && ip route add 104.26.0.0/16 dev awg0 && ip route add 172.67.0.0/16 dev awg0'
 Restart=always
 RestartSec=5
 
@@ -99,16 +103,16 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
-# 5. Принудительный мгновенный перезапуск службы в системе
+# 6. Принудительный мгновенный перезапуск службы в системе
 sudo systemctl daemon-reload
 sudo systemctl enable --now amneziawg > /dev/null 2>&1
 
 echo "  # # Инициализация зашифрованного линка. Ожидание 5 секунд..."
 sleep 5
 
-# 6. Контрольное тестирование соединения напрямую до заблокированного файла репозитория
+# 7. Контрольное тестирование соединения напрямую до заблокированного файла репозитория
 if curl -m 6 -sI https://repo.homebridge.io/stable/InRelease | grep -q "200"; then
-    echo -e "\n  ${green}[ОК] Настоящий AmneziaWG успешно запущен, блокировка пробита!${reset}\n"
+    echo -e "\n  ${green}[ОК] Туннель AmneziaWG успешно запущен, блокировка пробита!${reset}\n"
     exit 0
 else
     echo -e "\n  ${amber}[!] Соединение с Cloudflare отсутствует.${reset}"
