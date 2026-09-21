@@ -150,11 +150,13 @@ ZI="  Установка" && Zagolovok
 BackUpScript
 
 echo -en "\n" ; echo "  # # Очистка старых репозиториев Node.js и Homebridge..."
-# Удаляем старые файлы списков, если они остались от прошлых установок
+# Удаляем старые файлы списков и ключей, включая новый формат .sources
 sudo rm -f /etc/apt/keyrings/nodesource.gpg
 sudo rm -f /etc/apt/sources.list.d/nodesource.list
+sudo rm -f /etc/apt/sources.list.d/nodesource.sources
 sudo rm -f /etc/apt/sources.list.d/nodesource*.list
 sudo rm -f /etc/apt/sources.list.d/homebridge*.list
+
 
 echo -en "\n" ; echo "  # # Устранение ранее известных проблем..."
 # Автоматический принудительный сброс зависших блокировок apt/dpkg перед установкой
