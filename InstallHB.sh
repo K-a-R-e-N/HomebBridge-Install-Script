@@ -71,28 +71,29 @@ function СheckingInstalledPackage() {
     InstalledPackageKey=0
     echo -en "\n" ; echo "  # # Проверка на ранее установленную версию..."
     
-    # Проверяем, что пакет homebridge именно установлен (статус ii в dpkg), а не просто упоминается
+    # Проверяем реальный статус установки пакета homebridge
     if dpkg -s homebridge 2>/dev/null | grep -q "Status: install ok installed"; then
         echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge как системный пакет..."
-        InstallInfo="\${green}[уже установлен]\${reset}"
+        InstallInfo="${green}[уже установлен]${reset}"
         InstalledPackageKey=1
         
-    # Проверяем, что пакет nodejs именно полноценно установлен в системе
+    # Проверяем реальный статус установки пакета nodejs
     elif dpkg -s nodejs 2>/dev/null | grep -q "Status: install ok installed"; then
-        # Добавлено безопасное глушение ошибок 2>/dev/null на случай, если утилиты npm нет
+        # Проверяем наличие npm и установленный глобально homebridge
         if command -v npm >/dev/null 2>&1 && npm list -g --depth=0 2>/dev/null | grep -q homebridge; then
             echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge из NPM..."
-            InstallInfo="\${green}[уже установлен]\${reset}"
+            InstallInfo="${green}[уже установлен]${reset}"
             InstalledPackageKey=1
         else
-            # Извлекаем версию node, безопасно глуша любые ошибки, если бинарник поврежден
-            NODE_VER=\$(node -v 2>/dev/null | tr -d ' ' || echo "неизвестно")
-            echo -en "\n" ; echo "     - В системе уже установлен пакет Node.js \${green}\$NODE_VER\${reset}, но HomeBridge не установлен..."
-            InstallInfo="\${red}[установлен NodeJS]\${reset}"
+            # Без экранирования слэшами — чистый системный синтаксис (Исправлено!)
+            NODE_VER=$(node -v 2>/dev/null | tr -d ' ' || echo "неизвестно")
+            echo -en "\n" ; echo "     - В системе уже установлен пакет Node.js ${green}$NODE_VER${reset}, но HomeBridge не установлен..."
+            InstallInfo="${red}[установлен NodeJS]${reset}"
             InstalledPackageKey=1
         fi
     fi
 }
+
 
 
 if [ $InstalledPackageKey -eq 1 ]; then
