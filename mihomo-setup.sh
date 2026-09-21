@@ -69,8 +69,8 @@ EOF
 sudo cat /etc/mihomo/user_warp.yaml | sudo tee -a /etc/mihomo/config.yaml > /dev/null
 sudo rm -f /etc/mihomo/user_warp.yaml
 
-# Динамический сбор имен всех сгенерированных серверов с защитой от дефиса через --
-PROXY_NAMES=\$(grep -- "- name:" /etc/mihomo/config.yaml | awk -F'"' '{print \$2}')
+# Исправлено: убраны неверные косые черты перед знаками доллара
+PROXY_NAMES=$(grep -- "- name:" /etc/mihomo/config.yaml | awk -F'"' '{print $2}')
 
 # Дозапись отказоустойчивой proxy-группы и жёстких правил раздельного маршрута
 sudo tee -a /etc/mihomo/config.yaml > /dev/null << EOF
@@ -81,7 +81,7 @@ proxy-groups:
     url: 'https://www.google.com/generate_204'
     interval: 150
     proxies:
-\$(echo "\$PROXY_NAMES" | sed 's/^/      - "/;s/\$/"/')
+$(echo "$PROXY_NAMES" | sed 's/^/      - "/;s/$/"/')
 
 rules:
   # Домашняя сеть и SSH идут строго напрямую мимо туннеля без утечек внешних DNS-запросов
