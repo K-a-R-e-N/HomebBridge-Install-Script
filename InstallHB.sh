@@ -142,6 +142,7 @@ curl -sSfL https://repo.homebridge.io/KEY.gpg | sudo gpg --dearmor | sudo tee /u
 echo "deb [signed-by=/usr/share/keyrings/homebridge.gpg] https://repo.homebridge.io stable main" | sudo tee /etc/apt/sources.list.d/homebridge.list > /dev/null
 
 echo -en "\n" ; echo "  # # Проверка доступности репозитория Homebridge..."
+# Сначала тихо проверяем сеть в переменную
 if curl -m 4 -sI https://repo.homebridge.io/stable/InRelease | grep -q "200"; then
     HB_NET_STATUS=0
 else
@@ -151,26 +152,51 @@ fi
 if [ $HB_NET_STATUS -ne 0 ]; then
     echo -e "\n"
     echo "  ╔═════════════════════════════════════════════════════════════════════════════╗"
-    echo -e "  ║               ${red}КРИТИЧЕСКАЯ ОШИБКА: СКАЧИВАНИЕ НЕВОЗМОЖНО!${reset}                    ║"
+    echo -e "  ║               ${red}КРИТИЧЕСКАЯ ОШИБКА: РЕПОЗИТОРИЙ НЕДОСТУПЕН!${reset}                   ║"
     echo "  ╚═════════════════════════════════════════════════════════════════════════════╝"
-    echo -e "    ${yellow}Репозиторий repo.homebridge.io заблокирован или недоступен.${reset}"
-    echo "    Дальнейшая автоматическая установка прервана, чтобы не сломать систему."
+    echo -e "    ${yellow}Адрес репозитория:${reset} https://repo.homebridge.io"
+    echo -e "    ${yellow}Возможные причины:${reset}"
+    echo "    • Сервер заблокирован вашим интернет-провайдером (РКН)."
+    echo "    • Отсутствует внешнее интернет-соединение на плате SprutHub."
+    echo "    • Проблемы со стандартными DNS-серверами системы."
     echo -en "\n"
-    echo "    ┌────────────────── ЧТО ДЕЛАТЬ ДЛЯ ИСПРАВЛЕНИЯ? ──────────────────────┐"
-    echo "    │                                                                     │"
-    echo "    │  Вам необходимо настроить обход блокировок через Mihomo (Clash).    │"
-    echo "    │                                                                     │"
-    echo "    │  1. Сгенерируйте файл конфигурации AWG 2.0 на warp-gen.github.io │"
-    echo "    │  2. Установите ядро Mihomo в /usr/local/bin/mihomo                  │"
-    echo "    │  3. Настройте конфигурацию в /etc/mihomo/config.yaml          │"
-    echo "    │  4. Обязательно включите 'bypass-lan: true' для защиты SSH-доступа! │"
-    echo "    │  5. Настройте правила разделения (rules) для DIRECT и WARP          │"
-    echo "    │  6. Запустите службу туннеля: sudo systemctl enable --now mihomo    │"
-    echo "    │                                                                     │"
-    echo "    │  После того как туннель поднимется, запустите этот скрипт снова.    │"
-    echo "    └─────────────────────────────────────────────────────────────────────┘"
-    echo -e "\a"
-    return 1
+    echo "    Для исправления ситуации требуется настроить обход блокировок Mihomo (Clash)."
+    echo -en "\n"
+    
+    # Выводим интерактивное меню выбора
+    echo "    ┌────────────────── ВЫБЕРИТЕ ДЕЙСТВИЕ ────────────────┐"
+    echo "    │                                                     │"
+    echo "    │  1. Запустить скрипт настройки Mihomo (Clash)       │"
+    echo "    │  2. Отказаться и выйти из установки                 │"
+    echo "    │                                                     │"
+    echo "    └─────────────────────────────────────────────────────┘"
+    echo -en "\n"
+    
+    while true; do
+        read -p "    Введите номер пункта (1-2): " NET_CHOICE
+        case $NET_CHOICE in
+            1)
+                echo -e "\n    ${green}Запуск соседнего файла конфигурации Mihomo...${reset}"
+                # Проверяем, существует ли файл в текущей папке скрипта
+                SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+                if [ -f "$SCRIPT_DIR/mihomo-setup.sh" ]; then
+                    chmod +x "$SCRIPT_DIR/mihomo-setup.sh"
+                    bash "$SCRIPT_DIR/mihomo-setup.sh"
+                    return 1
+                else
+                    echo -e "    ${red}Ошибка: Файл $SCRIPT_DIR/mihomo-setup.sh не найден!${reset}"
+                    return 1
+                fi
+                ;;
+            2)
+                echo -e "    ${yellow}Установка отменена пользователем.${reset}"
+                return 1
+                ;;
+            *)
+                echo -e "    ${red}Неверный ввод. Пожалуйста, выберите 1 или 2.${reset}"
+                ;;
+        case
+    done
 else
     echo -e "  ${green}[ОК] Репозиторий доступен напрямую. Продолжаем установку...${reset}"
 fi
