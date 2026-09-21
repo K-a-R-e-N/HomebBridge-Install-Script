@@ -145,7 +145,7 @@ curl -sSfL https://repo.homebridge.io/KEY.gpg | sudo gpg --dearmor | sudo tee /u
 echo "deb [signed-by=/usr/share/keyrings/homebridge.gpg] https://repo.homebridge.io stable main" | sudo tee /etc/apt/sources.list.d/homebridge.list > /dev/null
 
 echo -en "\n" ; echo "  # # Проверка доступности репозитория Homebridge..."
-if curl -m 4 -sI https://repo.homebridge.io/stable/InRelease | grep -q "200"; then
+if curl -m 4 -sI https://repo.homebridge.io/KEY.gpg | grep -q "200"; then
     HB_NET_STATUS=0
 else
     HB_NET_STATUS=1
@@ -216,12 +216,11 @@ fi
 
 
 echo -en "\n" ; echo "  # # Добавление репозитория Node.js 24.x..."
-# Гарантируем наличие необходимых утилит для работы с репозиторием
 sudo apt-get install -y ca-certificates curl gnupg > /dev/null
-# Создаем директорию для ключей apt, если её нет
 sudo mkdir -p /etc/apt/keyrings
 # Скачиваем официальный GPG-ключ NodeSource с флагом --yes, чтобы принудительно перезаписать существующий ключ
-curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --yes --dearmor -o /etc/apt/keyrings/nodesource.gpg > /dev/null 2>&1
+curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | sudo gpg --yes --dearmor -o /etc/apt/keyrings/nodesource.gpg > /dev/null 2>&1
+#curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --yes --dearmor -o /etc/apt/keyrings/nodesource.gpg > /dev/null 2>&1
 
 # Добавляем официальный репозиторий для Node.js 24.x
 echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_24.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list > /dev/null
@@ -261,7 +260,7 @@ sudo systemctl restart nginx > /dev/null 2>&1
 #sudo systemctl restart nginx > /dev/null 2>&1
 
 # Восстанавление резервной копии
-if [ -f $BackupsFolder/config.json.* ]; then
+if [ -d "$BackupsFolder" ] && [ "$(ls -A "$BackupsFolder" 2>/dev/null)" ]; then
 	BackupRecovery=1 && echo -en "\n" && echo "  # # Восстанавление резервной копии конфигурационных файлов HomeBridge..."
 
 	if [ ! -d /var/lib/homebridge/backups/config-backups ] ; then 
@@ -272,11 +271,29 @@ if [ -f $BackupsFolder/config.json.* ]; then
 fi
 
 # Читаем порт из конфига HomeBridge (вырежет только цифры из строки "port": XXXX)
-HB_PORT=$(grep -o '"port":\s*[0-9]*' /var/lib/homebridge/config.json | grep -o '[0-9]*')
+HB_PORT=$(grep -o '"port":\s*[0-9]*' /var/lib/homebridge/config.json 2>/dev/null | grep -o '[0-9]*')
 # Если вдруг файл пустой или не найден, ставим дефолтный 8581
 HB_PORT=${HB_PORT:-8581}
 # Получаем IP-адрес (берем первый из списка, если их несколько)
 HB_IP=$(hostname -I | awk '{print $1}')
+
+# Безопасно считываем реальную установленную версию Homebridge
+if command -v homebridge >/dev/null 2>&1; then
+    FINAL_HB_VERSION=$(homebridge -v 2>/dev/null)
+else
+    FINAL_HB_VERSION="Ошибка установки"
+fi
+
+    echo -en "\n"
+    echo "    ┌──────────── Полезная информация для работы с HomeBridge ────────────┐"
+    echo "    │                                                                     │"
+    echo "    │  Установленная версия:  ${green}$FINAL_HB_VERSION${reset}" # Выведет точную версию, например: 2.0.18
+    echo "    │                                                                     │"
+    echo "    │  Доступ к веб-интерфейсу HomeBridge по адресу:                      │"
+    echo "    │  ${green}http://$HB_IP:$HB_PORT/${reset}                                       │"
+    echo "    └─────────────────────────────────────────────────────────────────────┘"
+    echo -en "\n"
+
 
 echo -en "\n"
 echo -en "\n"
@@ -286,9 +303,10 @@ echo "╚═══════════════════════�
 echo -en "\n"
 echo "    ┌──────────── Полезная информация для работы с HomeBridge ────────────┐"
 echo "    │                                                                     │"
-echo "    │                    Доступ к HomeBridge по адресу                    │"
-echo "    │                      ${green}http://$(hostname -I | tr -d ' '):${HB_PORT}/${reset}                      │"
-echo -e "    │                      ${green}http://${HB_IP}:${HB_PORT}/${reset}                    │"
+echo "    │  Установленная версия:  ${green}$FINAL_HB_VERSION${reset}" # Выведет точную версию, например: 2.0.18
+echo "    │                                                                     │"
+echo "    │            Доступ к веб-интерфейсу HomeBridge по адресу:            │"
+echo "    │  ${green}http://$HB_IP:$HB_PORT/${reset}                                       │"
 echo "    │                                                                     │"
 echo "    │                  Редактирование файла конфигурации                  │"
 echo "    │              ${green}sudo nano /var/lib/homebridge/config.json${reset}              │"
