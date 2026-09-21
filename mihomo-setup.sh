@@ -6,7 +6,6 @@ green=$(tput setaf 2)
 yellow=$(tput setaf 3)
 reset=$(tput sgr0)
 
-# Команду clear УБРАЛИ, чтобы не стирать лог консоли
 echo "╔═════════════════════════════════════════════════════════════════════════════╗"
 echo "║             Настройка обхода блокировок Mihomo (Вставка конфига)            ║"
 echo "╚═════════════════════════════════════════════════════════════════════════════╝"
@@ -22,7 +21,7 @@ if [ ! -f /usr/local/bin/mihomo ]; then
     sudo chmod +x /usr/local/bin/mihomo
 fi
 
-# 2. ПОДРОБНАЯ ПОШАГОВАЯ ИНСТРУКЦИЯ ДЛЯ ВЫВОДА В ТЕРМИНАЛ
+# 2. Инструкция для вывода в терминал
 echo -e "\n  ${yellow}┌────────────────────────── ИНСТРУКЦИЯ СКАЧИВАНИЯ ──────────────────────────┐${reset}"
 echo "  │                                                                           │"
 echo "  │  1. Перейдите по ссылке: https://warp-generation.github.io          │"
@@ -62,7 +61,7 @@ tun:
   stack: mixed
   auto-route: true
   auto-detect-interface: true
-  bypass-lan: true   # Изолируем домашнюю локальную сеть на уровне ядра
+  bypass-lan: true   # Изолируем домашнюю локальную сеть на уровне ядра (SSH/SprutHub)
 
 dns:
   enable: true
@@ -78,8 +77,8 @@ EOF
 sudo cat /etc/mihomo/user_warp.yaml | sudo tee -a /etc/mihomo/config.yaml > /dev/null
 sudo rm -f /etc/mihomo/user_warp.yaml
 
-# Автоматически парсим имена ваших прокси из вставленного текста
-PROXY_NAMES=$(grep "- name:" /etc/mihomo/config.yaml | awk -F'"' '{print $2}')
+# Исправлено: добавлен ключ -- для защиты grep от дефиса в тексте "- name:"
+PROXY_NAMES=$(grep -- "- name:" /etc/mihomo/config.yaml | awk -F'"' '{print $2}')
 
 # Дописываем fallback-группу и финальные правила туннелирования со встроенным Keepalive
 sudo tee -a /etc/mihomo/config.yaml > /dev/null << EOF
