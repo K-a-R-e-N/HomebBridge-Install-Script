@@ -177,7 +177,7 @@ sudo systemctl restart nginx > /dev/null 2>&1
 #sudo sed -i 's|:80;  |:8080;|' /etc/nginx/sites-available/homebridge.local
 #sudo sed -i 's|127.0.0.1:8581;|127.0.0.1:8080;|' /etc/nginx/sites-available/homebridge.local
 #sudo sed -i 's|"port": 8581|"port": 8080|' /var/lib/homebridge/config.json
-sudo systemctl restart nginx > /dev/null 2>&1
+#sudo systemctl restart nginx > /dev/null 2>&1
 
 # Восстанавление резервной копии
 if [ -f $BackupsFolder/config.json.* ]; then
