@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Объявляем цвета в чистом синтаксисе без каких-либо косых черт
 red=$(tput setaf 1)
 green=$(tput setaf 2)
 yellow=$(tput setaf 3)
@@ -14,7 +13,6 @@ echo "╚═══════════════════════�
 echo -en "\n" ; echo "  # # Создание рабочих каталогов..."
 sudo mkdir -p /usr/local/bin /etc/mihomo
 
-# 1. Скачивание ядра Mihomo
 if [ ! -f /usr/local/bin/mihomo ]; then
     echo "  # # Скачивание и распаковка ядра Mihomo..."
     sudo curl -L -o /usr/local/bin/mihomo.gz https://github.com/MetaCubeX/mihomo/releases/download/v1.19.30/mihomo-linux-arm64-v1.19.30.gz
@@ -22,15 +20,13 @@ if [ ! -f /usr/local/bin/mihomo ]; then
     sudo chmod +x /usr/local/bin/mihomo
 fi
 
-# 2. Инструкция и вызов nano для ручной вставки скопированного файла
 echo -e "\n  ${yellow}[ИНСТРУКЦИЯ]${reset}"
 echo "  1. Сейчас откроется пустой текстовый редактор."
-echo "  2. Скопируйте ВЕСЬ текст скачанного файла с сайта warp-generation.github.io"
-echo "  3. Вставьте его в редактор, нажмите Ctrl+O -> Enter (сохранить) и Ctrl+X (выйти)."
+echo "  2. Вставьте скопированный текст файла с сайта warp-generation.github.io"
+echo "  3. Нажмите Ctrl+O, затем Enter (сохранить) и Ctrl+X (выйти)."
 echo -en "\n"
 read -p "  Нажмите [ENTER], чтобы открыть редактор и вставить текст..."
 
-# Открываем временный файл для вставки оригинального конфига
 sudo nano /etc/mihomo/user_warp.yaml
 
 if [ ! -s /etc/mihomo/user_warp.yaml ]; then
@@ -38,22 +34,22 @@ if [ ! -s /etc/mihomo/user_warp.yaml ]; then
     exit 1
 fi
 
-# 3. Автоматическая очистка, вырезание IPv6 и внедрение правил защиты локальной сети
 echo -e "\n  # # Оптимизация конфигурации, отключение IPv6 и защита LAN..."
 
-# Вырезаем строки с ipv6, allowed-ips и дефолтные старые правила rules
+# Вырезаем нестабильный IPv6 и лишние блоки
 sudo sed -i '/ipv6:/d' /etc/mihomo/user_warp.yaml
 sudo sed -i '/allowed-ips:/d' /etc/mihomo/user_warp.yaml
+sudo sed -i '/proxy-groups:/,$d' /etc/mihomo/user_warp.yaml
 sudo sed -i '/rules:/,$d' /etc/mihomo/user_warp.yaml
 
-# Собираем финальный config.yaml с правильной структурой туннеля и разделением трафика
+# Создаем правильную и безопасную шапку конфигурации
 sudo tee /etc/mihomo/config.yaml > /dev/null << EOF
 tun:
   enable: true
   stack: mixed
   auto-route: true
   auto-detect-interface: true
-  bypass-lan: true   # Тотальная защита вашей домашней локальной сети (SSH/SprutHub)
+  bypass-lan: true   # Защита локальной домашней сети (SSH/SprutHub)
 
 dns:
   enable: true
@@ -65,29 +61,38 @@ dns:
 
 EOF
 
-# Склеиваем очищенные прокси пользователя с шапкой конфига
+# Приклеиваем блок с прокси-серверами из файла пользователя
 sudo cat /etc/mihomo/user_warp.yaml | sudo tee -a /etc/mihomo/config.yaml > /dev/null
 sudo rm -f /etc/mihomo/user_warp.yaml
 
-# Дописываем PersistentKeepalive и жёсткие правила раздельного туннелирования в самый конец файла
+# Автоматически вытаскиваем имена всех добавленных прокси-серверов для создания правильной группы управления
+PROXY_NAMES=$(grep "- name:" /etc/mihomo/config.yaml | awk -F'"' '{print $2}')
+
+# Дописываем динамическую прокси-группу и финальные жесткие правила раздельного туннелирования
 sudo tee -a /etc/mihomo/config.yaml > /dev/null << EOF
-    keepalive: 25      # Удержание стабильной сессии за NAT домашнего роутера
+
+proxy-groups:
+  - name: AMNEZIA_WARP
+    type: fallback
+    url: 'https://www.google.com/generate_204'
+    interval: 150
+    proxies:
+$(echo "$PROXY_NAMES" | sed 's/^/      - "/;s/$/"/')
 
 rules:
-  # Локальная домашняя сеть идет строго напрямую мимо VPN без внешних DNS запросов
+  # Локальная домашняя сеть идет строго напрямую мимо туннеля
   - GEOIP,lan,DIRECT,no-resolve
   
-  # Системные репозитории Linux пускаем напрямую на максимальной скорости провайдера
+  # Системные обновления пакетов OS качаем на максимальной скорости провайдера напрямую
   - DOMAIN-SUFFIX,raspberrypi.org,DIRECT
   - DOMAIN-SUFFIX,raspberrypi.com,DIRECT
   - DOMAIN-SUFFIX,raspbian.org,DIRECT
   - DOMAIN-SUFFIX,debian.org,DIRECT
   
-  # Весь остальной внешний интернет-трафик (включая репозиторий Homebridge) заворачиваем в туннель WARP
-  - MATCH,WARP
+  # Весь трафик к заблокированному репозиторию Homebridge пускаем через Amnezia-туннель
+  - MATCH,AMNEZIA_WARP
 EOF
 
-# 4. Создание системной службы автозапуска (Systemd)
 echo "  # # Настройка фоновой службы туннеля (Systemd)..."
 sudo tee /etc/systemd/system/mihomo.service > /dev/null << EOF
 [Unit]
@@ -105,19 +110,17 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
-# 5. Запуск службы
 sudo systemctl daemon-reload
 sudo systemctl enable --now mihomo > /dev/null 2>&1
 
 echo "  # # Запуск службы Mihomo. Ожидаем поднятия линка 5 секунд..."
 sleep 5
 
-# 6. Контрольное тестирование соединения
 if curl -m 5 -sI https://repo.homebridge.io/stable/InRelease | grep -q "200"; then
     echo -e "\n  ${green}[УСПЕХ] Обход блокировок AWG 2.0 MASQUE успешно настроен и запущен!${reset}"
     exit 0
 else
-    echo -e "\n  ${red}[ВНИМАНИЕ] Служба запущена, но тестовый пакет не прошел через Amnezia-туннель.${reset}"
+    echo -e "\n  ${red}[ВНИМАНИЕ] Служба запущенна, но тестовый пакет не прошел через Amnezia-туннель.${reset}"
     echo "  Посмотрите подробный лог ошибок ядра: sudo journalctl -u mihomo -n 20"
     exit 1
 fi
