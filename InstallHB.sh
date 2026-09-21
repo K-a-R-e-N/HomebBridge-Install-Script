@@ -128,7 +128,7 @@ fi
 function InstallScript() {
 clear ; CheckBackUp=0 ; BackupRecovery=0
 ZI="  Установка" && Zagolovok
-СheckingInstalledPackage
+СheckingInstalledPackage || return
 BackUpScript
 
 echo -en "\n" ; echo "  # # Очистка старых репозиториев Node.js и Homebridge..."
@@ -160,7 +160,6 @@ if curl -m 4 -sI https://repo.homebridge.io/KEY.gpg | grep -q "200"; then
     HB_NET_STATUS=0
 else
     HB_NET_STATUS=1
-
 fi
     bg_red=$(tput setab 1)$(tput setaf 7)
 
@@ -198,7 +197,6 @@ fi
                         bash "$SCRIPT_DIR/mihomo-setup.sh"
                         
                         echo "  # # Проверка связи после настройки туннеля..."
-                        # Исправлено: проверяем связь через файл ключей KEY.gpg
                         if curl -m 6 -sI https://repo.homebridge.io/KEY.gpg | grep -q "200"; then
                             echo -e "    ${green}[ОК] Сеть успешно восстановлена! Продолжаем установку Homebridge...${reset}"
                             break 
@@ -212,8 +210,9 @@ fi
                     fi
                     ;;
                 2)
-                    echo -e "    ${yellow}Действие отменено пользователем${reset}"
-                    break
+                    echo -e "    ${yellow}Действие отменено пользователем. Возврат в главное меню...${reset}"
+                    sleep 2
+                    return
                     ;;
                 *)
                     echo -e "    ${red}Неверный ввод. Пожалуйста, введите цифру 1 или 2${reset}"
