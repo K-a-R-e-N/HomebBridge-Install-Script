@@ -165,6 +165,9 @@ sudo apt-get install -y nodejs > /dev/null 2>&1
 echo -en "\n" ; echo "  # # Установка HomeBridge..."
 sudo apt-get install homebridge -y > /dev/null 2>&1
 
+echo -en "\n" ; echo "  # # Создание и запуск системной службы HomeBridge..."
+sudo hb-service install --user homebridge > /dev/null 2>&1
+
 #echo -en "\n" ; echo "  # # Установка порта HomeBridge по умолчанию на 8080..."
 #sudo hb-service install --port 8080
 #sudo sed -i 's|listen 80;  |listen 8080;|' /etc/nginx/sites-available/homebridge.local
