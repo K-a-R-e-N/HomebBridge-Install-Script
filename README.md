@@ -76,3 +76,9 @@ git clone https://github.com/K-a-R-e-N/HomebBridge-Install-Script
 bash ~/HomebBridge-Install-Script/InstallHB.sh -u -d
 #Готово
 ```
+
+
+
+```
+git clone https://github.com/K-a-R-e-N/HomebBridge-Install-Script && bash ~/HomebBridge-Install-Script/InstallHB.sh -i -d
+```
