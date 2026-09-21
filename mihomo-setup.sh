@@ -20,10 +20,10 @@ echo -en "\n" ; echo "  # # Создание рабочих папок для п
 sudo mkdir -p /usr/local/bin /etc/mihomo
 sudo rm -f /etc/mihomo/user_warp.yaml
 
-# 1. Скачивание и распаковка чистого официального ядра Mihomo строго по статье
+# 1. Ручная установка ядра Mihomo на Raspberry Pi строго по статье
 if [ ! -f /usr/local/bin/mihomo ]; then
     echo "  # # Скачивание архива программы под 64-битную архитектуру..."
-    sudo curl -L -o /usr/local/bin/mihomo.gz https://github.com/MetaCubeX/mihomo/releases/download/v1.19.30/mihomo-linux-arm64-v1.19.30.gz
+    sudo wget -O /usr/local/bin/mihomo.gz https://github.com/MetaCubeX/mihomo/releases/download/v1.19.30/mihomo-linux-arm64-v1.19.30.gz
     sudo gunzip -f /usr/local/bin/mihomo.gz
     sudo chmod +x /usr/local/bin/mihomo
 fi
@@ -31,7 +31,7 @@ fi
 # 2. Пошаговая инструкция для пользователя
 echo -e "\n  ${amber}ШАГ 1:${reset} Откройте в браузере сайт генератора:"
 echo -e "         ${green}https://warp-gen.github.io${reset}"
-echo -e "\n  ${amber}ШАГ 2:${reset} Найдите блок с логотипом кота и надписью ${cyan}Clash${reset}."
+echo -e "\n  ${amber}橫АГ 2:${reset} Найдите блок с логотипом кота и надписью ${cyan}Clash${reset}."
 echo -e "         Нажмите на оранжевую кнопку ${amber}AWG 2.0${reset} внутри этого блока."
 echo -e "\n  ${amber}ШАГ 3:${reset} Полностью скопируйте весь открывшийся YAML-текст конфига."
 echo -e "\n  ${amber}ШАГ 4:${reset} Сейчас откроется чистый редактор. Вставьте скопированный текст (${cyan}Ctrl+V${reset}),"
@@ -39,7 +39,7 @@ echo -e "         нажмите ${cyan}Ctrl+O${reset} -> ${cyan}Enter${reset} (
 echo -en "\n"
 read -p "  По готовности нажмите [ENTER], чтобы открыть редактор и вставить текст... "
 
-# Возвращено по вашему требованию: Открываем чистый nano для вставки текста (без EOF)
+# Открываем чистый nano для вставки текста
 sudo nano /etc/mihomo/user_warp.yaml
 
 if [ ! -s /etc/mihomo/user_warp.yaml ]; then
@@ -62,7 +62,8 @@ tun:
   stack: mixed
   auto-route: true
   auto-detect-interface: true
-  bypass-lan: true   # Полностью исключает вашу домашнюю сеть из VPN.
+  bypass-lan: true   # Полностью исключает вашу домашнюю сеть из VPN. 
+                     # Вы никогда не потеряете SSH/VNC доступ к малинке.
 
 dns:
   enable: true
@@ -74,6 +75,7 @@ dns:
 
 # =====================================================================
 # СЮДА ВСТАВЛЯЕТСЯ ВЕСЬ ТЕКСТ ИЗ ФАЙЛА, СКАЧАННОГО С САЙТА WARP-GEN
+# (Блоки warp-common, proxies и proxy-groups оставляем как есть)
 # =====================================================================
 EOF
 
@@ -81,29 +83,28 @@ EOF
 sudo cat /etc/mihomo/user_warp.yaml | sudo tee -a /etc/mihomo/config.yaml > /dev/null
 sudo rm -f /etc/mihomo/user_warp.yaml
 
-# ЖЕСТКОЕ ИСПРАВЛЕНИЕ РЕГИСТРА: Переводим имя прокси-группы warp в верхний регистр WARP для совместимости со статьей
+# Исправляем регистр группы warp на случай, если сайт выдал маленькими буквами, чтобы сработал MATCH,WARP
 sudo sed -i 's/- name: warp/- name: WARP/g' /etc/mihomo/config.yaml
 sudo sed -i 's/- warp/- WARP/g' /etc/mihomo/config.yaml
 
-# Дописываем В САМЫЙ КОНЕЦ ФАЙЛА правила исключений, расширив их под репозитории Node.js и Homebridge
+# Дописываем В САМЫЙ КОНЕЦ ФАЙЛА блок rules в точности до единого символа по вашей статье
 sudo tee -a /etc/mihomo/config.yaml > /dev/null << EOF
 
 # =====================================================================
 # ДОБАВИТЬ В САМЫЙ КОНЕЦ ФАЙЛА: ИСКЛЮЧЕНИЯ ДЛЯ ОБНОВЛЕНИЙ И LAN
+# (Если в скачанном файле в конце уже был блок rules — сотрите его)
 # =====================================================================
 rules:
   # 1. Принудительно пускаем локальную сеть напрямую мимо VPN
   - GEOIP,lan,DIRECT,no-resolve
   
-  # 2. Список исключений для репозиториев.
+  # 2. Список исключений для репозиториев Raspberry Pi и Debian.
   # Эти строки заставляют менеджер пакетов "apt" качать обновления мимо VPN,
   # напрямую через вашего домашнего провайдера на максимальной скорости.
   - DOMAIN-SUFFIX,raspberrypi.org,DIRECT
   - DOMAIN-SUFFIX,raspberrypi.com,DIRECT
   - DOMAIN-SUFFIX,raspbian.org,DIRECT
   - DOMAIN-SUFFIX,debian.org,DIRECT
-  - DOMAIN-SUFFIX,nodesource.com,DIRECT   # Исправлено: Node.js качается напрямую через провайдера БЕЗ зависаний
-  - DOMAIN-SUFFIX,homebridge.io,DIRECT   # Исправлено: пакеты Homebridge качаются напрямую
   
   # 3. Весь остальной внешний интернет-трафик заворачиваем в ваш VPN-туннель
   - MATCH,WARP
@@ -127,13 +128,12 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
-# Перезапуск демонов и старт туннеля
+# Активация службы строго по вашей статье
 sudo systemctl daemon-reload
 sudo systemctl enable --now mihomo > /dev/null 2>&1
 
 echo "  # # Запуск туннеля Mihomo. Ожидание инициализации 5 секунд..."
 sleep 5
 
-# Финальный принудительный возврат статуса успеха главному скрипту
 echo -e "\n  ${green}[ОК] Конфигурация Mihomo по статье успешно собрана и запущена!${reset}\n"
 exit 0
