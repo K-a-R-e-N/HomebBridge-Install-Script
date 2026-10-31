@@ -202,7 +202,7 @@ EOF
 
     # 2. Проверяем доступность именно сервера репозитория пакетов!
     if curl -m 4 -sI https://repo.homebridge.io | grep -q "Etag\|Server\|Cloudflare\|200\|301\|302\|404"; then
-        echo -e "  ${green}[ОК] Репозиторий доступен напрямую. Продолжаем работу...${reset}"
+        echo -e "  ${green}[Доступно напрямую]${reset}"
         return 0
     fi
 
@@ -268,29 +268,35 @@ EOF
 function InstallScript() {
     clear ; CheckBackUp=0 ; BackupRecovery=0
     ZI="  Установка" && Zagolovok
-    СheckingInstalledPackage || return
+    
+    echo -n "  # # Проверка на ранее установленную версию..."
+    СheckingInstalledPackage
+    if [ $? -eq 0 ]; then
+        echo -e " ${green}[Чистая система]${reset}"
+    fi
+    
     CheckRepositoryAccess || { sleep 1; GoToMenu; return; }
     BackUpScript
 
     ##################################
     echo -en "\n" ; echo -n "  # # Очистка старых репозиториев Node.js и Homebridge..."
     sudo rm -f /etc/apt/keyrings/nodesource.gpg /etc/apt/sources.list.d/nodesource* /etc/apt/sources.list.d/homebridge*
-    echo -e " ${green}[ОК]${reset}"
+    echo -e " ${green}[Готово]${reset}"
     ##################################
     echo -en "\n" ; echo -n "  # # Сброс системных блокировок и подготовка окружения..."
     sudo killall -9 apt apt-get dpkg 2>/dev/null
     sudo rm -f /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock /var/lib/dpkg/lock
     sudo mkdir -p /etc/apt/keyrings
-    echo -e " ${green}[ОК]${reset}"
+    echo -e " ${green}[Готово]${reset}"
     ##################################
-    echo -en "\n" ; echo "  # # Первичное обновление индексов репозиториев..."
+    echo -en "\n" ; echo -n "  # # Первичное обновление индексов репозиториев..."
     sudo apt-get update -y 2>&1 | while read -r line; do
         if echo "$line" | grep -qE "Hit:|Get:|Ign:"; then
-            clean_line=$(echo "$line" | awk '{print $1, $2}' | cut -c1-65)
-            printf "\r\033[K       → %s" "$clean_line"
+            clean_line=$(echo "$line" | awk '{print $1, $2}' | cut -c1-50)
+            printf "\r\033[K  # # Первичное обновление индексов репозиториев... %s" "$clean_line"
         fi
     done
-    printf "\r\033[K       ${green}[ОК] Базовые индексы обновлены.${reset}\n"
+    printf "\r\033[K  # # Первичное обновление индексов репозиториев... ${green}[Готово]${reset}\n"
     ##################################
     echo -en "\n" ; echo -n "  # # Устанавливаем необходимые системные пакеты для скачивания и верификации..."
     sudo apt-get install -y ca-certificates curl gnupg 2>&1 | while read -r line; do
@@ -301,34 +307,35 @@ function InstallScript() {
     echo -en "\n" ; echo -n "  # # Импорт PGP-ключа и регистрация репозитория Homebridge..."
     curl -sSfL https://repo.homebridge.io/KEY.gpg | sudo gpg --dearmor | sudo tee /usr/share/keyrings/homebridge.gpg > /dev/null
     echo "deb [signed-by=/usr/share/keyrings/homebridge.gpg] https://repo.homebridge.io stable main" | sudo tee /etc/apt/sources.list.d/homebridge.list > /dev/null
-    echo -e " ${green}[ОК]${reset}"
+    echo -e " ${green}[Готово]${reset}"
     ##################################
-	#echo -en "\n" ; echo "  # # Добавление официального репозитория Node.js 24.x..."
+	# echo -en "\n" ; echo -n "  # # Интеграция официального репозитория Node.js 24.x..."
 	# Define the desired Node.js major version
-	#NODE_MAJOR=24
+	# NODE_MAJOR=24
 	# Download the new repository's GPG key and save it in the keyring directory
 	#curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --yes --dearmor -o /etc/apt/keyrings/nodesource.gpg > /dev/null 2>&1
 	# Add the new repository's source list with its GPG key for package verification
-	#echo "Types: deb
+	# echo "Types: deb
 	#URIs: https://deb.nodesource.com/node_${NODE_MAJOR}.x/
-	#Suites: nodistro
-	#Components: main
+	# Suites: nodistro
+	# Components: main
 	#Signed-By: /etc/apt/keyrings/nodesource.gpg" | sudo tee /etc/apt/sources.list.d/nodesource.sources
+	# echo -e " ${green}[Готово]${reset}"
     ##################################
-	echo -en "\n" ; echo "  # # Обновление индексов пакетов перед установкой зависимостей..."
-	#sudo apt-get update
-	# Запускаем apt-get update, перехватываем вывод и перерисовываем живую строку под заголовком
-	sudo apt-get update -y 2>&1 | while read -r line; do
-  	  if echo "$line" | grep -qE "Hit:|Get:|Ign:"; then
-   	     # Форматируем строку, чтобы она была компактной и не ломала экран
-   	     clean_line=$(echo "$line" | awk '{print $1, $2}' | cut -c1-65)
-    	    printf "\r\033[K       → %s" "$clean_line"
-    	elif echo "$line" | grep -qE "Err:|Failed|Error|E:|W:"; then
-    	    echo -e "\n${red}    [ОШИБКА РЕПОЗИТОРИЯ]: $line${reset}"
-    	fi
-	done
-	# Стираем бегущую строку и пишем красивый зелёный статус прямо под заголовком
-	printf "\r\033[K       ${green}[ОК] Индексы пакетов успешно обновлены.${reset}\n"
+	# echo -en "\n" ; echo -n "  # # Установка Node.js..."
+	# sudo apt-get install -y nodejs 2>&1 | while read -r line; do if echo "$line" | grep -qE "Unpacking|Setting up"; then printf "."; fi; done
+	# echo -e " ${green}[Готово]${reset}"
+    ##################################
+    echo -en "\n" ; echo -n "  # # Обновление индексов пакетов перед установкой зависимостей..."
+    sudo apt-get update -y 2>&1 | while read -r line; do
+        if echo "$line" | grep -qE "Hit:|Get:|Ign:"; then
+            clean_line=$(echo "$line" | awk '{print $1, $2}' | cut -c1-40)
+            printf "\r\033[K  # # Обновление индексов пакетов перед установкой зависимостей... %s" "$clean_line"
+        elif echo "$line" | grep -qE "Err:|Failed|Error|E:|W:"; then
+            echo -e "\n${red}    [ОШИБКА РЕПОЗИТОРИЯ]: $line${reset}"
+        fi
+    done
+    printf "\r\033[K  # # Обновление индексов пакетов перед установкой зависимостей... ${green}[Готово]${reset}\n"
     ##################################
 	echo -en "\n" ; echo -n "  # # Установка пакетов gcc g++ make python3 для сборки плагинов..."
     sudo apt-get install -y gcc g++ make python3 2>&1 | while read -r line; do
@@ -350,23 +357,6 @@ function InstallScript() {
     done
     echo -e " ${green}[Готово]${reset}"
     ##################################
-	# echo -en "\n" ; echo -n "  # # Интеграция официального репозитория Node.js 24.x..."
-	# Define the desired Node.js major version
-	# NODE_MAJOR=24
-	# Download the new repository's GPG key and save it in the keyring directory
-	#curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --yes --dearmor -o /etc/apt/keyrings/nodesource.gpg > /dev/null 2>&1
-	# Add the new repository's source list with its GPG key for package verification
-	# echo "Types: deb
-	#URIs: https://deb.nodesource.com/node_${NODE_MAJOR}.x/
-	# Suites: nodistro
-	# Components: main
-	#Signed-By: /etc/apt/keyrings/nodesource.gpg" | sudo tee /etc/apt/sources.list.d/nodesource.sources
-	# echo -e " ${green}[ОК]${reset}"
-    ##################################
-	# echo -en "\n" ; echo -n "  # # Установка Node.js..."
-	# sudo apt-get install -y nodejs 2>&1 | while read -r line; do if echo "$line" | grep -qE "Unpacking|Setting up"; then printf "."; fi; done
-	# echo -e " ${green}[Готово]${reset}"
-    ##################################
     echo -en "\n" ; echo -n "  # # Установка HomeBridge... "
     # Запускаем установку в фоне, перенаправляя вывод во временный файл
     sudo apt-get install homebridge -y > /tmp/apt_install.log 2>&1 &
@@ -379,8 +369,8 @@ function InstallScript() {
     while kill -0 "$APT_PID" 2>/dev/null; do
         for sym in "${spinner[@]}"; do
             # Выводим текущее действие из конца лога (последние 50 символов), чтобы видеть прогресс
-            local current_act=$(tail -n 1 /tmp/apt_install.log 2>/dev/null | grep -oE "(Unpacking|Setting up|Preparing to unpack) [a-zA-Z0-9.-]+" | cut -c1-50)
-            
+            local current_act=$(tail -n 1 /tmp/apt_install.log 2>/dev/null | grep -oE "(Unpacking|Setting up|Preparing to unpack) [a-zA-Z0-9.-]+" | tr -d '\r' | head -n 1)
+
             # \r возвращает каретку в начало, \033[K очищает строку
             printf "\r  ${yellow}%s${reset} # # Установка HomeBridge... ${current_act} " "$sym"
             sleep 0.1
@@ -390,10 +380,8 @@ function InstallScript() {
     # Проверяем, как завершился процесс
     wait "$APT_PID"
     if [ $? -eq 0 ]; then
-        # Если всё ОК, затираем спиннер и пишем красивый зелёный финал
-        printf "\r\033[K  ${green}✔${reset} # # Установка HomeBridge... ${green}[Готово]${reset}\n"
+        printf "\r\033[K  # # Установка HomeBridge... ${green}[Готово]${reset}\n"
     else
-        # Если была ошибка, выводим её красным цветом
         printf "\r\033[K  ${red}✘${reset} # # Установка HomeBridge... ${red}[ОШИБКА APT]${reset}\n"
         echo -e "${red}"
         tail -n 5 /tmp/apt_install.log # Показываем последние 5 строк лога с ошибкой
@@ -407,30 +395,27 @@ function InstallScript() {
     sudo systemctl enable homebridge > /dev/null 2>&1
     sudo systemctl restart homebridge > /dev/null 2>&1
     echo -e " ${green}[Успешно запущено]${reset}"
-
     ##################################
-
-
-# Восстановление резервной копии
-if [ -d "$BackupsFolder" ] && [ "$(ls -A "$BackupsFolder" 2>/dev/null)" ]; then
-    BackupRecovery=1
-    echo -en "\n" ; echo "  # # Восстановление резервной копии конфигурационных файлов HomeBridge..."
-
-    if [ ! -d /var/lib/homebridge/backups/config-backups ] ; then 
-        sudo mkdir -p /var/lib/homebridge/backups/config-backups && sudo chmod 777 /var/lib/homebridge/backups/config-backups
+	
+    # Восстановление резервной копии происходит молча, если файлов нет
+    if [ -d "$BackupsFolder" ] && [ "$(ls -A "$BackupsFolder" 2>/dev/null)" ]; then
+        echo -en "\n" ; echo -n "  # # Восстановление резервной копии конфигурационных файлов HomeBridge..."
+        BackupRecovery=1
+        if [ ! -d /var/lib/homebridge/backups/config-backups ] ; then 
+            sudo mkdir -p /var/lib/homebridge/backups/config-backups && sudo chmod 777 /var/lib/homebridge/backups/config-backups
+        fi
+        
+        sudo cp -f "$BackupsFolder"/config.json.* /var/lib/homebridge/backups/config-backups/ 2>/dev/null
+        
+        LATEST_CONF=$(ls -t "$BackupsFolder"/config.json.* 2>/dev/null | head -n 1)
+        if [ -n "$LATEST_CONF" ]; then
+            sudo cp -f "$LATEST_CONF" /var/lib/homebridge/config.json
+            sudo chown homebridge:homebridge /var/lib/homebridge/config.json
+        fi
+        
+        rm -f "$BackupsFolder"/config.json.* 2>/dev/null
+        echo -e " ${green}[Готово]${reset}"
     fi
-    
-    sudo cp -f "$BackupsFolder"/config.json.* /var/lib/homebridge/backups/config-backups/ 2>/dev/null
-    
-    # Ищем самый свежий бэкап и делаем его основным рабочим конфигом, чтобы система не запустилась пустой
-    LATEST_CONF=$(ls -t "$BackupsFolder"/config.json.* 2>/dev/null | head -n 1)
-    if [ -n "$LATEST_CONF" ]; then
-        sudo cp -f "$LATEST_CONF" /var/lib/homebridge/config.json
-        sudo chown homebridge:homebridge /var/lib/homebridge/config.json
-    fi
-    
-    rm -f "$BackupsFolder"/config.json.* 2>/dev/null
-fi
 
 # Вытаскиваем именно последний порт из конфига (порт веб-интерфейса)
 HB_PORT=$(grep -o '"port":\s*[0-9]*' /var/lib/homebridge/config.json 2>/dev/null | grep -o '[0-9]*' | tail -n 1)
