@@ -200,7 +200,7 @@ xXC4LrA/JjsblTSkPIdp4EOrsRRRYuMoMdnGeZiFId6OdbfvS9Y2E24exbSb859e
 EOF
 
     # 2. Проверяем доступность именно сервера репозитория пакетов!
-    if curl -m 4 -sI https://repo.homebridge.io | grep -q "Etag\|Server\|Cloudflare\|200\|301\|302"; then
+    if curl -m 4 -sI https://repo.homebridge.io | grep -q "Etag\|Server\|Cloudflare\|200\|301\|302\|404"; then
         echo -e "  ${green}[ОК] Репозиторий доступен напрямую. Продолжаем работу...${reset}"
         return 0
     fi
@@ -240,7 +240,7 @@ EOF
                     bash "$SCRIPT_DIR/mihomo-setup.sh"
                     
                     echo "  # # Проверка связи после настройки туннеля..."
-                    if curl -m 6 -sI https://repo.homebridge.io | grep -q "Etag\|Server\|Cloudflare\|200\|301\|302"; then
+                    if curl -m 6 -sI https://repo.homebridge.io | grep -q "Etag\|Server\|Cloudflare\|200\|301\|302\|404"; then
                         echo -e "    ${green}[ОК] Сеть успешно восстановлена! Продолжаем...${reset}"
                         return 0
                     else
