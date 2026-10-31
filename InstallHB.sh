@@ -412,7 +412,7 @@ function InstallScript() {
     stty echo # ВОЗВРАЩАЕМ ЭХО КЛАВИАТУРЫ
     printf "\n\033[K\033[2A\r\033[K  # # Проверка обновлений перед зависимостями... ${green}[Готово]${reset}\n"
     ##################################
-	echo -en "\n" ; echo -n "  # # Установка пакетов gcc g++ make python3 для сборки плагинов..."
+	echo -en "\n" ; echo -n "  # # Установка gcc g++ make python3 для плагинов..."
     sudo apt-get install -y gcc g++ make python3 2>&1 | while read -r line; do
         if echo "$line" | grep -qE "Unpacking|Setting up|Preparing to unpack"; then
             printf "."
