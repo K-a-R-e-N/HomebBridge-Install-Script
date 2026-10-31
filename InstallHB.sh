@@ -359,14 +359,15 @@ function InstallScript() {
     sudo rm -f /etc/apt/keyrings/nodesource.gpg /etc/apt/sources.list.d/nodesource* /etc/apt/sources.list.d/homebridge*
     echo -e " ${green}[Готово]${reset}"
     ##################################
-    echo -en "\n" ; echo -n "  # # Первичное обновление индексов репозиториев..."
+    echo -en "\n" ; echo -n "  # # Обновление индексов репозиториев..."
     sudo apt-get update -y 2>&1 | while read -r line; do
         if echo "$line" | grep -qE "Hit:|Get:|Ign:|Удл:|Всэ:|Игн:"; then
-            clean_line=$(echo "$line" | tr -d '\r' | awk '{$1=$1;print}' | cut -c1-40)
-            printf "\r\033[K  # # Первичное обновление индексов репозиториев... %s" "$clean_line"
+            # Отрезаем адрес репозитория покороче (до 30 символов), чтобы строка не переносилась
+            clean_line=$(echo "$line" | tr -d '\r' | awk '{$1=$1;print}' | cut -c1-30)
+            printf "\r\033[K  # # Обновление индексов репозиториев... %s" "$clean_line"
         fi
     done
-    printf "\r\033[K  # # Первичное обновление индексов репозиториев... ${green}[Готово]${reset}\n"
+    printf "\r\033[K  # # Обновление индексов репозиториев... ${green}[Готово]${reset}\n"
     ##################################
     echo -en "\n" ; echo -n "  # # Установка базовых системных пакетов..."
     sudo apt-get install -y ca-certificates curl gnupg 2>&1 | while read -r line; do
@@ -396,16 +397,17 @@ function InstallScript() {
 	# sudo apt-get install -y nodejs 2>&1 | while read -r line; do if echo "$line" | grep -qE "Unpacking|Setting up"; then printf "."; fi; done
 	# echo -e " ${green}[Готово]${reset}"
     ##################################
-    echo -en "\n" ; echo -n "  # # Обновление индексов пакетов перед установкой зависимостей..."
+    echo -en "\n" ; echo -n "  # # Проверка обновлений перед зависимостями..."
     sudo apt-get update -y 2>&1 | while read -r line; do
         if echo "$line" | grep -qE "Hit:|Get:|Ign:|Удл:|Всэ:|Игн:"; then
-            clean_line=$(echo "$line" | tr -d '\r' | awk '{$1=$1;print}' | cut -c1-35)
-            printf "\r\033[K  # # Обновление индексов пакетов перед установкой зависимостей... %s" "$clean_line"
+            # Отрезаем до 25 символов, так как название шага чуть длиннее
+            clean_line=$(echo "$line" | tr -d '\r' | awk '{$1=$1;print}' | cut -c1-25)
+            printf "\r\033[K  # # Проверка обновлений перед зависимостями... %s" "$clean_line"
         elif echo "$line" | grep -qE "Err:|Failed|Error|E:|W:|Ошб:"; then
             echo -e "\n${red}    [ОШИБКА РЕПОЗИТОРИЯ]: $line${reset}"
         fi
     done
-    printf "\r\033[K  # # Обновление индексов пакетов перед установкой зависимостей... ${green}[Готово]${reset}\n"
+    printf "\r\033[K  # # Проверка обновлений перед зависимостями... ${green}[Готово]${reset}\n"
     ##################################
 	echo -en "\n" ; echo -n "  # # Установка пакетов gcc g++ make python3 для сборки плагинов..."
     sudo apt-get install -y gcc g++ make python3 2>&1 | while read -r line; do
