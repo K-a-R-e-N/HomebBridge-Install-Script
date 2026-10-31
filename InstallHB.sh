@@ -359,16 +359,20 @@ function InstallScript() {
     sudo rm -f /etc/apt/keyrings/nodesource.gpg /etc/apt/sources.list.d/nodesource* /etc/apt/sources.list.d/homebridge*
     echo -e " ${green}[Готово]${reset}"
     ##################################
-    echo -en "\n" ; echo -n "  # # Первичное обновление индексов репозиториев..."
+    echo -e "  # # Первичное обновление индексов репозиториев..."
     sudo apt-get update -y 2>&1 | while read -r line; do
-        if echo "$line" | grep -qE "Hit:|Get:|Ign:"; then
-            clean_line=$(echo "$line" | awk '{print $1, $2}' | cut -c1-45)
-            printf "\r\033[K  # # Первичное обновление индексов репозиториев... %s" "$clean_line"
+        if echo "$line" | grep -qE "Hit:|Get:|Ign:|Удл:|Всэ:|Игн:"; then
+            # Убираем возврат каретки, схлопываем лишние пробелы и берем первые 65 символов
+            clean_line=$(echo "$line" | tr -d '\r' | awk '{$1=$1;print}' | cut -c1-65)
+            # Выводим текущий репозиторий на нижней строке с отступом в 6 пробелов
+            printf "\r\033[K      %s" "$clean_line"
         fi
     done
-    printf "\r\033[K  # # Первичное обновление индексов репозиториев... ${green}[Готово]${reset}\n"
+    # Перемещаем курсор на строку вверх, стираем старый заголовок, пишем статус [Готово]
+    # Затем переходим вниз и полностью стираем оставшийся след от последнего репозитория
+    printf "\033[1A\r\033[K  # # Первичное обновление индексов репозиториев... ${green}[Готово]${reset}\n\033[K"
     ##################################
-    echo -en "\n" ; echo -n "  # # Устанавливаем необходимые системные пакеты для скачивания и верификации..."
+    echo -en "\n" ; echo -n "  # # Установка базовых системных пакетов..."
     sudo apt-get install -y ca-certificates curl gnupg 2>&1 | while read -r line; do
         if echo "$line" | grep -qE "Unpacking|Setting up"; then printf "."; fi
     done
@@ -396,16 +400,16 @@ function InstallScript() {
 	# sudo apt-get install -y nodejs 2>&1 | while read -r line; do if echo "$line" | grep -qE "Unpacking|Setting up"; then printf "."; fi; done
 	# echo -e " ${green}[Готово]${reset}"
     ##################################
-    echo -en "\n" ; echo -n "  # # Обновление индексов пакетов перед установкой зависимостей..."
+    echo -e "  # # Обновление индексов пакетов перед установкой зависимостей..."
     sudo apt-get update -y 2>&1 | while read -r line; do
-        if echo "$line" | grep -qE "Hit:|Get:|Ign:"; then
-            clean_line=$(echo "$line" | awk '{print $1, $2}' | cut -c1-40)
-            printf "\r\033[K  # # Обновление индексов пакетов перед установкой зависимостей... %s" "$clean_line"
-        elif echo "$line" | grep -qE "Err:|Failed|Error|E:|W:"; then
+        if echo "$line" | grep -qE "Hit:|Get:|Ign:|Удл:|Всэ:|Игн:"; then
+            clean_line=$(echo "$line" | tr -d '\r' | awk '{$1=$1;print}' | cut -c1-65)
+            printf "\r\033[K      %s" "$clean_line"
+        elif echo "$line" | grep -qE "Err:|Failed|Error|E:|W:|Ошб:"; then
             echo -e "\n${red}    [ОШИБКА РЕПОЗИТОРИЯ]: $line${reset}"
         fi
     done
-    printf "\r\033[K  # # Обновление индексов пакетов перед установкой зависимостей... ${green}[Готово]${reset}\n"
+    printf "\033[1A\r\033[K  # # Обновление индексов пакетов перед установкой зависимостей... ${green}[Готово]${reset}\n\033[K"
     ##################################
 	echo -en "\n" ; echo -n "  # # Установка пакетов gcc g++ make python3 для сборки плагинов..."
     sudo apt-get install -y gcc g++ make python3 2>&1 | while read -r line; do
