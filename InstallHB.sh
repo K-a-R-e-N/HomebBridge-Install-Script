@@ -87,7 +87,7 @@ function GoToMenu {
 function СheckingInstalledPackage() {
     local InstalledPackageKey=0
     echo -n "  # # Проверка на ранее установленную версию..."
-    
+
     if dpkg -s homebridge 2>/dev/null | grep -q "Status: install ok installed"; then
         echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge как системный пакет..."
         InstallInfo="${green}[уже установлен]${reset}"
@@ -159,8 +159,8 @@ function BackUpScript() {
 }
 
 function CheckRepositoryAccess {
-    echo -en "\n" ; echo -n "  # # Проверка доступности репозитория Homebridge..."
-    
+    echo -en "\n" ; echo -n " # # Проверка доступности репозитория Homebridge..."
+
     #Сначала безопасно создаем ключ из встроенного текста (без curl)
     sudo mkdir -p /usr/share/keyrings
     sudo tee /usr/share/keyrings/homebridge.gpg > /dev/null << 'EOF'
@@ -296,7 +296,6 @@ function InstallScript() {
         echo -e " ${green}[Не обнаружено]${reset}"
     fi
 
-    echo -en "\n"
     CheckRepositoryAccess || { sleep 1; GoToMenu; return; }
 
     BackUpScript
