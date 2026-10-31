@@ -517,7 +517,7 @@ echo "╚═══════════════════════�
 echo -en "\n"
 echo "    ┌──────────── Полезная информация для работы с HomeBridge ────────────┐"
 echo "    │                                                                     │"
-echo "    │                     Установленная версия:  ${green}$FINAL_HB_VERSION${reset}                   │" 
+echo "    │                     Установленная версия: ${green}$FINAL_HB_VERSION${reset}                    │" 
 echo "    │                                                                     │"
 echo "    │             Доступ к веб-интерфейсу HomeBridge по адресу:           │"
 echo "    │                      ${green}http://$HB_IP:$HB_PORT/${reset}                      │"
