@@ -29,6 +29,16 @@ trap cleanup EXIT
 BackupsFolder=~/HB_Backup
 # # # # # # # # # # # # # # # # 
 
+function Zagolovok {
+echo -en "${yellow} \n"
+echo "╔═════════════════════════════════════════════════════════════════════════════╗"
+echo "║                                                                             ║"
+echo "║                 $ZI HomeBridge и его зависимостей.                  ║"
+echo "║                                                                             ║"
+echo "╚═════════════════════════════════════════════════════════════════════════════╝"
+echo -en "\n ${reset}"
+}
+
 function GoToMenu {
     GoToMenuInfo="Чтобы продолжить, введите"
     while :
@@ -149,9 +159,9 @@ function BackUpScript() {
 }
 
 function CheckRepositoryAccess {
-    echo -n "  # # Проверка доступности репозитория Homebridge..."
+    echo -en "\n" ; echo -n "  # # Проверка доступности репозитория Homebridge..."
     
-    # 1. Сначала безопасно создаем ключ из встроенного текста (без curl)
+    #Сначала безопасно создаем ключ из встроенного текста (без curl)
     sudo mkdir -p /usr/share/keyrings
     sudo tee /usr/share/keyrings/homebridge.gpg > /dev/null << 'EOF'
 -----BEGIN PGP PUBLIC KEY BLOCK-----
@@ -208,9 +218,9 @@ xXC4LrA/JjsblTSkPIdp4EOrsRRRYuMoMdnGeZiFId6OdbfvS9Y2E24exbSb859e
 -----END PGP PUBLIC KEY BLOCK-----
 EOF
 
-    # 2. Проверяем доступность именно сервера репозитория пакетов!
+    #Проверяем доступность именно сервера репозитория пакетов!
     if curl -m 4 -sI https://repo.homebridge.io | grep -q "Etag\|Server\|Cloudflare\|200\|301\|302\|404"; then
-        echo -e " ${green}[Доступно]${reset}"
+        echo -e "${green}[Доступно]${reset}"
         return 0
     fi
 
@@ -285,8 +295,10 @@ function InstallScript() {
     if ! dpkg -s homebridge 2>/dev/null | grep -q "Status: install ok installed" && ! dpkg -s nodejs 2>/dev/null | grep -q "Status: install ok installed"; then
         echo -e " ${green}[Не обнаружено]${reset}"
     fi
-    
+
+    echo -en "\n"
     CheckRepositoryAccess || { sleep 1; GoToMenu; return; }
+
     BackUpScript
 
     ##################################
