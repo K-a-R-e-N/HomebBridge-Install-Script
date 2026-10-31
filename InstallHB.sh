@@ -268,7 +268,7 @@ function InstallScript() {
     clear ; CheckBackUp=0 ; BackupRecovery=0
     ZI="  Установка" && Zagolovok
     СheckingInstalledPackage || return
-    CheckRepositoryAccess || return 
+    CheckRepositoryAccess || { sleep 1; GoToMenu; return; }
     BackUpScript
 
     echo -en "\n" ; echo "  # # Очистка старых репозиториев Node.js и Homebridge..."
@@ -515,9 +515,9 @@ GoToMenu
 
 
 function UpdatingScript() {
-clear ; CheckBackUp=0 ; BackupRecovery=0
-ZI=" Обновление" && Zagolovok
-CheckRepositoryAccess || return
+    clear ; CheckBackUp=0 ; BackupRecovery=0
+    ZI=" Обновление" && Zagolovok
+    CheckRepositoryAccess || { sleep 1; GoToMenu; return; }
 
 # Перед любым обновлением обязательно страхуемся бэкапом
 BackUpScript
