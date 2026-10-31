@@ -6,25 +6,28 @@ reset=$(tput sgr0)
 
 cmdkey=0 ; ME=$(basename "$0") ; cd ~ || exit 1 ; clear
 
+
+# =========================================================================================
 # Запрашиваем пароль sudo один раз на самом старте, чтобы не разрывать логи функций
+# =========================================================================================
 echo "  # # Для работы скрипта необходимы права суперпользователя."
 sudo -v || exit 1
-# Фоновое обновление токена sudo каждые 60 секунд, пока работает скрипт
+# Запускаем фоновое обновление и сохраняем PID процесса в переменную SUDO_PID
 while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+SUDO_PID=$!
+# Функция очистки, которая убьет фоновый sudo при выходе из основного скрипта
+cleanup() {
+    if kill -0 "$SUDO_PID" 2>/dev/null; then
+        kill "$SUDO_PID" 2>/dev/null
+    fi
+}
+# Привязываем функцию к событию завершения скрипта (EXIT)
+trap cleanup EXIT
+# =========================================================================================
 
 # # # # # # # # # # # # # # # # 
 BackupsFolder=~/HB_Backup
 # # # # # # # # # # # # # # # # 
-
-function Zagolovok {
-echo -en "${yellow} \n"
-echo "╔═════════════════════════════════════════════════════════════════════════════╗"
-echo "║                                                                             ║"
-echo "║                 $ZI HomeBridge и его зависимостей.                  ║"
-echo "║                                                                             ║"
-echo "╚═════════════════════════════════════════════════════════════════════════════╝"
-echo -en "\n ${reset}"
-}
 
 function GoToMenu {
     GoToMenuInfo="Чтобы продолжить, введите"
@@ -44,6 +47,8 @@ function GoToMenu {
         echo -en "\n"
         echo "           4 - Обновление Homebridge до актуальной версии $UpdatingInfo"
         echo -en "\n"
+        echo "           5 - Полное удаление Node.js и его хвостов из системы"
+        echo -en "\n"
         echo "           0 - Завершение работы с самоудалением скрипта"
         echo -en "\n"
         echo "     │                                                                   │"
@@ -60,6 +65,7 @@ function GoToMenu {
             2) 	cmdkey=1 ; UninstallScript ; cmdkey=0 ; InstallScript ;;
             3) 	ReinstallInfo="" ; UninstallScript ;;
             4) 	UpdatingInfo="" ; UpdatingScript ;;
+            5) 	UninstallNodeJS ;;
             D|d) 	RremovalItself ;;
             H|h) 	print_help ;;
             *) 	clear && GoToMenuInfo="Попробуйте еще раз ввести" ;;
@@ -67,9 +73,10 @@ function GoToMenu {
     done
 }
 
+
 function СheckingInstalledPackage() {
     local InstalledPackageKey=0
-    echo -en "\n" ; echo "  # # Проверка на ранее установленную версию..."
+    echo -n "  # # Проверка на ранее установленную версию..."
     
     if dpkg -s homebridge 2>/dev/null | grep -q "Status: install ok installed"; then
         echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge как системный пакет..."
@@ -84,29 +91,29 @@ function СheckingInstalledPackage() {
         else
             NODE_VER=$(node -v 2>/dev/null | tr -d ' ' || echo "неизвестно")
             echo -en "\n" ; echo "     - В системе уже установлен пакет Node.js ${green}$NODE_VER${reset}, но HomeBridge не установлен..."
+            # Наличие чистого NodeJS больше не взводит триггер ошибки InstalledPackageKey=1
             [ "$cmdkey" -ne 1 ] && InstallInfo="${red}[установлен NodeJS]${reset}"
-            InstalledPackageKey=1
         fi
     fi
 
     if [ "$InstalledPackageKey" -eq 1 ]; then
         echo -en "\n" ; echo -e "\a"
         if [ "$cmdkey" -eq 1 ]; then
-		    echo -n "${green}           Нажмите Enter, чтобы завершить работу скрипта...${reset}"
-            read -r
-            exit 0
+            # Пишем ошибку в поток и выходим без остановки выполнения (без read)
+            echo -e "${red}Критическая ошибка: Автоматическая установка прервана, компоненты уже есть в системе.${reset}"
+            exit 1
         else
-		    echo -n "${green}           Нажмите Enter, чтобы вернуться в главное меню...${reset}"
+            echo -n "${green}           Нажмите Enter, чтобы вернуться в главное меню...${reset}"
             read -r
             return 1
         fi
     fi
-
+return 0
 }
 
 function BackUpScript() {
-    # Создаем папку для бэкапов, если её нет
-    [ ! -d "$BackupsFolder" ] && sudo mkdir -p "$BackupsFolder" && sudo chmod 777 "$BackupsFolder"
+    # Создаем папку от имени текущего пользователя
+	[ ! -d "$BackupsFolder" ] && mkdir -p "$BackupsFolder" && chmod 755 "$BackupsFolder"
 
     # Бэкап основного рабочего конфига современного Homebridge
     if [ -f /var/lib/homebridge/config.json ]; then
@@ -135,13 +142,14 @@ function BackUpScript() {
         CheckBackUp=1
     fi
 
-    if [ "$CheckBackUp" -eq 1 ]; then
-        echo -en "\n" ; echo "  # # Создание резервной копии конфигурационных файлов HomeBridge..."
-    fi
+	if [ "$CheckBackUp" -eq 1 ]; then
+    	sudo chown -R "$(id -u):$(id -g)" "$BackupsFolder"
+    	echo -en "\n" ; echo "  # # Создание резервной копии конфигурационных файлов HomeBridge..."
+	fi
 }
 
 function CheckRepositoryAccess {
-    echo -en "\n" ; echo "  # # Проверка доступности репозитория Homebridge..."
+    echo -n "  # # Проверка доступности репозитория Homebridge..."
     
     # 1. Сначала безопасно создаем ключ из встроенного текста (без curl)
     sudo mkdir -p /usr/share/keyrings
@@ -202,7 +210,7 @@ EOF
 
     # 2. Проверяем доступность именно сервера репозитория пакетов!
     if curl -m 4 -sI https://repo.homebridge.io | grep -q "Etag\|Server\|Cloudflare\|200\|301\|302\|404"; then
-        echo -e "  ${green}[Доступно напрямую]${reset}"
+        echo -e " ${green}[Доступно]${reset}"
         return 0
     fi
 
@@ -232,7 +240,7 @@ EOF
         echo -n "    Введите номер пункта (1-2): "
         read -r NET_CHOICE
         case $NET_CHOICE in
-            1)
+            1|y|Y|[дД])
                 clear
                 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
                 
@@ -253,7 +261,7 @@ EOF
                     return 1
                 fi
                 ;;
-            2)
+            2|n|N|[нН])
                 echo -e "       ${yellow}Действие отменено пользователем. Возврат в главное меню...${reset}"
                 sleep 2
                 return 1
@@ -269,30 +277,34 @@ function InstallScript() {
     clear ; CheckBackUp=0 ; BackupRecovery=0
     ZI="  Установка" && Zagolovok
     
-    echo -n "  # # Проверка на ранее установленную версию..."
+	# Запускаем проверку
     СheckingInstalledPackage
-    if [ $? -eq 0 ]; then
-        echo -e " ${green}[Чистая система]${reset}"
+    if [ $? -ne 0 ]; then
+        sleep 1 ; GoToMenu ; return
+    fi
+    if ! dpkg -s homebridge 2>/dev/null | grep -q "Status: install ok installed" && ! dpkg -s nodejs 2>/dev/null | grep -q "Status: install ok installed"; then
+        echo -e " ${green}[Не обнаружено]${reset}"
     fi
     
     CheckRepositoryAccess || { sleep 1; GoToMenu; return; }
     BackUpScript
 
     ##################################
-    echo -en "\n" ; echo -n "  # # Очистка старых репозиториев Node.js и Homebridge..."
-    sudo rm -f /etc/apt/keyrings/nodesource.gpg /etc/apt/sources.list.d/nodesource* /etc/apt/sources.list.d/homebridge*
-    echo -e " ${green}[Готово]${reset}"
-    ##################################
     echo -en "\n" ; echo -n "  # # Сброс системных блокировок и подготовка окружения..."
     sudo killall -9 apt apt-get dpkg 2>/dev/null
+	sleep 1
     sudo rm -f /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock /var/lib/dpkg/lock
     sudo mkdir -p /etc/apt/keyrings
+    echo -e " ${green}[Готово]${reset}"
+    ##################################
+    echo -en "\n" ; echo -n "  # # Очистка старых репозиториев Node.js и Homebridge..."
+    sudo rm -f /etc/apt/keyrings/nodesource.gpg /etc/apt/sources.list.d/nodesource* /etc/apt/sources.list.d/homebridge*
     echo -e " ${green}[Готово]${reset}"
     ##################################
     echo -en "\n" ; echo -n "  # # Первичное обновление индексов репозиториев..."
     sudo apt-get update -y 2>&1 | while read -r line; do
         if echo "$line" | grep -qE "Hit:|Get:|Ign:"; then
-            clean_line=$(echo "$line" | awk '{print $1, $2}' | cut -c1-50)
+            clean_line=$(echo "$line" | awk '{print $1, $2}' | cut -c1-45)
             printf "\r\033[K  # # Первичное обновление индексов репозиториев... %s" "$clean_line"
         fi
     done
@@ -368,11 +380,11 @@ function InstallScript() {
     # Крутим спиннер, пока процесс установки жив
     while kill -0 "$APT_PID" 2>/dev/null; do
         for sym in "${spinner[@]}"; do
-            # Выводим текущее действие из конца лога (последние 50 символов), чтобы видеть прогресс
-            local current_act=$(tail -n 1 /tmp/apt_install.log 2>/dev/null | grep -oE "(Unpacking|Setting up|Preparing to unpack) [a-zA-Z0-9.-]+" | tr -d '\r' | head -n 1)
+            # Правильное присваивание без вызова local внутри итератора
+            current_act=$(tail -n 1 /tmp/apt_install.log 2>/dev/null | grep -oE "(Unpacking|Setting up|Preparing to unpack) [a-zA-Z0-9.-]+" | tr -d '\r' | head -n 1)
 
-            # \r возвращает каретку в начало, \033[K очищает строку
-            printf "\r  ${yellow}%s${reset} # # Установка HomeBridge... ${current_act} " "$sym"
+            # Безопасный вывод через %s для исключения конфликтов с синтаксисом printf
+            printf "\r  ${yellow}%s${reset} # # Установка HomeBridge... %s " "$sym" "$current_act"
             sleep 0.1
         done
     done
@@ -411,7 +423,9 @@ function InstallScript() {
         if [ -n "$LATEST_CONF" ]; then
             sudo cp -f "$LATEST_CONF" /var/lib/homebridge/config.json
             sudo chown homebridge:homebridge /var/lib/homebridge/config.json
+            sudo systemctl restart homebridge > /dev/null 2>&1
         fi
+
         
         rm -f "$BackupsFolder"/config.json.* 2>/dev/null
         echo -e " ${green}[Готово]${reset}"
@@ -491,8 +505,7 @@ fi
 
 echo -n "${green}           Нажмите Enter, чтобы вернуться в главное меню...${reset}"
 read -r
-sleep 1
-GoToMenu
+return
 }
 
 
@@ -513,9 +526,6 @@ BackUpScript
 echo -en "\n" ; echo "  # # Деинсталляция пакета HomeBridge..."
 sudo apt-get remove homebridge -y > /dev/null 2>&1
 
-echo -en "\n" ; echo "  # # Деинсталляция NodeJS (если осталась в системе)..."
-sudo apt-get purge --auto-remove nodejs -y > /dev/null 2>&1
-
 echo -en "\n" ; echo "  # # Удаление репозитория и ключей Homebridge..."
 sudo rm -f /etc/apt/sources.list.d/homebridge.list
 sudo rm -f /usr/share/keyrings/homebridge.gpg
@@ -527,7 +537,9 @@ echo -en "\n" ; echo "  # # Деинсталляция всех плагинов
 sudo apt-get purge homebridge -y > /dev/null 2>&1
 
 echo -en "\n" ; echo "  # # Удаление пользователя homebridge..."
-sudo userdel -rf homebridge > /dev/null 2>&1
+sudo pkill -u homebridge > /dev/null 2>&1
+sudo userdel -f homebridge > /dev/null 2>&1
+
 
 echo -en "\n" ; echo "  # # Удаление служб из списка автозагрузки..."
 sudo update-rc.d homebridge remove > /dev/null 2>&1
@@ -537,14 +549,8 @@ sudo rm -rf /etc/systemd/system/multi-user.target.wants/homebridge*
 sudo systemctl --system daemon-reload > /dev/null
 
 echo -en "\n" ; echo "  # # Удаление хвостов для возможности последующей нормальной установки..."
-sudo curl -sfL https://gist.githubusercontent.com/oznu/312b54364616082c3c1e0b6b02351f0e/raw/remove-node.sh | sudo bash > /dev/null 2>&1
-sudo rm -rf /usr/lib/node_modules/homebridge*
-sudo rm -rf /usr/bin/homebridge*
-sudo rm -rf /etc/default/homebridge*
-sudo rm -rf /var/lib/homebridge*
-sudo rm -rf /home/pi/.homebridge*
-sudo rm -rf /home/homebridge*
-sudo rm -rf ~/.homebridge*
+sudo rm -rf /usr/lib/node_modules/homebridge* /usr/bin/homebridge* /etc/default/homebridge* /var/lib/homebridge*
+
 
 echo -en "\n" ; echo "  # # Удаление хвостов от плагинов..."
 sudo rm -rf /usr/bin/ps4-waker
@@ -566,8 +572,7 @@ fi
 
 echo -n "${green}           Нажмите Enter, чтобы вернуться в главное меню...${reset}"
 read -r
-sleep 1
-GoToMenu
+return
 }
 
 
@@ -575,52 +580,84 @@ GoToMenu
 function UpdatingScript() {
     clear ; CheckBackUp=0 ; BackupRecovery=0
     ZI=" Обновление" && Zagolovok
-    CheckRepositoryAccess || { sleep 1; GoToMenu; return; }
+    CheckRepositoryAccess || { sleep 1; return 1; }
 
-# Перед любым обновлением обязательно страхуемся бэкапом
-BackUpScript
+    # Перед любым обновлением обязательно страхуемся бэкапом
+    BackUpScript
 
-echo -en "\n" ; echo "  # # Обновление индексов пакетов..."
-sudo apt-get update -y > /dev/null 2>&1
+    echo -en "\n" ; echo "  # # Обновление индексов пакетов..."
+    sudo apt-get update -y > /dev/null 2>&1
 
-echo -en "\n" ; echo "  # # Обновление HomeBridge..."
-# Флаг --only-upgrade обновит только Homebridge, не трогая остальную операционную систему
-sudo apt-get install --only-upgrade homebridge -y > /dev/null 2>&1
-
-# echo -en "\n" ; echo "  # # Обновление встроенного окружения Node.js до ветки 24..."
-# Проверяем, обновился ли бинарник hb-service, и обновляем внутренний Node.js
-# if command -v hb-service >/dev/null 2>&1; then
-#     sudo hb-service update-node 24 > /dev/null 2>&1
-# fi
-
-if [ -f /opt/homebridge/bin/node ]; then
-    echo -en "\n" ; echo "  # # Среда Node.js изолирована внутри пакета и обновилась автоматически."
-else
-    echo -en "\n" ; echo "  # # Обновление внешнего окружения Node.js до актуальной LTS версии..."
-    if command -v hb-service >/dev/null 2>&1; then
-        sudo hb-service update-node lts > /dev/null 2>&1
+    echo -en "\n" ; echo "  # # Обновление HomeBridge..."
+    # Флаг --only-upgrade обновит только Homebridge, не трогая остальную операционную систему
+    sudo apt-get install --only-upgrade homebridge -y > /dev/null 2>&1
+    ##################################
+    # echo -en "\n" ; echo "  # # Обновление встроенного окружения Node.js до ветки 24..."
+    # Проверяем, обновился ли бинарник hb-service, и обновляем внутренний Node.js
+    # if command -v hb-service >/dev/null 2>&1; then
+    #     sudo hb-service update-node 24 > /dev/null 2>&1
+    # fi
+    ##################################
+    if [ -f /opt/homebridge/bin/node ]; then
+        echo -en "\n" ; echo "  # # Среда Node.js изолирована внутри пакета и обновилась автоматически."
+    else
+        echo -en "\n" ; echo "  # # Обновление внешнего окружения Node.js до актуальной LTS версии..."
+        if command -v hb-service >/dev/null 2>&1; then
+            sudo hb-service update-node lts > /dev/null 2>&1
+        fi
     fi
-fi
 
-echo -en "\n"
-echo -en "\n"
-echo "╔═════════════════════════════════════════════════════════════════════════════╗"
-echo "   ${green}Обновление Homebridge успешно завершено!${reset}"
-echo "╚═════════════════════════════════════════════════════════════════════════════╝"
-echo -e "\a"
+    echo -en "\n"
+    echo -en "\n"
+    echo "╔═════════════════════════════════════════════════════════════════════════════╗"
+    echo "   ${green}Обновление Homebridge успешно завершено!${reset}"
+    echo "╚═════════════════════════════════════════════════════════════════════════════╝"
+    echo -e "\a"
 
-UpdatingInfo="${green}[OK]${reset}"
+    UpdatingInfo="${green}[OK]${reset}"
 
-if [ "$cmdkey" -eq 1 ]; then
-	sleep 5
-	return
-fi
+    if [ "$cmdkey" -eq 1 ]; then
+        sleep 5
+        return
+    fi
 
-echo -n "${green}           Нажмите Enter, чтобы вернуться в главное меню...${reset}"
-read -r
-sleep 1
-GoToMenu
+    echo -n "${green}           Нажмите Enter, чтобы вернуться в главное меню...${reset}"
+    read -r
+    return
 }
+
+
+function UninstallNodeJS() {
+    clear
+    ZI=" Удаление Node" && Zagolovok
+    echo -en "\n" ; echo "${red}  # # ВНИМАНИЕ: Будет произведено ПОЛНОЕ удаление Node.js и всех модулей!${reset}"
+    echo "  Это действие может нарушить работу других компонентов SprutHub."
+    echo -n "  Вы уверены, что хотите продолжить? (yes/no): "
+    read -r -n 1 confirm
+    echo
+    # Проверка регулярным выражением: принимает y, Y, д, Д
+    if [[ ! "$confirm" =~ ^[yYдД]$ ]]; then
+        echo -e "\n  ${yellow}Операция отменена пользователем.${reset}"
+        sleep 2
+        return 1
+    fi
+
+    echo -en "\n" ; echo -n "  # # Удаление системы и очистка хвостов Node.js..."
+    # Вызов оригинального скрипта деинсталляции через curl
+    sudo curl -sfL https://gist.githubusercontent.com/oznu/312b54364616082c3c1e0b6b02351f0e/raw/remove-node.sh | sudo bash > /dev/null 2>&1
+    echo -e " ${green}[Готово]${reset}"
+
+    echo -en "\n"
+    echo "╔═════════════════════════════════════════════════════════════════════════════╗"
+    echo "   ${green}Окружение Node.js полностью удалено из вашей системы!${reset}"
+    echo "╚═════════════════════════════════════════════════════════════════════════════╝"
+    echo -e "\a"
+    
+    echo -n "${green}           Нажмите Enter, чтобы вернуться в главное меню...${reset}"
+    read -r
+    return 0
+}
+
 
 
 function RremovalItself() {
@@ -641,32 +678,36 @@ function print_help() {
     echo -en "\n"
     echo "  ${yellow}Справка по работе скрипта $ME из командной строки${reset}"
     echo -en "\n"
-    echo "    Использование: $ME [-i] [-u] [-r] [-d] [-h] "
+    echo "    Использование: $ME [-i] [-u] [-r] [-n] [-d] [-h] "
     echo -en "\n"
     echo "        Параметры:"
-    echo "            -i        Установка Homebridge на чистой системе."
-    echo "            -u        Полное удаление Homebridge с очисткой системы."
-    echo "            -r        Установка Homebridge с полным удалением старой версии."
-    echo "            -d        Самоудаление папки со скриптом установки."
+    echo "            -i / -I        Установка Homebridge на чистой системе."
+    echo "            -u / -U        Полное удаление Homebridge с очисткой системы."
+    echo "            -r / -R        Установка Homebridge с полным удалением старой версии."
+    echo "            -n / -N        Полная очистка системы от Node.js и его хвостов."
+    echo "            -d / -D        Самоудаление папки со скриптом установки."
     echo -en "\n"
-    echo "            -h        Вызов справки."
+    echo "            -h / -H        Вызов справки."
     echo -en "\n"
     exit 0
 }
+
+
 
 # Если аргументов нет — запускаем интерактивное меню
 if [ $# = 0 ]; then
     GoToMenu
 fi
 
-while getopts ":uUiIrRhHdD" Option
+while getopts ":iIuUrRdDhHnN" Option
 do
     case $Option in
-        I|i)    cmdkey=1 ; InstallScript ;;
-        U|u)    cmdkey=1 ; UninstallScript ;;
-        R|r)    cmdkey=1 ; UninstallScript ; InstallScript ;;
-        D|d)    RremovalItself ;;
-        H|h)    print_help ;;
+        i|I)    cmdkey=1 ; InstallScript ;;
+        u|U)    cmdkey=1 ; UninstallScript ;;
+        r|R)    cmdkey=1 ; UninstallScript ; InstallScript ;;
+        n|N)    cmdkey=1 ; UninstallNodeJS ;;
+        d|D)    RremovalItself ;;
+        h|H)    print_help ;;
         *)      echo -en "\n" ; echo -en "\n"
                 echo "${red}           Неправильный параметр!${reset}"
                 print_help
