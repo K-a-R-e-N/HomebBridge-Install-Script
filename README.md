@@ -76,9 +76,14 @@ git clone https://github.com/K-a-R-e-N/HomebBridge-Install-Script
 bash ~/HomebBridge-Install-Script/InstallHB.sh -u -d
 #Готово
 ```
+### РУЧНОЕ УДАЛЕНИЕ ПАПКИ СО СКРИПТОМ УСТАНОВКИ
 
+Для ручного удаления папки вместе со скриптом установки, надо скопировать нижние строки и ввести в консоль терминала:
+```
+sudo rm -rf ~/HomebBridge-Install-Script
+```
 
-
+### ДЛЯ ТЕСТОВ, НЕ ОБРАЩАЕМ ВНИМАНИЯ !!!
 ```
 sudo rm -rf ~/HomebBridge-Install-Script && git clone https://github.com/K-a-R-e-N/HomebBridge-Install-Script && bash ~/HomebBridge-Install-Script/InstallHB.sh -i -d
 ```
