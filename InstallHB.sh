@@ -6,6 +6,13 @@ reset=$(tput sgr0)
 
 cmdkey=0 ; ME=$(basename "$0") ; cd ~ || exit 1 ; clear
 
+# Запрашиваем пароль sudo один раз на самом старте, чтобы не разрывать логи функций
+echo "  # # Для работы скрипта необходимы права суперпользователя."
+sudo -v || exit 1
+# Фоновое обновление токена sudo каждые 60 секунд, пока работает скрипт
+while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+
+# # # # # # # # # # # # # # # # 
 BackupsFolder=~/HB_Backup
 
 function Zagolovok {
@@ -152,7 +159,7 @@ zlpe0Ki/VCm3HmafwQc/VOphZvKnBtA1Jh8iFGMpEg0WGhqTpkpk965Cc+Rokx13
 dO+UMI0ZHd3Q58az3KVCoame7sKqaCAbjj58pvjkTX3XH8E1reSgJtm0ZbjMnsfL
 X5C3KfBUq1s9pAGeeO3hpiHYGfN1sKeAOrBVyiS8R1S0JnbQK12yC8CfTQARAQAB
 tEhIb21lYnJpZGdlIENJIChHUEcgS2V5IEZvciBHaXRIdWIgQWN0aW9uIERlcGxv
-eW1lbnRzKSA8Y2lAaG9t晨yaWRnZS5pbz6JAk4EEwEKADgWIQSsqmCBSnUkUE8H
+eW1lbnRzKSA8Y2lAaG9tZWJyaWRnZS5pbz6JAk4EEwEKADgWIQSsqmCBSnUkUE8H
 3gffWw/ojI9dkgUCYmToiQIbAwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgAAKCRDf
 Ww/ojI9dkuDGEACrF0gaonn1Q+3V+TiFTVF/iIGOz2T1wNc5sX/FtQCp9s9JhSEW
 uPOMO06gW2/xd8aciw80wBxGp/XFukwtPaDLfeLJAR7afGhuS6zIa577hyMBmrHQ
@@ -192,24 +199,26 @@ xXC4LrA/JjsblTSkPIdp4EOrsRRRYuMoMdnGeZiFId6OdbfvS9Y2E24exbSb859e
 -----END PGP PUBLIC KEY BLOCK-----
 EOF
 
-    # 2. Проверяем доступность сайта через пинг заголовков
+    # 2. Проверяем доступность именно сервера репозитория пакетов!
     if curl -m 4 -sI https://repo.homebridge.io | grep -q "Etag\|Server\|Cloudflare\|200\|301\|302"; then
         echo -e "  ${green}[ОК] Репозиторий доступен напрямую. Продолжаем работу...${reset}"
         return 0
     fi
 
-    # 3. Если недоступен — выводим твой красивый блок ошибки
     bg_red=$(tput setab 1)$(tput setaf 7)
     echo -e "\n"
     echo "  ╔═════════════════════════════════════════════════════════════════════════════╗"
     echo -e "  ║               ${bg_red} КРИТИЧЕСКАЯ ОШИБКА: РЕПОЗИТОРИЙ НЕДОСТУПЕН! ${reset}                 ║"
     echo "  ╚═════════════════════════════════════════════════════════════════════════════╝"
+    
     echo -e "\n    ${yellow}Адрес назначения:${reset} https://repo.homebridge.io"
+    
     echo -e "\n    ${yellow}Возможные причины ответа сервера:${reset}"
     echo "    • Сетевые адреса Cloudflare заблокированы вашим провайдером (РКН)."
     echo "    • На плате SprutHub отсутствует внешнее интернет-соединение."
     echo "    • Системные DNS-серверы не могут разрешить имя хоста."
     echo -en "\n"
+    
     echo "    ┌─────────────────────────────────────────────────────┐"
     echo "    │                                                     │"
     echo "    │  1. Автоматически настроить сеть через AmneziaWG    │"
@@ -225,6 +234,7 @@ EOF
             1)
                 clear
                 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+                
                 if [ -f "$SCRIPT_DIR/mihomo-setup.sh" ]; then
                     chmod +x "$SCRIPT_DIR/mihomo-setup.sh"
                     bash "$SCRIPT_DIR/mihomo-setup.sh"
@@ -285,75 +295,6 @@ function InstallScript() {
     echo -en "\n" ; echo "  # # Добавление репозитория HomeBridge..."
     curl -sSfL https://repo.homebridge.io/KEY.gpg | sudo gpg --dearmor | sudo tee /usr/share/keyrings/homebridge.gpg > /dev/null
     echo "deb [signed-by=/usr/share/keyrings/homebridge.gpg] https://repo.homebridge.io stable main" | sudo tee /etc/apt/sources.list.d/homebridge.list > /dev/null
-
-    echo -en "\n" ; echo "  # # Проверка доступности репозитория Homebridge..."
-    if curl -m 4 -sI https://repo.homebridge.io/KEY.gpg | grep -q "200"; then
-        HB_NET_STATUS=0
-    else
-        HB_NET_STATUS=1
-    fi
-    bg_red=$(tput setab 1)$(tput setaf 7)
-
-    if [ "$HB_NET_STATUS" -ne 0 ]; then
-        echo -e "\n"
-        echo "  ╔═════════════════════════════════════════════════════════════════════════════╗"
-        echo -e "  ║               ${bg_red} КРИТИЧЕСКАЯ ОШИБКА: РЕПОЗИТОРИЙ НЕДОСТУПЕН! ${reset}                 ║"
-        echo "  ╚═════════════════════════════════════════════════════════════════════════════╝"
-        
-        echo -e "\n    ${yellow}Адрес назначения:${reset} https://repo.homebridge.io"
-        
-        echo -e "\n    ${yellow}Возможные причины ответа сервера:${reset}"
-        echo "    • Сетевые адреса Cloudflare заблокированы вашим провайдером (РКН)."
-        echo "    • На плате SprutHub отсутствует внешнее интернет-соединение."
-        echo "    • Системные DNS-серверы не могут разрешить имя хоста."
-        echo -en "\n"
-        
-        echo "    ┌─────────────────────────────────────────────────────┐"
-        echo "    │                                                     │"
-        echo "    │  1. Автоматически настроить сеть через AmneziaWG    │"
-        echo "    │  2. Отказаться и завершить установку                │"
-        echo "    │                                                     │"
-        echo "    └─────────────────────────────────────────────────────┘"
-        echo -en "\n"
-        
-        while true; do
-            echo -n "    Введите номер пункта (1-2): "
-            read -r NET_CHOICE
-            case $NET_CHOICE in
-                1)
-                    clear
-                    SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
-                    
-                    if [ -f "$SCRIPT_DIR/mihomo-setup.sh" ]; then
-                        chmod +x "$SCRIPT_DIR/mihomo-setup.sh"
-                        bash "$SCRIPT_DIR/mihomo-setup.sh"
-                        
-                        echo "  # # Проверка связи после настройки туннеля..."
-                        if curl -m 6 -sI https://repo.homebridge.io/KEY.gpg | grep -q "200"; then
-                            echo -e "    ${green}[ОК] Сеть успешно восстановлена! Продолжаем установку Homebridge...${reset}"
-                            break 
-                        else
-                            echo -e "    ${red}Внимание: Репозиторий всё ещё заблокирован провайдером${reset}"
-                            break
-                        fi
-                    else
-                        echo -e "    ${red}Ошибка: Соседний файл $SCRIPT_DIR/mihomo-setup.sh не найден!${reset}"
-                        break
-                    fi
-                    ;;
-                2)
-                    echo -e "    ${yellow}Действие отменено пользователем. Возврат в главное меню...${reset}"
-                    sleep 2
-                    return
-                    ;;
-                *)
-                    echo -e "    ${red}Неверный ввод. Пожалуйста, введите цифру 1 или 2${reset}"
-                    ;;
-            esac
-        done
-    else
-        echo -e "  ${green}[ОК] Репозиторий доступен напрямую. Продолжаем установку...${reset}"
-    fi
 
 
 #echo -en "\n" ; echo "  # # Добавление официального репозитория Node.js 24.x..."
@@ -429,13 +370,7 @@ fi
 HB_IP=$(hostname -I | awk '{print $1}')
 
 # Безопасно считываем реальную установленную версию Homebridge
-if command -v homebridge >/dev/null 2>&1; then
-    FINAL_HB_VERSION=$(homebridge -v 2>/dev/null)
-elif [ -f /opt/homebridge/bin/homebridge ]; then
-    FINAL_HB_VERSION=$(/opt/homebridge/bin/homebridge -v 2>/dev/null)
-else
-    FINAL_HB_VERSION="Ошибка установки"
-fi
+FINAL_HB_VERSION=$(dpkg-query -W -f='${Version}' homebridge 2>/dev/null || echo "Ошибка определения")
 
 # Считываем версию Node.js (приоритет изолированной версии Homebridge на Debian 13)
 if [ -f /opt/homebridge/bin/node ]; then
