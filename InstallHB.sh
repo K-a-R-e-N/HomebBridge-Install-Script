@@ -359,15 +359,14 @@ function InstallScript() {
     sudo rm -f /etc/apt/keyrings/nodesource.gpg /etc/apt/sources.list.d/nodesource* /etc/apt/sources.list.d/homebridge*
     echo -e " ${green}[Готово]${reset}"
     ##################################
-    echo -e "  # # Первичное обновление индексов репозиториев..."
+    echo -en "\n" ; echo -n "  # # Первичное обновление индексов репозиториев..."
     sudo apt-get update -y 2>&1 | while read -r line; do
         if echo "$line" | grep -qE "Hit:|Get:|Ign:|Удл:|Всэ:|Игн:"; then
-            clean_line=$(echo "$line" | tr -d '\r' | awk '{$1=$1;print}' | cut -c1-65)
-            printf "\r\033[K      %s" "$clean_line"
+            clean_line=$(echo "$line" | tr -d '\r' | awk '{$1=$1;print}' | cut -c1-40)
+            printf "\r\033[K  # # Первичное обновление индексов репозиториев... %s" "$clean_line"
         fi
     done
-    # Перемещаем курсор вверх, пишем [Готово], переходим вниз, стираем след и делаем перенос строки \n для отступа
-    printf "\033[1A\r\033[K  # # Первичное обновление индексов репозиториев... ${green}[Готово]${reset}\n\033[K\n"
+    printf "\r\033[K  # # Первичное обновление индексов репозиториев... ${green}[Готово]${reset}\n"
     ##################################
     echo -en "\n" ; echo -n "  # # Установка базовых системных пакетов..."
     sudo apt-get install -y ca-certificates curl gnupg 2>&1 | while read -r line; do
@@ -397,16 +396,16 @@ function InstallScript() {
 	# sudo apt-get install -y nodejs 2>&1 | while read -r line; do if echo "$line" | grep -qE "Unpacking|Setting up"; then printf "."; fi; done
 	# echo -e " ${green}[Готово]${reset}"
     ##################################
-    echo -e "  # # Обновление индексов пакетов перед установкой зависимостей..."
+    echo -en "\n" ; echo -n "  # # Обновление индексов пакетов перед установкой зависимостей..."
     sudo apt-get update -y 2>&1 | while read -r line; do
         if echo "$line" | grep -qE "Hit:|Get:|Ign:|Удл:|Всэ:|Игн:"; then
-            clean_line=$(echo "$line" | tr -d '\r' | awk '{$1=$1;print}' | cut -c1-65)
-            printf "\r\033[K      %s" "$clean_line"
+            clean_line=$(echo "$line" | tr -d '\r' | awk '{$1=$1;print}' | cut -c1-35)
+            printf "\r\033[K  # # Обновление индексов пакетов перед установкой зависимостей... %s" "$clean_line"
         elif echo "$line" | grep -qE "Err:|Failed|Error|E:|W:|Ошб:"; then
             echo -e "\n${red}    [ОШИБКА РЕПОЗИТОРИЯ]: $line${reset}"
         fi
     done
-    printf "\033[1A\r\033[K  # # Обновление индексов пакетов перед установкой зависимостей... ${green}[Готово]${reset}\n\033[K\n"
+    printf "\r\033[K  # # Обновление индексов пакетов перед установкой зависимостей... ${green}[Готово]${reset}\n"
     ##################################
 	echo -en "\n" ; echo -n "  # # Установка пакетов gcc g++ make python3 для сборки плагинов..."
     sudo apt-get install -y gcc g++ make python3 2>&1 | while read -r line; do
@@ -465,12 +464,12 @@ function InstallScript() {
     sudo systemctl daemon-reload > /dev/null 2>&1
     sudo systemctl enable homebridge > /dev/null 2>&1
     sudo systemctl restart homebridge > /dev/null 2>&1
-    echo -e " ${green}[Успешно запущено]${reset}"
+    echo -e " ${green}[Успешно]${reset}"
     ##################################
 	
     # Восстановление резервной копии происходит молча, если файлов нет
     if [ -d "$BackupsFolder" ] && [ "$(ls -A "$BackupsFolder" 2>/dev/null)" ]; then
-        echo -en "\n" ; echo -n "  # # Восстановление резервной копии конфигурационных файлов HomeBridge..."
+        echo -en "\n" ; echo -n "  # # Восстановление резервной копии HomeBridge..."
         BackupRecovery=1
         if [ ! -d /var/lib/homebridge/backups/config-backups ] ; then 
             sudo mkdir -p /var/lib/homebridge/backups/config-backups && sudo chmod 777 /var/lib/homebridge/backups/config-backups
