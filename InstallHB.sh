@@ -204,7 +204,7 @@ function BackUpScript() {
 }
 
 function CheckRepositoryAccess {
-    echo -en "\n" ; echo -n " # # Проверка доступности репозитория Homebridge..."
+    echo -en "\n" ; echo -n "  # # Проверка доступности репозитория Homebridge..."
 
     #Сначала безопасно создаем ключ из встроенного текста (без curl)
     sudo mkdir -p /usr/share/keyrings
@@ -265,7 +265,7 @@ EOF
 
     #Проверяем доступность именно сервера репозитория пакетов!
     if curl -m 4 -sI https://repo.homebridge.io | grep -q "Etag\|Server\|Cloudflare\|200\|301\|302\|404"; then
-        echo -e "${green}[Доступно]${reset}"
+        echo -e " ${green}[Доступно]${reset}"
         return 0
     fi
 
@@ -719,14 +719,15 @@ function UninstallNodeJS() {
 
 
 function RremovalItself() {
-    echo -en "\n" ; echo "                   Самоудаление папки со скриптом установки...  " ; cd
+    echo -en "\n" ; echo "  # # Самоудаление папки со скриптом установки..." ; cd
     
     SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
     sudo rm -rf "$SCRIPT_DIR"
     if [ $? -eq 0 ]; then
-        echo "                ${green}[Успешно удалено]${reset} - ${red}Завершение работы скрипта...${reset}" ; echo -en "\n"
+        # Текст теперь напечатается ровно по левой сетке, как и все остальные шаги
+        echo -e "  ${green}[Успешно удалено]${reset} - ${red}Завершение работы скрипта...${reset}"
     else
-        echo "            ${red}[Удаление не удалось] - Завершение работы скрипта...${reset}" ; echo -en "\n"
+        echo -e "  ${red}[Удаление не удалось]${reset} - Завершение работы скрипта..."
     fi
     sleep 1
     exit 0
