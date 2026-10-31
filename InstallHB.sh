@@ -310,7 +310,21 @@ function InstallScript() {
 #Signed-By: /etc/apt/keyrings/nodesource.gpg" | sudo tee /etc/apt/sources.list.d/nodesource.sources
 
 echo -en "\n" ; echo "  # # Обновление индексов пакетов перед установкой зависимостей..."
-sudo apt-get update
+#sudo apt-get update
+# Запускаем apt-get update, перехватываем вывод и перерисовываем живую строку под заголовком
+sudo apt-get update -y 2>&1 | while read -r line; do
+    if echo "$line" | grep -qE "Hit:|Get:|Ign:"; then
+        # Форматируем строку, чтобы она была компактной и не ломала экран
+        clean_line=$(echo "$line" | awk '{print $1, $2}' | cut -c1-65)
+        printf "\r\033[K       → %s" "$clean_line"
+    elif echo "$line" | grep -qE "Err:|Failed|Error|E:|W:"; then
+        echo -e "\n${red}    [ОШИБКА РЕПОЗИТОРИЯ]: $line${reset}"
+    fi
+done
+# Стираем бегущую строку и пишем красивый зелёный статус прямо под заголовком
+printf "\r\033[K       ${green}[ОК] Индексы пакетов успешно обновлены.${reset}\n"
+
+
 
 echo -en "\n" ; echo "  # # Установка пакетов gcc g++ make python3 для сборки плагинов..."
 sudo apt-get install -y gcc g++ make python3 > /dev/null
@@ -321,8 +335,20 @@ sudo apt-get install -y libavahi-compat-libdnssd-dev > /dev/null
 #echo -en "\n" ; echo "  # # Установка Node.js..."
 #sudo apt-get install -y nodejs > /dev/null 2>&1
 
-echo -en "\n" ; echo "  # # Установка HomeBridge..."
+echo -en "\n" ; echo -n "  # # Установка HomeBridge."
 #sudo apt-get install homebridge -y > /dev/null 2>&1
+sudo apt-get install homebridge -y 2>&1 | while read -r line; do
+    if echo "$line" | grep -qE "Unpacking|Setting up|Preparing to unpack"; then
+        printf "." 
+    elif echo "$line" | grep -qE "Err:|Failed|Error|E:|W:"; then
+        echo -e "\n${red}    [ОШИБКА APT]: $line${reset}"
+    fi
+done
+echo -e " ${green}[Готово]${reset}"
+
+
+
+
 # Запускаем apt-get, отлавливаем только важные шаги и ошибки
 sudo apt-get install homebridge -y 2>&1 | while read -r line; do
     if echo "$line" | grep -qE "Unpacking|Setting up|Preparing to unpack"; then
