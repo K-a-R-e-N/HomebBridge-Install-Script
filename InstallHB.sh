@@ -14,6 +14,7 @@ while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 
 # # # # # # # # # # # # # # # # 
 BackupsFolder=~/HB_Backup
+# # # # # # # # # # # # # # # # 
 
 function Zagolovok {
 echo -en "${yellow} \n"
@@ -271,107 +272,144 @@ function InstallScript() {
     CheckRepositoryAccess || { sleep 1; GoToMenu; return; }
     BackUpScript
 
-    echo -en "\n" ; echo "  # # Очистка старых репозиториев Node.js и Homebridge..."
-    # Удаляем старые файлы списков и ключей, включая новый формат .sources
-    sudo rm -f /etc/apt/keyrings/nodesource.gpg
-    sudo rm -f /etc/apt/sources.list.d/nodesource.list
-    sudo rm -f /etc/apt/sources.list.d/nodesource.sources
-    sudo rm -f /etc/apt/sources.list.d/nodesource*.list
-    sudo rm -f /etc/apt/sources.list.d/homebridge*.list
-
-    echo -en "\n" ; echo "  # # Устранение ранее известных проблем..."
-    # Автоматический принудительный сброс зависших блокировок apt/dpkg перед установкой
+    ##################################
+    echo -en "\n" ; echo -n "  # # Очистка старых репозиториев Node.js и Homebridge..."
+    sudo rm -f /etc/apt/keyrings/nodesource.gpg /etc/apt/sources.list.d/nodesource* /etc/apt/sources.list.d/homebridge*
+    echo -e " ${green}[ОК]${reset}"
+    ##################################
+    echo -en "\n" ; echo -n "  # # Сброс системных блокировок и подготовка окружения..."
     sudo killall -9 apt apt-get dpkg 2>/dev/null
     sudo rm -f /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock /var/lib/dpkg/lock
-    # Create a directory for the new repository's keyring, if it doesn't exist
     sudo mkdir -p /etc/apt/keyrings
-
-    echo -en "\n" ; echo "  # # Обновление индексов репозиторий..."
-    sudo apt update -y > /dev/null 2>&1
-
-    echo -en "\n" ; echo "  # # Устанавливаем необходимые системные пакеты для скачивания и верификации..."
-    sudo apt-get install -y ca-certificates curl gnupg > /dev/null
-
-    echo -en "\n" ; echo "  # # Добавление репозитория HomeBridge..."
+    echo -e " ${green}[ОК]${reset}"
+    ##################################
+    echo -en "\n" ; echo "  # # Первичное обновление индексов репозиториев..."
+    sudo apt-get update -y 2>&1 | while read -r line; do
+        if echo "$line" | grep -qE "Hit:|Get:|Ign:"; then
+            clean_line=$(echo "$line" | awk '{print $1, $2}' | cut -c1-65)
+            printf "\r\033[K       → %s" "$clean_line"
+        fi
+    done
+    printf "\r\033[K       ${green}[ОК] Базовые индексы обновлены.${reset}\n"
+    ##################################
+    echo -en "\n" ; echo -n "  # # Устанавливаем необходимые системные пакеты для скачивания и верификации..."
+    sudo apt-get install -y ca-certificates curl gnupg 2>&1 | while read -r line; do
+        if echo "$line" | grep -qE "Unpacking|Setting up"; then printf "."; fi
+    done
+    echo -e " ${green}[Готово]${reset}"
+    ##################################
+    echo -en "\n" ; echo -n "  # # Импорт PGP-ключа и регистрация репозитория Homebridge..."
     curl -sSfL https://repo.homebridge.io/KEY.gpg | sudo gpg --dearmor | sudo tee /usr/share/keyrings/homebridge.gpg > /dev/null
     echo "deb [signed-by=/usr/share/keyrings/homebridge.gpg] https://repo.homebridge.io stable main" | sudo tee /etc/apt/sources.list.d/homebridge.list > /dev/null
+    echo -e " ${green}[ОК]${reset}"
+    ##################################
+	#echo -en "\n" ; echo "  # # Добавление официального репозитория Node.js 24.x..."
+	# Define the desired Node.js major version
+	#NODE_MAJOR=24
+	# Download the new repository's GPG key and save it in the keyring directory
+	#curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --yes --dearmor -o /etc/apt/keyrings/nodesource.gpg > /dev/null 2>&1
+	# Add the new repository's source list with its GPG key for package verification
+	#echo "Types: deb
+	#URIs: https://deb.nodesource.com/node_${NODE_MAJOR}.x/
+	#Suites: nodistro
+	#Components: main
+	#Signed-By: /etc/apt/keyrings/nodesource.gpg" | sudo tee /etc/apt/sources.list.d/nodesource.sources
+    ##################################
+	echo -en "\n" ; echo "  # # Обновление индексов пакетов перед установкой зависимостей..."
+	#sudo apt-get update
+	# Запускаем apt-get update, перехватываем вывод и перерисовываем живую строку под заголовком
+	sudo apt-get update -y 2>&1 | while read -r line; do
+  	  if echo "$line" | grep -qE "Hit:|Get:|Ign:"; then
+   	     # Форматируем строку, чтобы она была компактной и не ломала экран
+   	     clean_line=$(echo "$line" | awk '{print $1, $2}' | cut -c1-65)
+    	    printf "\r\033[K       → %s" "$clean_line"
+    	elif echo "$line" | grep -qE "Err:|Failed|Error|E:|W:"; then
+    	    echo -e "\n${red}    [ОШИБКА РЕПОЗИТОРИЯ]: $line${reset}"
+    	fi
+	done
+	# Стираем бегущую строку и пишем красивый зелёный статус прямо под заголовком
+	printf "\r\033[K       ${green}[ОК] Индексы пакетов успешно обновлены.${reset}\n"
+    ##################################
+	echo -en "\n" ; echo -n "  # # Установка пакетов gcc g++ make python3 для сборки плагинов..."
+    sudo apt-get install -y gcc g++ make python3 2>&1 | while read -r line; do
+        if echo "$line" | grep -qE "Unpacking|Setting up|Preparing to unpack"; then
+            printf "."
+        elif echo "$line" | grep -qE "Err:|Failed|Error|E:|W:"; then
+            echo -e "\n${red}    [ОШИБКА APT]: $line${reset}"
+        fi
+    done
+    echo -e " ${green}[Готово]${reset}"
+    ##################################
+	echo -en "\n" ; echo -n "  # # Установка пакета libavahi-compat-libdnssd-dev..."
+    sudo apt-get install -y libavahi-compat-libdnssd-dev 2>&1 | while read -r line; do
+        if echo "$line" | grep -qE "Unpacking|Setting up|Preparing to unpack"; then
+            printf "."
+        elif echo "$line" | grep -qE "Err:|Failed|Error|E:|W:"; then
+            echo -e "\n${red}    [ОШИБКА APT]: $line${reset}"
+        fi
+    done
+    echo -e " ${green}[Готово]${reset}"
+    ##################################
+	# echo -en "\n" ; echo -n "  # # Интеграция официального репозитория Node.js 24.x..."
+	# Define the desired Node.js major version
+	# NODE_MAJOR=24
+	# Download the new repository's GPG key and save it in the keyring directory
+	#curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --yes --dearmor -o /etc/apt/keyrings/nodesource.gpg > /dev/null 2>&1
+	# Add the new repository's source list with its GPG key for package verification
+	# echo "Types: deb
+	#URIs: https://deb.nodesource.com/node_${NODE_MAJOR}.x/
+	# Suites: nodistro
+	# Components: main
+	#Signed-By: /etc/apt/keyrings/nodesource.gpg" | sudo tee /etc/apt/sources.list.d/nodesource.sources
+	# echo -e " ${green}[ОК]${reset}"
+    ##################################
+	# echo -en "\n" ; echo -n "  # # Установка Node.js..."
+	# sudo apt-get install -y nodejs 2>&1 | while read -r line; do if echo "$line" | grep -qE "Unpacking|Setting up"; then printf "."; fi; done
+	# echo -e " ${green}[Готово]${reset}"
+    ##################################
+    echo -en "\n" ; echo -n "  # # Установка HomeBridge... "
+    # Запускаем установку в фоне, перенаправляя вывод во временный файл
+    sudo apt-get install homebridge -y > /tmp/apt_install.log 2>&1 &
+    APT_PID=$! # Запоминаем ID процесса установки
 
+    # Массив символов для анимации крутящегося спиннера
+    spinner=( '╱' '─' '╲' '│' )
+    
+    # Крутим спиннер, пока процесс установки жив
+    while kill -0 "$APT_PID" 2>/dev/null; do
+        for sym in "${spinner[@]}"; do
+            # Выводим текущее действие из конца лога (последние 50 символов), чтобы видеть прогресс
+            local current_act=$(tail -n 1 /tmp/apt_install.log 2>/dev/null | grep -oE "(Unpacking|Setting up|Preparing to unpack) [a-zA-Z0-9.-]+" | cut -c1-50)
+            
+            # \r возвращает каретку в начало, \033[K очищает строку
+            printf "\r  ${yellow}%s${reset} # # Установка HomeBridge... ${current_act} " "$sym"
+            sleep 0.1
+        done
+    done
 
-#echo -en "\n" ; echo "  # # Добавление официального репозитория Node.js 24.x..."
-# Define the desired Node.js major version
-#NODE_MAJOR=24
-# Download the new repository's GPG key and save it in the keyring directory
-#curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --yes --dearmor -o /etc/apt/keyrings/nodesource.gpg > /dev/null 2>&1
-# Add the new repository's source list with its GPG key for package verification
-#echo "Types: deb
-#URIs: https://deb.nodesource.com/node_${NODE_MAJOR}.x/
-#Suites: nodistro
-#Components: main
-#Signed-By: /etc/apt/keyrings/nodesource.gpg" | sudo tee /etc/apt/sources.list.d/nodesource.sources
-
-echo -en "\n" ; echo "  # # Обновление индексов пакетов перед установкой зависимостей..."
-#sudo apt-get update
-# Запускаем apt-get update, перехватываем вывод и перерисовываем живую строку под заголовком
-sudo apt-get update -y 2>&1 | while read -r line; do
-    if echo "$line" | grep -qE "Hit:|Get:|Ign:"; then
-        # Форматируем строку, чтобы она была компактной и не ломала экран
-        clean_line=$(echo "$line" | awk '{print $1, $2}' | cut -c1-65)
-        printf "\r\033[K       → %s" "$clean_line"
-    elif echo "$line" | grep -qE "Err:|Failed|Error|E:|W:"; then
-        echo -e "\n${red}    [ОШИБКА РЕПОЗИТОРИЯ]: $line${reset}"
+    # Проверяем, как завершился процесс
+    wait "$APT_PID"
+    if [ $? -eq 0 ]; then
+        # Если всё ОК, затираем спиннер и пишем красивый зелёный финал
+        printf "\r\033[K  ${green}✔${reset} # # Установка HomeBridge... ${green}[Готово]${reset}\n"
+    else
+        # Если была ошибка, выводим её красным цветом
+        printf "\r\033[K  ${red}✘${reset} # # Установка HomeBridge... ${red}[ОШИБКА APT]${reset}\n"
+        echo -e "${red}"
+        tail -n 5 /tmp/apt_install.log # Показываем последние 5 строк лога с ошибкой
+        echo -e "${reset}"
     fi
-done
-# Стираем бегущую строку и пишем красивый зелёный статус прямо под заголовком
-printf "\r\033[K       ${green}[ОК] Индексы пакетов успешно обновлены.${reset}\n"
+    rm -f /tmp/apt_install.log
 
+    ##################################
+    echo -en "\n" ; echo -n "  # # Интеграция в systemd, активация и запуск демона Homebridge..."
+    sudo systemctl daemon-reload > /dev/null 2>&1
+    sudo systemctl enable homebridge > /dev/null 2>&1
+    sudo systemctl restart homebridge > /dev/null 2>&1
+    echo -e " ${green}[Успешно запущено]${reset}"
 
+    ##################################
 
-echo -en "\n" ; echo "  # # Установка пакетов gcc g++ make python3 для сборки плагинов..."
-sudo apt-get install -y gcc g++ make python3 > /dev/null
-
-echo -en "\n" ; echo "  # # Установка пакета libavahi-compat-libdnssd-dev..."
-sudo apt-get install -y libavahi-compat-libdnssd-dev > /dev/null
-
-#echo -en "\n" ; echo "  # # Установка Node.js..."
-#sudo apt-get install -y nodejs > /dev/null 2>&1
-
-echo -en "\n" ; echo -n "  # # Установка HomeBridge."
-#sudo apt-get install homebridge -y > /dev/null 2>&1
-sudo apt-get install homebridge -y 2>&1 | while read -r line; do
-    if echo "$line" | grep -qE "Unpacking|Setting up|Preparing to unpack"; then
-        printf "." 
-    elif echo "$line" | grep -qE "Err:|Failed|Error|E:|W:"; then
-        echo -e "\n${red}    [ОШИБКА APT]: $line${reset}"
-    fi
-done
-echo -e " ${green}[Готово]${reset}"
-
-
-
-
-# Запускаем apt-get, отлавливаем только важные шаги и ошибки
-sudo apt-get install homebridge -y 2>&1 | while read -r line; do
-    if echo "$line" | grep -qE "Unpacking|Setting up|Preparing to unpack"; then
-        echo -n "." # Рисуем точки по мере распаковки и настройки пакета
-    elif echo "$line" | grep -qE "Err:|Failed|Error|E:|W:"; then
-        echo -e "\n${red}    [ОШИБКА APT]: $line${reset}" # Выводим ошибку ярким красным цветом
-    fi
-done
-echo -e " ${green}[Готово]${reset}"
-
-
-echo -en "\n" ; echo "  # # Включение и запуск службы HomeBridge..."
-# Так как это официальный пакет, просто включаем и перезапускаем стандартную службу:
-sudo systemctl enable homebridge > /dev/null 2>&1
-sudo systemctl restart homebridge > /dev/null 2>&1
-
-#echo -en "\n" ; echo "  # # Установка порта HomeBridge по умолчанию на 8080..."
-#sudo hb-service install --port 8080
-#sudo sed -i 's|listen 80;  |listen 8080;|' /etc/nginx/sites-available/homebridge.local
-#sudo sed -i 's|:80;  |:8080;|' /etc/nginx/sites-available/homebridge.local
-#sudo sed -i 's|127.0.0.1:8581;|127.0.0.1:8080;|' /etc/nginx/sites-available/homebridge.local
-#sudo sed -i 's|"port": 8581|"port": 8080|' /var/lib/homebridge/config.json
-#sudo systemctl restart nginx > /dev/null 2>&1
 
 # Восстановление резервной копии
 if [ -d "$BackupsFolder" ] && [ "$(ls -A "$BackupsFolder" 2>/dev/null)" ]; then
@@ -422,10 +460,10 @@ echo "╚═══════════════════════�
 echo -en "\n"
 echo "    ┌──────────── Полезная информация для работы с HomeBridge ────────────┐"
 echo "    │                                                                     │"
-echo "    │                Установленная версия:  ${green}$FINAL_HB_VERSION${reset}                        │" 
+echo "    │                     Установленная версия:  ${green}$FINAL_HB_VERSION${reset}                   │" 
 echo "    │                                                                     │"
-echo "    │            Доступ к веб-интерфейсу HomeBridge по адресу:            │"
-echo "    │                      ${green}http://$HB_IP:$HB_PORT/${reset}                     │"
+echo "    │             Доступ к веб-интерфейсу HomeBridge по адресу:           │"
+echo "    │                      ${green}http://$HB_IP:$HB_PORT/${reset}                      │"
 echo "    │                                                                     │"
 echo "    │                  Редактирование файла конфигурации                  │"
 echo "    │              ${green}sudo nano /var/lib/homebridge/config.json${reset}              │"
