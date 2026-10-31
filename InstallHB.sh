@@ -360,14 +360,16 @@ function InstallScript() {
     sudo rm -f /etc/apt/keyrings/nodesource.gpg /etc/apt/sources.list.d/nodesource* /etc/apt/sources.list.d/homebridge*
     echo -e " ${green}[Готово]${reset}"
     ##################################
-	echo -e "\n  # # Обновление индексов репозиториев..."
+	cho -e "\n  # # Обновление индексов репозиториев..."
+    stty -echo # БЛОКИРУЕМ ЭХО КЛАВИАТУРЫ
     sudo apt-get update -y 2>&1 | while read -r line; do
         if echo "$line" | grep -qE "Hit:|Get:|Ign:|Удл:|Всэ:|Игн:"; then
-            clean_line=$(echo "$line" | tr -d '\r' | awk '{$1=$1;print}' | cut -c1-55)
+            clean_line=$(echo "$line" | tr -d '\r' | awk '{$1=$1;print}' | cut -c1-45)
             printf "\n\033[K       %s\033[1A" "$clean_line"
         fi
     done
-    printf "\n\033[K\033[2A\r\033[K  # # Обновление индексов репозиториев... ${green}[Готово]${reset}\n\n"
+    stty echo # ВОЗВРАЩАЕМ ЭХО КЛАВИАТУРЫ
+    printf "\n\033[K\033[2A\r\033[K  # # Обновление индексов репозиториев... ${green}[Готово]${reset}\n"
     ##################################
     echo -en "\n" ; echo -n "  # # Установка базовых системных пакетов..."
     sudo apt-get install -y ca-certificates curl gnupg 2>&1 | while read -r line; do
@@ -398,15 +400,17 @@ function InstallScript() {
 	# echo -e " ${green}[Готово]${reset}"
     ##################################
 	echo -e "\n  # # Проверка обновлений перед зависимостями..."
+    stty -echo # БЛОКИРУЕМ ЭХО КЛАВИАТУРЫ
     sudo apt-get update -y 2>&1 | while read -r line; do
         if echo "$line" | grep -qE "Hit:|Get:|Ign:|Удл:|Всэ:|Игн:"; then
-            clean_line=$(echo "$line" | tr -d '\r' | awk '{$1=$1;print}' | cut -c1-50)
+            clean_line=$(echo "$line" | tr -d '\r' | awk '{$1=$1;print}' | cut -c1-45)
             printf "\n\033[K       %s\033[1A" "$clean_line"
         elif echo "$line" | grep -qE "Err:|Failed|Error|E:|W:|Ошб:"; then
             echo -e "\n${red}    [ОШИБКА РЕПОЗИТОРИЯ]: $line${reset}"
         fi
     done
-    printf "\n\033[K\033[2A\r\033[K  # # Проверка обновлений перед зависимостями... ${green}[Готово]${reset}\n\n"
+    stty echo # ВОЗВРАЩАЕМ ЭХО КЛАВИАТУРЫ
+    printf "\n\033[K\033[2A\r\033[K  # # Проверка обновлений перед зависимостями... ${green}[Готово]${reset}\n"
     ##################################
 	echo -en "\n" ; echo -n "  # # Установка пакетов gcc g++ make python3 для сборки плагинов..."
     sudo apt-get install -y gcc g++ make python3 2>&1 | while read -r line; do
