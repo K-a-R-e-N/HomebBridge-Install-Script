@@ -438,11 +438,11 @@ function InstallScript() {
     # Крутим спиннер, пока процесс установки жив
     while kill -0 "$APT_PID" 2>/dev/null; do
         for sym in "${spinner[@]}"; do
-            # Правильное присваивание без вызова local внутри итератора
-            current_act=$(tail -n 1 /tmp/apt_install.log 2>/dev/null | grep -oE "(Unpacking|Setting up|Preparing to unpack) [a-zA-Z0-9.-]+" | tr -d '\r' | head -n 1)
+            # Исправлено регулярное выражение: добавлен захват пробелов и очистка скрытых символов dpkg через sed
+            current_act=$(tail -n 1 /tmp/apt_install.log 2>/dev/null | tr -d '\r' | sed 's/\r//g' | grep -oE "(Unpacking|Setting up|Preparing to unpack)[[:space:]]+[a-zA-Z0-9.-]+" | head -n 1)
 
-            # Безопасный вывод через %s для исключения конфликтов с синтаксисом printf
-            printf "\r  ${yellow}%s${reset} # # Установка HomeBridge... %s " "$sym" "$current_act"
+            # Выводим строку, очищая предыдущий след в консоли
+            printf "\r\033[K  ${yellow}%s${reset} # # Установка HomeBridge... %s" "$sym" "$current_act"
             sleep 0.1
         done
     done
@@ -460,7 +460,7 @@ function InstallScript() {
     rm -f /tmp/apt_install.log
 
     ##################################
-    echo -en "\n" ; echo -n "  # # Интеграция в systemd, активация и запуск демона Homebridge..."
+    echo -en "\n" ; echo -n "  # # Интеграция в Systemd, активация и запуск демона Homebridge..."
     sudo systemctl daemon-reload > /dev/null 2>&1
     sudo systemctl enable homebridge > /dev/null 2>&1
     sudo systemctl restart homebridge > /dev/null 2>&1
