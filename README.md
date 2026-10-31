@@ -85,5 +85,5 @@ sudo rm -rf ~/HomebBridge-Install-Script
 
 ### ДЛЯ ТЕСТОВ, НЕ ОБРАЩАЕМ ВНИМАНИЯ !!!
 ```
-sudo rm -rf ~/HomebBridge-Install-Script && git clone https://github.com/K-a-R-e-N/HomebBridge-Install-Script && bash ~/HomebBridge-Install-Script/InstallHB.sh -i -d
+sudo rm -rf ~/HomebBridge-Install-Script && git clone https://github.com/K-a-R-e-N/HomebBridge-Install-Script && bash ~/HomebBridge-Install-Script/InstallHB.sh -u -i -d
 ```
