@@ -108,8 +108,14 @@ function СheckingInstalledPackage() {
 
     if [ "$InstalledPackageKey" -eq 1 ]; then
         if [ "$cmdkey" -eq 1 ]; then
-            # При автоматическом запуске по ключам — жестко прерываемся ради безопасности
-            echo -e "\n${red}Критическая ошибка: Автоматическая установка прервана, компоненты уже есть в системе.${reset}"
+            echo -e "\n\n${red}Критическая ошибка: Автоматическая установка прервана, компоненты уже есть в системе.${reset}"
+            echo -e "\n  ${yellow}Что делать дальше? Используйте один из вариантов:${reset}"
+            echo -e "  1. Запустить полную переустановку в тихом режиме (с предварительной очисткой):"
+            echo -e "     ${green}bash $ME -r -d${reset}"
+            echo -e "  2. Запустить обновление Homebridge до актуальной версии в тихом режиме:"
+            echo -e "     ${green}bash $ME -f -d${reset}"
+            echo -e "  3. Запустить скрипт в интерактивном режиме для выбора действий через меню:"
+            echo -e "     ${green}bash $ME${reset}\n"
             exit 1
         else
             # Сбрасываем каретку, выводим красивую рамку и предлагаем пользователю выбор
@@ -722,13 +728,14 @@ function print_help() {
     echo -en "\n"
     echo "  ${yellow}Справка по работе скрипта $ME из командной строки${reset}"
     echo -en "\n"
-    echo "    Использование: $ME [-i] [-u] [-r] [-n] [-d] [-h] "
+    echo "    Использование: $ME [-i] [-u] [-r] [-n] [-f] [-d] [-h] "
     echo -en "\n"
     echo "        Параметры:"
     echo "            -i / -I        Установка Homebridge на чистой системе."
     echo "            -u / -U        Полное удаление Homebridge с очисткой системы."
     echo "            -r / -R        Установка Homebridge с полным удалением старой версии."
-    echo "            -n / -N        Полная очистка системы от Node.js и его хвостов."
+    echo "            -n / -N        Полное удаление Node.js и его хвостов из системы."
+    echo "            -f / -F        Обновление Homebridge до актуальной версии в тихом режиме."
     echo "            -d / -D        Самоудаление папки со скриптом установки."
     echo -en "\n"
     echo "            -h / -H        Вызов справки."
@@ -737,19 +744,19 @@ function print_help() {
 }
 
 
-
 # Если аргументов нет — запускаем интерактивное меню
 if [ $# = 0 ]; then
     GoToMenu
 fi
 
-while getopts ":iIuUrRdDhHnN" Option
+while getopts ":iIuUrRdDhHnNfF" Option
 do
     case $Option in
         i|I)    cmdkey=1 ; InstallScript ;;
         u|U)    cmdkey=1 ; UninstallScript ;;
         r|R)    cmdkey=1 ; UninstallScript ; InstallScript ;;
         n|N)    cmdkey=1 ; UninstallNodeJS ;;
+        f|F)    cmdkey=1 ; UpdatingScript ;;
         d|D)    RremovalItself ;;
         h|H)    print_help ;;
         *)      echo -en "\n" ; echo -en "\n"
