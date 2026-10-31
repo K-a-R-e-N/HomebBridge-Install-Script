@@ -7,114 +7,158 @@ amber=$(tput setaf 3)
 dim=$(tput setaf 8)
 reset=$(tput sgr0)
 
-# Полностью вычищаем старые зависшие процессы перед сборкой по статье
+# Полностью вычищаем старые зависшие процессы перед сборкой
 sudo systemctl disable --now amneziawg > /dev/null 2>&1
 sudo systemctl disable --now mihomo > /dev/null 2>&1
 sudo killall -9 awg awg-quick mihomo > /dev/null 2>&1
 
 echo "${cyan}╔═════════════════════════════════════════════════════════════════════════════╗${reset}"
-echo "${cyan}║             Настройка обхода блокировок Mihomo (По вашей статье)            ║${reset}"
+echo "${cyan}║         Автоматическая установка ПОСЛЕДНЕЙ версии Mihomo (AmneziaWG)        ║${reset}"
 echo "${cyan}╚═════════════════════════════════════════════════════════════════════════════╝${reset}"
 
 echo -en "\n" ; echo "  # # Создание рабочих папок для программы..."
 sudo mkdir -p /usr/local/bin /etc/mihomo
-sudo rm -f /etc/mihomo/user_warp.yaml
+sudo rm -f /usr/local/bin/mihomo.xz /usr/local/bin/mihomo.gz /usr/local/bin/mihomo
 
-# 1. Ручная установка ядра Mihomo на Raspberry Pi строго по статье
-if [ ! -f /usr/local/bin/mihomo ]; then
-    echo "  # # Скачивание архива программы под 64-битную архитектуру..."
-    sudo wget -O /usr/local/bin/mihomo.gz https://github.com/MetaCubeX/mihomo/releases/download/v1.19.30/mihomo-linux-arm64-v1.19.30.gz
-    sudo gunzip -f /usr/local/bin/mihomo.gz
-    sudo chmod +x /usr/local/bin/mihomo
+# 1. Автоматический поиск и скачивание ПОСЛЕДНЕЙ СТАБИЛЬНОЙ версии ядра Mihomo под arm64
+echo "  # # Запрос последней версии у GitHub API..."
+LATEST_URL=$(curl -s https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | grep "browser_download_url" | grep "linux-arm64" | grep -v -i "compatible" | head -n 1 | cut -d '"' -f 4)
+
+if [ -z "$LATEST_URL" ]; then
+    echo "${amber}  [!] Не удалось получить релиз через /latest. Пробуем общий список релизов...${reset}"
+    LATEST_URL=$(curl -s https://github.com | grep "browser_download_url" | grep "linux-arm64" | grep -v -i "compatible" | grep -v -i "alpha" | grep -v -i "beta" | head -n 1 | cut -d '"' -f 4)
 fi
 
-# 2. Пошаговая инструкция для пользователя
-echo -e "\n  ${amber}ШАГ 1:${reset} Откройте в браузере сайт генератора:"
-echo -e "         ${green}https://warp-gen.github.io${reset}"
-echo -e "\n  ${amber}橫АГ 2:${reset} Найдите блок с логотипом кота и надписью ${cyan}Clash${reset}."
-echo -e "         Нажмите на оранжевую кнопку ${amber}AWG 2.0${reset} внутри этого блока."
-echo -e "\n  ${amber}ШАГ 3:${reset} Полностью скопируйте весь открывшийся YAML-текст конфига."
-echo -e "\n  ${amber}ШАГ 4:${reset} Сейчас откроется чистый редактор. Вставьте скопированный текст (${cyan}Ctrl+V${reset}),"
-echo -e "         нажмите ${cyan}Ctrl+O${reset} -> ${cyan}Enter${reset} (сохранить) и ${cyan}Ctrl+X${reset} (выход)."
-echo -en "\n"
-read -p "  По готовности нажмите [ENTER], чтобы открыть редактор и вставить текст... "
-
-# Открываем чистый nano для вставки текста
-sudo nano /etc/mihomo/user_warp.yaml
-
-if [ ! -s /etc/mihomo/user_warp.yaml ]; then
-    echo -e "\n  ${amber}Ошибка: Вы ничего не вставили в редактор. Действие отменено.${reset}\n"
+if [ -z "$LATEST_URL" ]; then
+    echo -e "\n  ${amber}Ошибка: Не удалось получить ссылку на загрузку от GitHub API.${reset}"
+    echo "  Проверьте подключение к интернету или доступность github.com"
     exit 1
 fi
 
-echo -e "\n  # # Модификация и сборка главного файла конфигурации config.yaml..."
+# Получаем расширение скачиваемого файла (обычно xz или gz)
+EXT="${LATEST_URL##*.}"
 
-# Очищаем вставленный текст от старых правил rules, если они были в конце скачанного файла
-sudo sed -i '/rules:/,$d' /etc/mihomo/user_warp.yaml
+echo "  # # Скачивание актуального релиза ядра..."
+sudo wget -O /usr/local/bin/mihomo_download.$EXT "$LATEST_URL"
 
-# Сборка структуры: ДОБАВЛЯЕМ В САМОЕ НАЧАЛО ФАЙЛА блоки tun и dns строго по вашей статье
-sudo tee /etc/mihomo/config.yaml > /dev/null << EOF
+echo "  # # Распаковка архива программы..."
+if [ "$EXT" = "xz" ]; then
+    sudo unxz -f /usr/local/bin/mihomo_download.xz
+elif [ "$EXT" = "gz" ]; then
+    sudo gunzip -f /usr/local/bin/mihomo_download.gz
+else
+    # Если скачался чистый бинарник без сжатия
+    sudo mv /usr/local/bin/mihomo_download.$EXT /usr/local/bin/mihomo_download
+fi
+
+# Переименовываем распакованный файл в чистый короткий бинарник
+sudo mv /usr/local/bin/mihomo_download /usr/local/bin/mihomo
+sudo chmod +x /usr/local/bin/mihomo
+
+echo -n "  # # Проверка установленной версии ядра: "
+/usr/local/bin/mihomo -v
+
+# 2. Автоматическая сборка умной конфигурации config.yaml
+echo -e "\n  # # Сборка главного файла конфигурации config.yaml..."
+
+sudo tee /etc/mihomo/config.yaml > /dev/null << 'EOF'
 # =====================================================================
-# ДОБАВИТЬ В САМОЕ НАЧАЛО ФАЙЛА: ВКЛЮЧЕНИЕ ТУННЕЛЯ И ЗАЩИТА ЛОКАЛКИ
-# =====================================================================
+mixed-port: 7890
+allow-lan: true
+mode: rule
+log-level: info
+
+# Автоматический перехват трафика системы с защитой локальной сети умного дома
 tun:
   enable: true
-  stack: mixed
+  stack: gvisor
+  dns-hijack:
+    - "any:53"
   auto-route: true
   auto-detect-interface: true
-  bypass-lan: true   # Полностью исключает вашу домашнюю сеть из VPN. 
-                     # Вы никогда не потеряете SSH/VNC доступ к малинке.
+  bypass-lan: true   # Полностью исключает домашнюю сеть. Доступ по SSH/VNC не пропадет.
 
+# Обязательный блок для работы DNS внутри ядра Mihomo
 dns:
   enable: true
-  enhanced-mode: fake-ip
   listen: 0.0.0.0:53
+  enhanced-mode: fake-ip
   nameserver:
-    - 1.1.1.1
     - 8.8.8.8
+    - 1.1.1.1
+    - 114.114.114.114
 
-# =====================================================================
-# СЮДА ВСТАВЛЯЕТСЯ ВЕСЬ ТЕКСТ ИЗ ФАЙЛА, СКАЧАННОГО С САЙТА WARP-GEN
-# (Блоки warp-common, proxies и proxy-groups оставляем как есть)
-# =====================================================================
-EOF
+warp-common: &warp-common
+  type: wireguard
+  ip: 172.16.0.2
+  ipv6: 2606:4700:110:837c:5cec:fc3b:243c:a041
+  private-key: b5B0ir5azTMvL1gOd+z02LK9o/Y8V1WK4KWww1i8v60=
+  public-key: bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=
+  allowed-ips: ['0.0.0.0/0']
+  udp: true
+  mtu: 1280
+  remote-dns-resolve: true
+  dns: [1.1.1.1, 1.0.0.1, 2606:4700:4700::1111, 2606:4700:4700::1001]
 
-# Бесшовно приклеиваем скопированный пользователем текст (блоки warp-common, proxies, proxy-groups)
-sudo cat /etc/mihomo/user_warp.yaml | sudo tee -a /etc/mihomo/config.yaml > /dev/null
-sudo rm -f /etc/mihomo/user_warp.yaml
+proxies:
+- name: "Стандартный 1"
+  <<: *warp-common
+  server: 162.159.192.1
+  port: 4500
+  amnezia-wg-option:
+   version: 3
+   jc: 4
+   jmin: 40
+   jmax: 70
+   i1: <b0xce000000010897a297ecc34cd6dd000044d0ec2e2e1ea2991f467ace4222129b5a098823784694b4897b9986ae0b7280135fa85e196d9ad980b150122129ce2a9379531b0fd3e871ca5fdb883c369832f730e272d7b8b74f393f9f0fa43f11e510ecb2219a52984410c204cf875585340c62238e14ad04dff382f2c200e0ee22fe743b9c6b8b043121c5710ec289f471c91ee414fca8b8be8419ae8ce7ffc53837f6ade262891895f3f4cecd31bc93ac5599e18e4f01b472362b8056c3172b513051f8322d1062997ef4a383b01706598d08d48c221d30e74c7ce000cdad36b706b1bf9b0607c32ec4b3203a4ee21ab64df336212b9758280803fcab14933b0e7ee1e04a7becce3e2633f4852585c567894a5f9efe9706a151b615856647e8b7dba69ab357b3982f554549bef9256111b2d67afde0b496f16962d4957ff654232aa9e845b61463908309cfd9de0a6abf5f425f577d7e5f6440652aa8da5f73588e82e9470f3b21b27b28c649506ae1a7f5f15b876f56abc4615f49911549b9bb39dd804fde182bd2dcec0c33bad9b138ca07d4a4a1650a2c2686acea05727e2a78962a840ae428f55627516e73c83dd8893b02358e81b524b4d99fda6df52b3a8d7a5291326e7ac9d773c5b43b8444554ef5aea104a738ed650aa979674bbed38da58ac29d87c29d387d80b526065baeb073ce65f075ccb56e47533aef357dceaa8293a523c5f6f790be90e4731123d3c6152a70576e90b4ab5bc5ead01576c68ab633ff7d36dcde2a0b2c68897e1acfc4d6483aaaeb635dd63c96b2b6a7a2bfe042f6aed82e5363aa850aace12ee3b1a93f30d8ab9537df483152a5527faca21efc9981b304f11fc95336f5b9637b174c5a0659e2b22e159a9fed4b8e93047371175b1d6d9cc8ab745f3b2281537d1c75fb9451871864efa5d184c38c185fd203de206751b92620f7c369e031d2041e152040920ac2c5ab5340bfc9d0561176abf10a147287ea90758575ac6a9f5ac9f390d0d5b23ee12af583383d994e22c0cf42383834bcd3ada1b3825a0664d8f3fb678261d57601ddf94a8a68a7c273a18c08aa99c7ad8c6c42eab67718843597ec9930457359dfdfbce024afc2dcf9348579a57d8d3490b2fa99f278f1c37d87dad9b221acd575192ffae1784f8e60ec7cee4068b6b988f0433d96d6a1b1865f4e155e9fe020279f434f3bf1bd117b717b92f6cd1cc9bea7d45978bcc3f24bda631a36910110a6ec06da35f8966c9279d130347594f13e9e07514fa370754d1424c0a1545c5070ef9fb2acd14233e8a50bfc5978b5bdf8bc1714731f798d21e2004117c61f2989dd44f0cf027b27d4019e81ed4b5c31db347c4a3a4d85048d7093cf16753d7b0d15e078f5c7a5205dc2f87e330a1f716738dce1c6180e9d02869b5546f1c4d2748f8c90d9693cba4e0079297d22fd61402dea32ff0eb69ebd65a5d0b687d87e3a8b2c42b648aa723c7c7daf37abcc4bb85caea2ee8f55bec20e913b3324ab8f5c3304f820d42ad1b9f2ffc1a3af9927136b4419e1e579ab4c2ae3c776d293d397d575df181e6cae0a4ada5d67ecea171cca3288d57c7bbdaee3befe745fb7d634f70386d873b90c4d6c6596bb65af68f9e5121e67ebf0d89d3c909ceedfb32ce9575a7758ff080724e1ab5d5f43074ecb53a479af21ed03d7b6899c36631c0166f9d47e5e1d4528a5d3d3f744029c4b1c190cbfbad06f5f83f7ad0429fa9a2719c56ffe3783460e166de2d8>
+- name: "Стандартный 2"
+  <<: *warp-common
+  server: 162.159.192.1
+  port: 4500
+  amnezia-wg-option:
+   version: 3
+   jc: 4
+   jmin: 40
+   jmax: 70
+   i1: <b0xc400000001015c000040570b2e25e1a2fb2e1d5cf2bfdaeb0ca79c3255f6384628e6e6c22adb43440db63fa1d26ad16120d9cbdbf0dc2f7a8eb3525561b193c6b6a0ef44e8d118c3b04a3ae880c081a9b9e97321315915787938abd8b925506b830d>
+- name: "Стандартный 3"
+  <<: *warp-common
+  server: 162.159.192.1
+  port: 4500
+  amnezia-wg-option:
+   version: 3
+   jc: 4
+   jmin: 40
+   jmax: 70
+   i1: <b0x494e56495445207369703a626f624062696c6f78692e636f6d205349502f322e300d0a5669613a205349502f322e302f55445020706333332e61746c616e74612e636f6d3b6272616e63683d7a39684734624b3737366173646864730d0a4d61782d466f7277617264733a2037300d0a546f3a20426f62203c7369703a626f624062696c6f78692e636f6d3e0d0a46726f6d3a20416c696365203c7369703a616c6963654061746c616e74612e636f6d3e3b7461673d313932383330313737340d0a43616c6c2d49443a20613834623463373665363637313040706333332e61746c616e74612e636f6d0d0a435365713a2033313431353920494e564954450d0a436f6e74656e742d547970653a206170706c69636174696f6e2f7364700d0a436f6e74656e742d4c656e6774683a20300d0a0d0a>
+   i2: <b0x5349502f322e302031303020547279696e670d0a5669613a205349502f322e302f55445020706333332e61746c616e74612e636f6d3b6272616e63683d7a39684734624b3737366173646864730d0a546f3a20426f62203c7369703a626f624062696c6f78692e636f6d3e0d0a46726f6d3a20416c696365203c7369703a616c6963654061746c616e74612e636f6d3e3b7461673d313932383330313737340d0a43616c6c2d49443a20613834623463373665363637313040706333332e61746c616e74612e636f6d0d0a435365713a2033313431353920494e564954450d0a436f6e74656e742d4c656e6774683a20300d0a0d0a>
 
-# Исправляем регистр группы warp на случай, если сайт выдал маленькими буквами, чтобы сработал MATCH,WARP
-sudo sed -i 's/- name: warp/- name: WARP/g' /etc/mihomo/config.yaml
-sudo sed -i 's/- warp/- WARP/g' /etc/mihomo/config.yaml
+proxy-groups:
+- name: WARP
+  type: select
+  proxies:
+    - "Стандартный 1"
+    - "Стандартный 2"
+    - "Стандартный 3"
 
-# Дописываем В САМЫЙ КОНЕЦ ФАЙЛА блок rules в точности до единого символа по вашей статье
-sudo tee -a /etc/mihomo/config.yaml > /dev/null << EOF
-
-# =====================================================================
-# ДОБАВИТЬ В САМЫЙ КОНЕЦ ФАЙЛА: ИСКЛЮЧЕНИЯ ДЛЯ ОБНОВЛЕНИЙ И LAN
-# (Если в скачанном файле в конце уже был блок rules — сотрите его)
-# =====================================================================
 rules:
-  # 1. Принудительно пускаем локальную сеть напрямую мимо VPN
+  # Исключения для локального трафика умного дома и обновлений apt системы мимо VPN
   - GEOIP,lan,DIRECT,no-resolve
-  
-  # 2. Список исключений для репозиториев Raspberry Pi и Debian.
-  # Эти строки заставляют менеджер пакетов "apt" качать обновления мимо VPN,
-  # напрямую через вашего домашнего провайдера на максимальной скорости.
   - DOMAIN-SUFFIX,raspberrypi.org,DIRECT
   - DOMAIN-SUFFIX,raspberrypi.com,DIRECT
   - DOMAIN-SUFFIX,raspbian.org,DIRECT
   - DOMAIN-SUFFIX,debian.org,DIRECT
   
-  # 3. Весь остальной внешний интернет-трафик заворачиваем в ваш VPN-туннель
+  # Весь внешний трафик (включая репозитории Homebridge) заворачиваем в WARP
   - MATCH,WARP
+# =====================================================================
 EOF
 
-# 3. Настройка автозапуска службы (Systemd) строго по вашей статье
+# 3. Настройка автозапуска службы (Systemd)
 echo "  # # Настройка автозапуска службы (Systemd)..."
 sudo tee /etc/systemd/system/mihomo.service > /dev/null << EOF
 [Unit]
-Description=Mihomo Cloudflare WARP Daemon
+Description=Mihomo Daemon
 After=network.target
 
 [Service]
@@ -128,12 +172,21 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
-# Активация службы строго по вашей статье
+# Активация службы
 sudo systemctl daemon-reload
 sudo systemctl enable --now mihomo > /dev/null 2>&1
 
 echo "  # # Запуск туннеля Mihomo. Ожидание инициализации 5 секунд..."
 sleep 5
 
-echo -e "\n  ${green}[ОК] Конфигурация Mihomo по статье успешно собрана и запущена!${reset}\n"
+# Тест доступности внешней сети
+if curl --connect-timeout 4 -s ifconfig.me > /dev/null; then
+    new_ip=$(curl -s ifconfig.me)
+    echo -e "\n  ${green}[ОК] VPN успешно запущен на базе ПОСЛЕДНЕГО СТАБИЛЬНОГО релиза Mihomo!${reset}"
+    echo -e "       Ваш текущий внешний IP: ${cyan}$new_ip${reset}\n"
+else
+    echo -e "\n  ${amber}[ВНИМАНИЕ] Служба запущена, но внешняя сеть пока недоступна.${reset}"
+    echo -e "              Проверьте статус команды: sudo systemctl status mihomo\n"
+fi
+
 exit 0
