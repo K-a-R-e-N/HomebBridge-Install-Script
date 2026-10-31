@@ -105,20 +105,23 @@ function СheckingInstalledPackage() {
             [ "$cmdkey" -ne 1 ] && InstallInfo="${red}[установлен NodeJS]${reset}"
         fi
     fi
+if [ "$InstalledPackageKey" -eq 1 ]; then
+        # Автоматически вычисляем точный путь к скрипту с заменой домашней папки на тильду ~
+        local SCRIPT_PATH="${0/#$HOME/\~}"
 
-    if [ "$InstalledPackageKey" -eq 1 ]; then
         if [ "$cmdkey" -eq 1 ]; then
+            # Вариант вывода для ТИХОГО режима (по ключам)
             echo -e "\n\n${red}Критическая ошибка: Автоматическая установка прервана, компоненты уже есть в системе.${reset}"
             echo -e "\n  ${yellow}Что делать дальше? Используйте один из вариантов:${reset}"
             echo -e "  1. Запустить полную переустановку в тихом режиме (с предварительной очисткой):"
-            echo -e "     ${green}bash $ME -r -d${reset}"
+            echo -e "     ${green}bash $SCRIPT_PATH -r -d${reset}"
             echo -e "  2. Запустить обновление Homebridge до актуальной версии в тихом режиме:"
-            echo -e "     ${green}bash $ME -f -d${reset}"
+            echo -e "     ${green}bash $SCRIPT_PATH -f -d${reset}"
             echo -e "  3. Запустить скрипт в интерактивном режиме для выбора действий через меню:"
-            echo -e "     ${green}bash $ME${reset}\n"
+            echo -e "     ${green}bash $SCRIPT_PATH${reset}\n"
             exit 1
         else
-            # Сбрасываем каретку, выводим красивую рамку и предлагаем пользователю выбор
+            # Вариант вывода для ИНТЕРАКТИВНОГО режима (через меню)
             echo -e "\n"
             echo "    ┌─ Что необходимо сделать? ──────────────────────────────────────────┐"
             echo "    │                                                                    │"
@@ -127,6 +130,9 @@ function СheckingInstalledPackage() {
             echo "          0 - Отменить операцию и вернуться в главное меню"
             echo "    │                                                                    │"
             echo "    └────────────────────────────────────────────────────────────────────┘"
+            echo -e "\n  ${yellow}Шпаргалка: запуск этих действий одной строкой из консоли (тихий режим):${reset}"
+            echo -e "  • Полная переустановка:   ${green}bash $SCRIPT_PATH -r -d${reset}"
+            echo -e "  • Быстрое обновление:     ${green}bash $SCRIPT_PATH -f -d${reset}\n"
             
             while true; do
                 echo -n "    Введите номер действия (0-2) или буквы (y/n): "
@@ -325,15 +331,17 @@ EOF
 function InstallScript() {
     clear ; CheckBackUp=0 ; BackupRecovery=0
     ZI="  Установка" && Zagolovok
-    
-	# Запускаем проверку
+
+    ##################################
+	# Запускаем проверку с интерактивным меню и шпаргалкой внутри
     СheckingInstalledPackage
     if [ $? -ne 0 ]; then
         # Если внутри функции запустилось обновление/удаление или была отмена — выходим!
         return
     fi
-    # Сюда скрипт пойдет, только если система изначально была на 100% чистая
+    # Сюда скрипт перейдет, только если система изначально была полностью чистая
     echo -e " ${green}[Не обнаружено]${reset}"
+    ##################################
 
     CheckRepositoryAccess || { sleep 1; GoToMenu; return; }
 
