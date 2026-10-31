@@ -86,7 +86,7 @@ function GoToMenu {
 
 function СheckingInstalledPackage() {
     local InstalledPackageKey=0
-    echo -n "  # # Проверка на ранее установленную версию..."
+    echo -en "\n" ; echo -n "  # # Проверка на ранее установленную версию..."
 
     if dpkg -s homebridge 2>/dev/null | grep -q "Status: install ok installed"; then
         echo -en "\n" ; echo "     - В вашей системе уже установлен HomeBridge как системный пакет..."
@@ -717,21 +717,20 @@ function UninstallNodeJS() {
 }
 
 
-
 function RremovalItself() {
-    echo -en "\n" ; echo "  # # Самоудаление папки со скриптом установки..." ; cd
+    echo -en "\n" ; echo "                   Самоудаление папки со скриптом установки...  " ; cd
     
     SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
     sudo rm -rf "$SCRIPT_DIR"
     if [ $? -eq 0 ]; then
-        # Текст теперь напечатается ровно по левой сетке, как и все остальные шаги
-        echo -e "  ${green}[Успешно удалено]${reset} - ${red}Завершение работы скрипта...${reset}"
+        echo "                ${green}[Успешно удалено]${reset} - ${red}Завершение работы скрипта...${reset}" ; echo -en "\n"
     else
-        echo -e "  ${red}[Удаление не удалось]${reset} - Завершение работы скрипта..."
+        echo "            ${red}[Удаление не удалось] - Завершение работы скрипта...${reset}" ; echo -en "\n"
     fi
     sleep 1
     exit 0
 }
+
 
 function print_help() {
     echo -en "\n"
