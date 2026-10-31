@@ -350,8 +350,9 @@ function InstallScript() {
     ##################################
     echo -en "\n" ; echo -n "  # # Сброс системных блокировок и подготовка окружения..."
     sudo killall -9 apt apt-get dpkg 2>/dev/null
-	sleep 1
+    sleep 1
     sudo rm -f /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock /var/lib/dpkg/lock
+    sudo dpkg --configure -a >/dev/null 2>&1
     sudo mkdir -p /etc/apt/keyrings
     echo -e " ${green}[Готово]${reset}"
     ##################################
@@ -359,16 +360,13 @@ function InstallScript() {
     sudo rm -f /etc/apt/keyrings/nodesource.gpg /etc/apt/sources.list.d/nodesource* /etc/apt/sources.list.d/homebridge*
     echo -e " ${green}[Готово]${reset}"
     ##################################
-    echo -e "  # # Обновление индексов репозиториев..."
+	echo -e "\n  # # Обновление индексов репозиториев..."
     sudo apt-get update -y 2>&1 | while read -r line; do
         if echo "$line" | grep -qE "Hit:|Get:|Ign:|Удл:|Всэ:|Игн:"; then
-            # Очищаем строку и обрезаем ее, чтобы она точно влезла в экран
-            clean_line=$(echo "$line" | tr -d '\r' | awk '{$1=$1;print}' | cut -c1-60)
-            # Переходим на строку вниз (\n) и пишем репозиторий с отступом, затем возвращаем курсор на строку вверх (\033[1A)
+            clean_line=$(echo "$line" | tr -d '\r' | awk '{$1=$1;print}' | cut -c1-55)
             printf "\n\033[K       %s\033[1A" "$clean_line"
         fi
     done
-    # Переходим на нижнюю строку, полностью стираем ее след (\033[K), возвращаемся вверх и пишем [Готово]
     printf "\n\033[K\033[1A\r\033[K  # # Обновление индексов репозиториев... ${green}[Готово]${reset}\n"
     ##################################
     echo -en "\n" ; echo -n "  # # Установка базовых системных пакетов..."
@@ -399,10 +397,10 @@ function InstallScript() {
 	# sudo apt-get install -y nodejs 2>&1 | while read -r line; do if echo "$line" | grep -qE "Unpacking|Setting up"; then printf "."; fi; done
 	# echo -e " ${green}[Готово]${reset}"
     ##################################
-    echo -e "  # # Проверка обновлений перед зависимостями..."
+	echo -e "\n  # # Проверка обновлений перед зависимостями..."
     sudo apt-get update -y 2>&1 | while read -r line; do
         if echo "$line" | grep -qE "Hit:|Get:|Ign:|Удл:|Всэ:|Игн:"; then
-            clean_line=$(echo "$line" | tr -d '\r' | awk '{$1=$1;print}' | cut -c1-60)
+            clean_line=$(echo "$line" | tr -d '\r' | awk '{$1=$1;print}' | cut -c1-50)
             printf "\n\033[K       %s\033[1A" "$clean_line"
         elif echo "$line" | grep -qE "Err:|Failed|Error|E:|W:|Ошб:"; then
             echo -e "\n${red}    [ОШИБКА РЕПОЗИТОРИЯ]: $line${reset}"
@@ -483,11 +481,16 @@ function InstallScript() {
         LATEST_CONF=$(ls -t "$BackupsFolder"/config.json.* 2>/dev/null | head -n 1)
         if [ -n "$LATEST_CONF" ]; then
             sudo cp -f "$LATEST_CONF" /var/lib/homebridge/config.json
-            sudo chown homebridge:homebridge /var/lib/homebridge/config.json
+            
+            # Проверяем, успела ли система создать пользователя homebridge перед chown
+            if id "homebridge" >/dev/null 2>&1; then
+                sudo chown homebridge:homebridge /var/lib/homebridge/config.json
+            else
+                sudo chmod 664 /var/lib/homebridge/config.json
+            fi
             sudo systemctl restart homebridge > /dev/null 2>&1
         fi
 
-        
         rm -f "$BackupsFolder"/config.json.* 2>/dev/null
         echo -e " ${green}[Готово]${reset}"
     fi
