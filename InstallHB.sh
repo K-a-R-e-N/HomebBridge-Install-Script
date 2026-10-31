@@ -107,15 +107,48 @@ function СheckingInstalledPackage() {
     fi
 
     if [ "$InstalledPackageKey" -eq 1 ]; then
-        echo -en "\n" ; echo -e "\a"
         if [ "$cmdkey" -eq 1 ]; then
-            # Пишем ошибку в поток и выходим без остановки выполнения (без read)
-            echo -e "${red}Критическая ошибка: Автоматическая установка прервана, компоненты уже есть в системе.${reset}"
+            # При автоматическом запуске по ключам — жестко прерываемся ради безопасности
+            echo -e "\n${red}Критическая ошибка: Автоматическая установка прервана, компоненты уже есть в системе.${reset}"
             exit 1
         else
-            echo -n "${green}           Нажмите Enter, чтобы вернуться в главное меню...${reset}"
-            read -r
-            return 1
+            # Сбрасываем каретку, выводим красивую рамку и предлагаем пользователю выбор
+            echo -e "\n"
+            echo "    ┌─ Что необходимо сделать? ──────────────────────────────────────────┐"
+            echo "    │                                                                    │"
+            echo "          1 - Полностью удалить старую версию и установить заново"
+            echo "          2 - Попробовать обновить текущую установку до актуальной"
+            echo "          0 - Отменить операцию и вернуться в главное меню"
+            echo "    │                                                                    │"
+            echo "    └────────────────────────────────────────────────────────────────────┘"
+            
+            while true; do
+                echo -n "    Введите номер действия (0-2) или буквы (y/n): "
+                read -r -n 1 CHOICE_OVER
+                echo
+                case $CHOICE_OVER in
+                    1|y|Y|[дД])
+                        echo -e "\n  ${yellow}Запуск процесса полной переустановки...${reset}"
+                        sleep 1
+                        cmdkey=1 ; UninstallScript ; cmdkey=0 ; InstallScript
+                        return 1
+                        ;;
+                    2)
+                        echo -e "\n  ${yellow}Запуск процесса обновления...${reset}"
+                        sleep 1
+                        UpdatingScript
+                        return 1
+                        ;;
+                    0|n|N|[нН])
+                        echo -e "\n  ${yellow}Операция отменена. Возврат в главное меню...${reset}"
+                        sleep 1
+                        return 1
+                        ;;
+                    *)
+                        echo -e "       ${red}Неверный ввод. Выберите пункт меню (0-2) или (y/n)${reset}"
+                        ;;
+                esac
+            done
         fi
     fi
 return 0
@@ -290,11 +323,11 @@ function InstallScript() {
 	# Запускаем проверку
     СheckingInstalledPackage
     if [ $? -ne 0 ]; then
-        sleep 1 ; GoToMenu ; return
+        # Если внутри функции запустилось обновление/удаление или была отмена — выходим!
+        return
     fi
-    if ! dpkg -s homebridge 2>/dev/null | grep -q "Status: install ok installed" && ! dpkg -s nodejs 2>/dev/null | grep -q "Status: install ok installed"; then
-        echo -e " ${green}[Не обнаружено]${reset}"
-    fi
+    # Сюда скрипт пойдет, только если система изначально была на 100% чистая
+    echo -e " ${green}[Не обнаружено]${reset}"
 
     CheckRepositoryAccess || { sleep 1; GoToMenu; return; }
 
