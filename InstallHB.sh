@@ -238,27 +238,27 @@ EOF
                 if [ -f "$SCRIPT_DIR/mihomo-setup.sh" ]; then
                     chmod +x "$SCRIPT_DIR/mihomo-setup.sh"
                     bash "$SCRIPT_DIR/mihomo-setup.sh"
-                    
+
                     echo "  # # Проверка связи после настройки туннеля..."
                     if curl -m 6 -sI https://repo.homebridge.io | grep -q "Etag\|Server\|Cloudflare\|200\|301\|302\|404"; then
-                        echo -e "    ${green}[ОК] Сеть успешно восстановлена! Продолжаем...${reset}"
+                        echo -e "       ${green}[ОК] Сеть успешно восстановлена! Продолжаем...${reset}"
                         return 0
                     else
-                        echo -e "    ${red}Внимание: Репозиторий всё ещё заблокирован провайдером${reset}"
+                        echo -e "       ${red}Внимание: Репозиторий всё ещё заблокирован провайдером${reset}"
                         return 1
                     fi
                 else
-                    echo -e "    ${red}Ошибка: Соседний файл $SCRIPT_DIR/mihomo-setup.sh не найден!${reset}"
+                    echo -e "       ${red}Ошибка: Соседний файл $SCRIPT_DIR/mihomo-setup.sh не найден!${reset}"
                     return 1
                 fi
                 ;;
             2)
-                echo -e "    ${yellow}Действие отменено пользователем. Возврат в главное меню...${reset}"
+                echo -e "       ${yellow}Действие отменено пользователем. Возврат в главное меню...${reset}"
                 sleep 2
                 return 1
                 ;;
             *)
-                echo -e "    ${red}Неверный ввод. Пожалуйста, введите цифру 1 или 2${reset}"
+                echo -e "       ${red}Неверный ввод. Пожалуйста, введите цифру 1 или 2${reset}"
                 ;;
         esac
     done
@@ -323,7 +323,16 @@ sudo apt-get install -y libavahi-compat-libdnssd-dev > /dev/null
 
 echo -en "\n" ; echo "  # # Установка HomeBridge..."
 #sudo apt-get install homebridge -y > /dev/null 2>&1
-sudo apt-get install homebridge -y
+# Запускаем apt-get, отлавливаем только важные шаги и ошибки
+sudo apt-get install homebridge -y 2>&1 | while read -r line; do
+    if echo "$line" | grep -qE "Unpacking|Setting up|Preparing to unpack"; then
+        echo -n "." # Рисуем точки по мере распаковки и настройки пакета
+    elif echo "$line" | grep -qE "Err:|Failed|Error|E:|W:"; then
+        echo -e "\n${red}    [ОШИБКА APT]: $line${reset}" # Выводим ошибку ярким красным цветом
+    fi
+done
+echo -e " ${green}[Готово]${reset}"
+
 
 echo -en "\n" ; echo "  # # Включение и запуск службы HomeBridge..."
 # Так как это официальный пакет, просто включаем и перезапускаем стандартную службу:
@@ -387,10 +396,10 @@ echo "╚═══════════════════════�
 echo -en "\n"
 echo "    ┌──────────── Полезная информация для работы с HomeBridge ────────────┐"
 echo "    │                                                                     │"
-echo "    │  Установленная версия:  ${green}$FINAL_HB_VERSION${reset}                                       │" 
+echo "    │                Установленная версия:  ${green}$FINAL_HB_VERSION${reset}                        │" 
 echo "    │                                                                     │"
 echo "    │            Доступ к веб-интерфейсу HomeBridge по адресу:            │"
-echo "    │  ${green}http://$HB_IP:$HB_PORT/${reset}                                       │"
+echo "    │                      ${green}http://$HB_IP:$HB_PORT/${reset}                     │"
 echo "    │                                                                     │"
 echo "    │                  Редактирование файла конфигурации                  │"
 echo "    │              ${green}sudo nano /var/lib/homebridge/config.json${reset}              │"
