@@ -367,7 +367,7 @@ function InstallScript() {
             printf "\n\033[K       %s\033[1A" "$clean_line"
         fi
     done
-    printf "\n\033[K\033[1A\r\033[K  # # Обновление индексов репозиториев... ${green}[Готово]${reset}\n"
+    printf "\n\033[K\033[2A\r\033[K  # # Обновление индексов репозиториев... ${green}[Готово]${reset}\n\n"
     ##################################
     echo -en "\n" ; echo -n "  # # Установка базовых системных пакетов..."
     sudo apt-get install -y ca-certificates curl gnupg 2>&1 | while read -r line; do
@@ -406,7 +406,7 @@ function InstallScript() {
             echo -e "\n${red}    [ОШИБКА РЕПОЗИТОРИЯ]: $line${reset}"
         fi
     done
-    printf "\n\033[K\033[1A\r\033[K  # # Проверка обновлений перед зависимостями... ${green}[Готово]${reset}\n"
+    printf "\n\033[K\033[2A\r\033[K  # # Проверка обновлений перед зависимостями... ${green}[Готово]${reset}\n\n"
     ##################################
 	echo -en "\n" ; echo -n "  # # Установка пакетов gcc g++ make python3 для сборки плагинов..."
     sudo apt-get install -y gcc g++ make python3 2>&1 | while read -r line; do
