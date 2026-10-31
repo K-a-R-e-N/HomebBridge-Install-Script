@@ -360,7 +360,7 @@ function InstallScript() {
     sudo rm -f /etc/apt/keyrings/nodesource.gpg /etc/apt/sources.list.d/nodesource* /etc/apt/sources.list.d/homebridge*
     echo -e " ${green}[Готово]${reset}"
     ##################################
-	cho -e "\n  # # Обновление индексов репозиториев..."
+	echo -e "\n  # # Обновление индексов репозиториев..."
     stty -echo # БЛОКИРУЕМ ЭХО КЛАВИАТУРЫ
     sudo apt-get update -y 2>&1 | while read -r line; do
         if echo "$line" | grep -qE "Hit:|Get:|Ign:|Удл:|Всэ:|Игн:"; then
